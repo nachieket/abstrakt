@@ -1,6 +1,0 @@
-cluster_name = "random-uk-cluster"
-vpc_name = "random-uk-vpc"
-subnet_name = "random-uk-subnet"
-project_id = "njcsa-369315"
-region = "europe-west2"
-cidr_range = "10.10.0.0/24"
