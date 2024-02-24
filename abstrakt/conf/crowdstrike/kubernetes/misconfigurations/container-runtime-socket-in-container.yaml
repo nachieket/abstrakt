@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: container-runtime-socket-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: container-runtime-socket-container
+      image: nginx
+      volumeMounts:
+        - name: run-volume
+          mountPath: /var/run/docker.sock
+  volumes:
+    - name: run-volume
+      hostPath:
+        path: /var/run/docker.sock

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: no-runasnonroot-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: no-runasnonroot-container
+      image: nginx

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sensitive-secret
+  namespace: crowdstrike-detections
+data:
+  password: YmFzZTY0
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-key-ref-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: secret-key-ref-container
+      image: nginx
+      env:
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sensitive-secret
+              key: password

@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: without-security-context-deployment
+  namespace: crowdstrike-detections
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: example-app
+  template:
+    metadata:
+      labels:
+        app: example-app
+    spec:
+      containers:
+        - name: example-container
+          image: nginx

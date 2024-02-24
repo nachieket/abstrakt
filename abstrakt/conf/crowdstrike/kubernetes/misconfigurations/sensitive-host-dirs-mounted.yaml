@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sensitive-mount-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: sensitive-mount-container
+      image: nginx
+      volumeMounts:
+        - name: host-volume
+          mountPath: /var/sensitive
+  volumes:
+    - name: host-volume
+      hostPath:
+        path: /etc/sensitive

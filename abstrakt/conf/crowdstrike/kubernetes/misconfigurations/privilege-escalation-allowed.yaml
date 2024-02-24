@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privilege-escalation-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: privilege-escalation-container
+      image: nginx
+      securityContext:
+        allowPrivilegeEscalation: true

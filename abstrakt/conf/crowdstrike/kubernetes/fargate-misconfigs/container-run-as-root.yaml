@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: root-container-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: root-container
+      image: nginx
+      securityContext:
+        runAsUser: 0

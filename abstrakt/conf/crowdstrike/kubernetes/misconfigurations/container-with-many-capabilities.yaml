@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: many-capabilities-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: many-capabilities-container
+      image: nginx
+      securityContext:
+        capabilities:
+          add:
+            - NET_ADMIN
+            - SYS_ADMIN
+            - SYS_RAWIO

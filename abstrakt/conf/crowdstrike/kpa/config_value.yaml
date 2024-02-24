@@ -1,0 +1,7 @@
+crowdstrikeConfig:
+    clientID: "3af74117b84f4e04b29baf6840243fbc"
+    clientSecret: "aWxvXF0UKpIAt8hBu716eRM9GY4m5w3ikZDyVT2d"
+    clusterName: some_uk_aks_cluster
+    env: us-1
+    cid: cbcf840c8e3d4e77bf920fc457cde8f6
+    dockerAPIToken: AKCp8nFvgekx6dmTwRSU123FY1pp5uAxdpjvthdiqoJ6rzTeBsoo4gWuHEFArJogEicQVZYhK

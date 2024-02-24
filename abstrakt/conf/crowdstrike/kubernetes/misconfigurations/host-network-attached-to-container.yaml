@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: host-network-pod
+  namespace: crowdstrike-detections
+spec:
+  hostNetwork: true
+  containers:
+    - name: host-network-container
+      image: nginx

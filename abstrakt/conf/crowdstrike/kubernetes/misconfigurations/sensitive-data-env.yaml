@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sensitive-data-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: sensitive-data-container
+      image: nginx
+      env:
+        - name: SECRET_KEY
+          value: "mysecret"

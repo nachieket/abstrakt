@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: valid-sysctl-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: valid-sysctl-container
+      image: nginx
+      securityContext:
+        sysctls:
+          - name: kernel.msgmax
+            value: "65536" # Specify a valid integer value here

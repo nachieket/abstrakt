@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unsafe-proc-mount-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: unsafe-proc-mount-container
+      image: nginx
+      securityContext:
+        procMount: Unconfined

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: host-ipc-namespace-pod
+  namespace: crowdstrike-detections
+spec:
+  containers:
+    - name: host-ipc-namespace-container
+      image: nginx
+      securityContext:
+        runAsUser: 0
+  hostIPC: true  # This shares IPC namespace with the host
