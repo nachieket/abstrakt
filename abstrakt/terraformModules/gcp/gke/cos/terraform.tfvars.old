@@ -1,6 +1,0 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MPL-2.0
-
-project_id = "njcsa-369315"
-region     = "europe-west2"
-common_tags = ["cstag-owner: njoshi02", "cstag-product: Falcon", "cstag-accounting: dev", "cstag-department: Sales - 310000", "cstag-business: Sales"]
