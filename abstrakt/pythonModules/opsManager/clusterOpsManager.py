@@ -27,9 +27,9 @@ class ClusterOperationsManager:
                ebpf_mode=None,
                falcon_client_id=None,
                falcon_client_secret=None,
-               falcon_cid=None,
-               falcon_cloud_region=None,
-               falcon_api=None,
+               # falcon_cid=None,
+               # falcon_cloud_region=None,
+               # falcon_api=None,
                monitor_namespaces=None,
                exclude_namespaces=None,
                proxy_server=None,
@@ -47,9 +47,9 @@ class ClusterOperationsManager:
     self.ebpf_mode = ebpf_mode
     self.falcon_client_id = falcon_client_id
     self.falcon_client_secret = falcon_client_secret
-    self.falcon_cid = falcon_cid
-    self.falcon_cloud_region = falcon_cloud_region
-    self.falcon_api = falcon_api
+    # self.falcon_cid = falcon_cid
+    # self.falcon_cloud_region = falcon_cloud_region
+    # self.falcon_api = falcon_api
     self.monitor_namespaces = monitor_namespaces
     self.exclude_namespaces = exclude_namespaces
     self.proxy_server = proxy_server
@@ -71,9 +71,9 @@ class ClusterOperationsManager:
                                           ebpf_mode=self.ebpf_mode,
                                           falcon_client_id=self.falcon_client_id,
                                           falcon_client_secret=self.falcon_client_secret,
-                                          falcon_cid=self.falcon_cid,
-                                          falcon_cloud_region=self.falcon_cloud_region,
-                                          falcon_api=self.falcon_api,
+                                          # falcon_cid=self.falcon_cid,
+                                          # falcon_cloud_region=self.falcon_cloud_region,
+                                          # falcon_api=self.falcon_api,
                                           proxy_server=self.proxy_server,
                                           proxy_port=self.proxy_port,
                                           falcon_sensor_tags=self.falcon_sensor_tags,
@@ -115,9 +115,9 @@ class ClusterOperationsManager:
       sensor_mode = 'kernel' if self.kernel_mode else 'bpf' if self.ebpf_mode else ''
       daemonset = FalconSensorDaemonset(falcon_client_id=self.falcon_client_id,
                                         falcon_client_secret=self.falcon_client_secret,
-                                        falcon_cid=self.falcon_cid,
-                                        falcon_cloud_region=self.falcon_cloud_region,
-                                        falcon_cloud_api=self.falcon_api,
+                                        # falcon_cid=self.falcon_cid,
+                                        # falcon_cloud_region=self.falcon_cloud_region,
+                                        # falcon_cloud_api=self.falcon_api,
                                         proxy_server=self.proxy_server,
                                         proxy_port=self.proxy_port,
                                         tags=self.falcon_sensor_tags,
@@ -128,9 +128,9 @@ class ClusterOperationsManager:
     elif self.cluster_type == 'gke-cos':
       daemonset = FalconSensorDaemonset(falcon_client_id=self.falcon_client_id,
                                         falcon_client_secret=self.falcon_client_secret,
-                                        falcon_cid=self.falcon_cid,
-                                        falcon_cloud_region=self.falcon_cloud_region,
-                                        falcon_cloud_api=self.falcon_api,
+                                        # falcon_cid=self.falcon_cid,
+                                        # falcon_cloud_region=self.falcon_cloud_region,
+                                        # falcon_cloud_api=self.falcon_api,
                                         proxy_server=self.proxy_server,
                                         proxy_port=self.proxy_port,
                                         tags=self.falcon_sensor_tags,
@@ -141,9 +141,9 @@ class ClusterOperationsManager:
     else:
       sidecar = FalconSensorSidecar(falcon_client_id=self.falcon_client_id,
                                     falcon_client_secret=self.falcon_client_secret,
-                                    falcon_cid=self.falcon_cid,
-                                    falcon_cloud_region=self.falcon_cloud_region,
-                                    falcon_cloud_api=self.falcon_api,
+                                    # falcon_cid=self.falcon_cid,
+                                    # falcon_cloud_region=self.falcon_cloud_region,
+                                    # falcon_cloud_api=self.falcon_api,
                                     monitor_namespaces=self.monitor_namespaces,
                                     exclude_namespaces=self.exclude_namespaces,
                                     sensor_mode='sidecar',
@@ -161,7 +161,7 @@ class ClusterOperationsManager:
   def start_kac_deployment(self):
     # install kubernetes admission controller
     kac = FalconKAC(falcon_client_id=self.falcon_client_id, falcon_client_secret=self.falcon_client_secret,
-                    falcon_cloud_region=self.falcon_cloud_region, falcon_cid=self.falcon_cid, logger=self.logger)
+                    logger=self.logger)
     kac.deploy_falcon_kac()
 
   def start_detections_container_deployment(self):

@@ -9,12 +9,9 @@ from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 
 
 class FalconSensorDaemonset(CrowdStrikeSensors):
-  def __init__(self, falcon_client_id, falcon_client_secret, falcon_cid,
-               falcon_cloud_region, falcon_cloud_api, sensor_mode, logger,
+  def __init__(self, falcon_client_id, falcon_client_secret, sensor_mode, logger,
                proxy_server=None, proxy_port=None, tags=None):
-    super().__init__(falcon_client_id, falcon_client_secret, falcon_cid,
-                     falcon_cloud_region, falcon_cloud_api, sensor_mode,
-                     logger, proxy_server, proxy_port, tags)
+    super().__init__(falcon_client_id, falcon_client_secret, sensor_mode, logger, proxy_server, proxy_port, tags)
 
   def get_helm_chart(self):
     falcon_image_repo = self.get_falcon_image_repo()

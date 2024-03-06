@@ -87,10 +87,12 @@ COPY ./abstrakt/terraformModules /crowdstrike/abstrakt/terraformModules
 COPY abstrakt.sh /root/.bash_completions/abstrakt.sh
 
 RUN python3.10 -m pip install pytz
+RUN python3.10 -m pip install requests
 RUN python3.10 -m pip install pydantic
 RUN python3.10 -m pip install azure
 RUN python3.10 -m pip install azure-identity
 RUN python3.10 -m pip install kubernetes
+RUN python3.10 -m pip install crowdstrike-falconpy
 RUN python3.10 -m pip install /tmp/crowdstrike/abstrakt-0.1.0-py3-none-any.whl
 
 # Add the line to ~/.bashrc

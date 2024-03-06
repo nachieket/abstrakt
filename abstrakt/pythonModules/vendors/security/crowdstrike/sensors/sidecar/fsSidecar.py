@@ -9,10 +9,9 @@ from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 
 
 class FalconSensorSidecar(CrowdStrikeSensors):
-  def __init__(self, falcon_client_id, falcon_client_secret, falcon_cid, falcon_cloud_region,
-               falcon_cloud_api, monitor_namespaces, exclude_namespaces, sensor_mode, logger):
-    super().__init__(falcon_client_id, falcon_client_secret, falcon_cid,
-                     falcon_cloud_region, falcon_cloud_api, sensor_mode, logger)
+  def __init__(self, falcon_client_id, falcon_client_secret, monitor_namespaces,
+               exclude_namespaces, sensor_mode, logger):
+    super().__init__(falcon_client_id, falcon_client_secret, sensor_mode, logger)
 
     self.monitor_namespaces = monitor_namespaces
     self.exclude_namespaces = exclude_namespaces

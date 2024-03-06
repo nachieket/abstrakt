@@ -9,7 +9,6 @@ class RuntimeParameterVerification:
 
   def verify_csp_runtime_parameters(self, config_file=None, install_falcon_sensor=None, kernel_mode=None,
                                     ebpf_mode=None, falcon_client_id=None, falcon_client_secret=None,
-                                    falcon_cid=None, falcon_cloud_region=None, falcon_api=None,
                                     proxy_server=None, proxy_port=None, falcon_sensor_tags=None,
                                     install_kpa=None, install_kac=None, install_detections_container=None,
                                     install_load_test_apps=None, cluster_type=None):
@@ -20,7 +19,7 @@ class RuntimeParameterVerification:
 
     if cluster_type == ('eks-managed-node' or 'aks' or 'gke-cos'):
       if install_falcon_sensor and ((not kernel_mode and not ebpf_mode) or not falcon_client_id or not
-                                    falcon_client_secret or not falcon_cid or not falcon_cloud_region or not falcon_api):
+                                    falcon_client_secret):
         printf('\nUsage: --kernel-mode OR --ebpf-mode, --falcon-client-id, --falcon-client-secret, --falcon-cid,',
                '--falcon-cloud-region, and --falcon-api are required to install falcon sensor. Exiting program.\n',
                logger=self.logger)
@@ -29,23 +28,19 @@ class RuntimeParameterVerification:
         printf('\nUsage: --kernel-mode and --ebpf-mode cannot be used together. Existing program.\n',
                logger=self.logger)
         exit()
-      elif (install_falcon_sensor and (kernel_mode or ebpf_mode) and falcon_client_id and falcon_client_secret and
-            falcon_cid and falcon_cloud_region and falcon_api and ((proxy_server and not proxy_port) or
-                                                                   (proxy_port and not proxy_server))):
+      elif (install_falcon_sensor and (kernel_mode or ebpf_mode) and falcon_client_id and falcon_client_secret
+            and ((proxy_server and not proxy_port) or (proxy_port and not proxy_server))):
         printf('\nUsage: --proxy-server and --proxy-port both are required together. Exiting program.\n',
                logger=self.logger)
         exit()
       elif (install_falcon_sensor and falcon_sensor_tags and ((not kernel_mode and not ebpf_mode)
-                                                              or not falcon_client_id or not
-                                                              falcon_client_secret or not falcon_cid or
-                                                              not falcon_cloud_region or not falcon_api)):
+                                                              or not falcon_client_id or not falcon_client_secret)):
         printf('\nUsage: --kernel-mode OR --ebpf-mode, --falcon-client-id, --falcon-client-secret, --falcon-cid,',
                '--falcon-cloud-region, and --falcon-api are required to install falcon sensor. Exiting program.\n',
                logger=self.logger)
         exit()
     else:
-      if install_falcon_sensor and (not falcon_client_id or not falcon_client_secret or not falcon_cid or
-                                    not falcon_cloud_region or not falcon_api):
+      if install_falcon_sensor and (not falcon_client_id or not falcon_client_secret):
         printf('\nUsage: --falcon-client-id, --falcon-client-secret, --falcon-cid, --falcon-cloud-region, '
                'and --falcon-api are required to install falcon sensor. Exiting program.\n',
                logger=self.logger)
@@ -55,8 +50,7 @@ class RuntimeParameterVerification:
       if not os.path.exists("./abstrakt/conf/crowdstrike/kpa/config_value.yaml"):
         print(f"The file ./abstrakt/conf/crowdstrike/kpa/config_value.yaml does not exist. Exiting the program.\n")
         exit()
-    elif install_kac and (not falcon_client_id or not falcon_client_secret
-                          or not falcon_cloud_region or not falcon_cid):
+    elif install_kac and (not falcon_client_id or not falcon_client_secret):
       printf('\nUsage: --falcon-client-id, --falcon-client-secret, --falcon-cid, and --falcon-cloud-region '
              'are required to install falcon kubernetes admission controller. Exiting program.\n',
              logger=self.logger)

@@ -14,8 +14,7 @@ class CrowdStrikeSensors(CrowdStrike):
     super().__init__(falcon_client_id, falcon_client_secret, logger)
     self.falcon_client_id = falcon_client_id
     self.falcon_client_secret = falcon_client_secret
-    self.falcon_cid = self.get_falcon_cid(falcon_client_id, falcon_client_secret)
-    self.falcon_cloud_api, self.falcon_cloud_region = self.get_base_url_and_region()
+    self.falcon_cid, self.falcon_cloud_api, self.falcon_cloud_region = self.get_cid_api_region()
     self.sensor_mode = sensor_mode
     self.logger = logger
     self.proxy_server = proxy_server
