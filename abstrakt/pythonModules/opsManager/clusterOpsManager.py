@@ -154,8 +154,9 @@ class ClusterOperationsManager:
 
   def start_kpa_deployment(self):
     # install kubernetes protection agent
-    kpa = FalconKPA(logger=self.logger, config_file_path="./abstrakt/conf/crowdstrike/kpa/config_value.yaml")
-    kpa.deploy_kpa()
+    kpa = FalconKPA(falcon_client_id=self.falcon_client_id, falcon_client_secret=self.falcon_client_secret,
+                    logger=self.logger)
+    kpa.deploy_falcon_kpa()
 
   def start_kac_deployment(self):
     # install kubernetes admission controller

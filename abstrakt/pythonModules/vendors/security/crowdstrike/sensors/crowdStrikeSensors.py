@@ -5,17 +5,17 @@ import subprocess
 import inspect
 
 from requests.auth import HTTPBasicAuth
+from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import CrowdStrike
 
 
-class CrowdStrikeSensors:
-  def __init__(self, falcon_client_id, falcon_client_secret, falcon_cid,
-               falcon_cloud_region, falcon_cloud_api, sensor_mode, logger,
-               proxy_server=None, proxy_port=None, tags=None):
+class CrowdStrikeSensors(CrowdStrike):
+  def __init__(self, falcon_client_id, falcon_client_secret, sensor_mode,
+               logger, proxy_server=None, proxy_port=None, tags=None):
+    super().__init__(falcon_client_id, falcon_client_secret, logger)
     self.falcon_client_id = falcon_client_id
     self.falcon_client_secret = falcon_client_secret
-    self.falcon_cid = falcon_cid
-    self.falcon_cloud_region = falcon_cloud_region
-    self.falcon_cloud_api = falcon_cloud_api
+    self.falcon_cid = self.get_falcon_cid(falcon_client_id, falcon_client_secret)
+    self.falcon_cloud_api, self.falcon_cloud_region = self.get_base_url_and_region()
     self.sensor_mode = sensor_mode
     self.logger = logger
     self.proxy_server = proxy_server
