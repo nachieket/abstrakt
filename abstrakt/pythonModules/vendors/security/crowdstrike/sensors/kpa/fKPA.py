@@ -34,7 +34,10 @@ class FalconKPA(CrowdStrike):
   def execute_kpa_installation_process(self):
     falcon_cid, falcon_cloud_api, falcon_cloud_region = self.get_cid_api_region()
 
-    if access_token := self.get_api_access_token(falcon_cloud_api) and falcon_cid and falcon_cloud_region:
+    if (falcon_cid or falcon_cloud_api or falcon_cloud_region) is None:
+      return False
+
+    if access_token := self.get_api_access_token(falcon_cloud_api):
       try:
         # Set FALCON_API_ACCESS_TOKEN
         # os.environ['FALCON_API_ACCESS_TOKEN'] = access_token
@@ -79,17 +82,20 @@ class FalconKPA(CrowdStrike):
         # os.environ['FALCON_KPA_PASSWORD'] = falcon_kpa_password
 
         cluster_name_command = [
-          "kubectl", "config", "view", "--minify", "--output", "'jsonpath={..cluster}'", "|", "awk", "'{ print $NF }'"
+          "kubectl", "config", "view", "--minify", "--output", "jsonpath={..cluster}"
         ]
 
-        process = subprocess.run(cluster_name_command, capture_output=True, text=True)
+        process = subprocess.run(cluster_name_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 text=True, check=True)
+
+        # Generate a random 4-character string including letters and digits
+        random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+        cluster_name = f"random_{random_string}_cluster"
 
         if process.stdout:
-          cluster_name = process.stdout
-        else:
-          # Generate a random 4-character string including letters and digits
-          random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
-          cluster_name = f"random_{random_string}_cluster"
+          for x in process.stdout.split(' '):
+            if 'certificate-authority-data' not in x:
+              cluster_name = x
 
         # Run Helm upgrade/install command
         process = subprocess.run([
@@ -110,16 +116,18 @@ class FalconKPA(CrowdStrike):
           self.logger.error(process.stderr)
           return False
       except Exception as e:
-        self.logger.erro(e)
+        self.logger.error(e)
         return False
     else:
       return False
 
   def deploy_falcon_kpa(self):
-    print('Installing Kubernetes Protection Agent...\n')
+    print(f"\n{'+' * 40}\nCrowdStrike Kubernetes Protection Agent\n{'+' * 40}\n")
+
+    print('Installing Kubernetes Protection Agent...')
 
     with MultiThreading() as mt:
-      status = mt.run_with_progress_indicator(self.execute_kpa_installation_process(), 1)
+      status = mt.run_with_progress_indicator(self.execute_kpa_installation_process, 1)
 
     if status:
       print('Kubernetes protection agent installation successful\n')

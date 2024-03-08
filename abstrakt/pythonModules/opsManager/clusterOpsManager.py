@@ -13,6 +13,8 @@ from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.daemonset.fsDae
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.sidecar.fsSidecar import FalconSensorSidecar
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kpa.fKPA import FalconKPA
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kac.fsKAC import FalconKAC
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.iar.fIAR import IAR
+from abstrakt.pythonModules.vendors.generic.VulnerableApps.vulnerableApps import VulnerableApps
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.detectionsContainer.detectionsContainer import \
   DetectionsContainer
 from abstrakt.pythonModules.kubernetesOps.kubectlApplyYAMLs import KubectlApplyYAMLs
@@ -37,7 +39,9 @@ class ClusterOperationsManager:
                falcon_sensor_tags=None,
                install_kpa=None,
                install_kac=None,
+               install_iar=None,
                install_detections_container=None,
+               install_vulnerable_apps=None,
                cloud_type=None,
                cluster_type=None,
                logger=None):
@@ -57,7 +61,9 @@ class ClusterOperationsManager:
     self.falcon_sensor_tags = falcon_sensor_tags
     self.install_kpa = install_kpa
     self.install_kac = install_kac
+    self.install_iar = install_iar
     self.install_detections_container = install_detections_container
+    self.install_vulnerable_apps = install_vulnerable_apps
     self.cloud_type = cloud_type
     self.cluster_type = cluster_type
     self.logger = logger
@@ -164,6 +170,17 @@ class ClusterOperationsManager:
                     logger=self.logger)
     kac.deploy_falcon_kac()
 
+  def start_iar_deployment(self):
+    # install image assessment at runtime
+    iar = IAR(falcon_client_id=self.falcon_client_id, falcon_client_secret=self.falcon_client_secret,
+              logger=self.logger)
+    iar.deploy_falcon_iar()
+
+  def start_vulnerable_app_deployment(self):
+    # install vulnerable apps
+    apps = VulnerableApps(logger=self.logger)
+    apps.deploy_vulnerable_apps()
+
   def start_detections_container_deployment(self):
     # install detections container and generate artificial detections + misconfigurations
     detection_container = DetectionsContainer(logger=self.logger)
@@ -200,7 +217,7 @@ class ClusterOperationsManager:
            logger=self.logger)
 
     # Deploy the cluster using Terraform
-    self.deploy_cluster()
+    # self.deploy_cluster()
 
     # install falcon sensor in daemonset mode
     if self.install_falcon_sensor:
@@ -214,9 +231,17 @@ class ClusterOperationsManager:
     if self.install_kac:
       self.start_kac_deployment()
 
+    # install image assessment at runtime
+    if self.install_iar:
+      self.start_iar_deployment()
+
     # install detections container and generate artificial detections + misconfigurations
     if self.install_detections_container:
       self.start_detections_container_deployment()
+
+    # install vulnerable apps
+    if self.install_vulnerable_apps:
+      self.start_vulnerable_app_deployment()
 
     end_time = time.time()
     time_difference = end_time - start_time

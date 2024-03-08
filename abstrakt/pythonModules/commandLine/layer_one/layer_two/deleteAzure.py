@@ -48,7 +48,7 @@ delete_azure_app = typer.Typer()
 
 @delete_azure_app.command(help='Delete AKS Cluster', rich_help_panel="Azure Kubernetes Clusters")
 def aks():
-  aks_log_filename = f'/var/logs/crowdstrike/azure/aks/aks-{uk_time_str}.log'
+  aks_log_filename = f'/var/logs/crowdstrike/azure/aks-{uk_time_str}.log'
   aks_logger = CustomLogger('aks', aks_log_filename).logger
 
   printf('Deleting CrowdStrike sensors and agents\n', logger=aks_logger)
@@ -65,6 +65,7 @@ def aks():
   helm.run_helm_delete("falcon-kac", "falcon-kac")
   helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
   helm.run_helm_delete("falcon-helm", "falcon-system")
+  helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
   printf('CrowdStrike sensors and agents deleted\n', logger=aks_logger)
 

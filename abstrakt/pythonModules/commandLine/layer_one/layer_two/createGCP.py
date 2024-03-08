@@ -22,13 +22,10 @@ def gke_cos(
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
                                                       help='Install Falcon Sensor -> Requires: '
                                                            '--falcon-client-id, '
-                                                           '--falcon-client-secret, '
-                                                           '--falcon-cid, '
-                                                           '--falcon-cloud-region, '
-                                                           '--falcon-api), '
+                                                           '--falcon-client-secret), '
                                                            '(Optional: --proxy-server, '
                                                            '--proxy-port '
-                                                           '--falcon-sensor-tags',
+                                                           '--falcon-sensor-tags)',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
   falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
                                                 help='Client ID to Install Falcon Sensor | Example: QWERT',
@@ -97,13 +94,10 @@ def gke_autopilot(
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
                                                       help='Install Falcon Sensor -> Requires: '
                                                            '--falcon-client-id, '
-                                                           '--falcon-client-secret, '
-                                                           '--falcon-cid, '
-                                                           '--falcon-cloud-region, '
-                                                           '--falcon-api), '
+                                                           '--falcon-client-secret), '
                                                            '(Optional: --proxy-server, '
                                                            '--proxy-port '
-                                                           '--falcon-sensor-tags',
+                                                           '--falcon-sensor-tags)',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
   falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
                                                 help='Client ID to Install Falcon Sensor | Example: QWERT',

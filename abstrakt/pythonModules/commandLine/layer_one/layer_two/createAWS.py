@@ -23,13 +23,10 @@ def eks_managed_node(
                                                       help='Install Falcon Sensor -> Requires: '
                                                            '--kernel-mode OR --ebpf-mode, '
                                                            '--falcon-client-id, '
-                                                           '--falcon-client-secret, '
-                                                           '--falcon-cid, '
-                                                           '--falcon-cloud-region, '
-                                                           '--falcon-api), '
+                                                           '--falcon-client-secret), '
                                                            '(Optional: --proxy-server, '
                                                            '--proxy-port '
-                                                           '--falcon-sensor-tags',
+                                                           '--falcon-sensor-tags)',
                                                       rich_help_panel="CrowdStrike EDR Sensor")] = False,
   kernel_mode: Annotated[bool, typer.Option('--kernel-mode', help='Install Falcon Sensor in Kernel mode',
                                             rich_help_panel="CrowdStrike EDR Sensor Options")] = False,
@@ -109,13 +106,10 @@ def eks_fargate(
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
                                                       help='Install Falcon Sensor -> (Requires: '
                                                            '--falcon-client-id, '
-                                                           '--falcon-client-secret, '
-                                                           '--falcon-cid, '
-                                                           '--falcon-cloud-region, '
-                                                           '--falcon-api), '
+                                                           '--falcon-client-secret), '
                                                            '(Optional: --proxy-server, '
                                                            '--proxy-port '
-                                                           '--falcon-sensor-tags',
+                                                           '--falcon-sensor-tags)',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
   falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
                                                 help='Client ID to Install Falcon Sensor | Example: QWERT',

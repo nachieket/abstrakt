@@ -52,6 +52,7 @@ def eks_managed_node():
   helm.run_helm_delete("falcon-kac", "falcon-kac")
   helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
   helm.run_helm_delete("falcon-helm", "falcon-system")
+  helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
   printf('\nCrowdStrike sensors and agents deleted\n', logger=managed_node_logger)
 

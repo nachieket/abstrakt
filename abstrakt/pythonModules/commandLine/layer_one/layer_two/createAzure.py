@@ -13,34 +13,56 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 
 create_azure_app = typer.Typer()
 
+help_message = """
+Install Azure AKS Cluster\n
+_                       _\n\n\n
+Example Usages:\n\n
+abstrakt create azure aks --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
+--install-detections-container --install-vulnerable-apps\n
+abstrakt create azure aks --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
+--install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps\n\n\n\n
+Other Usages:\n
+abstrakt create azure aks --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create azure aks --install-kpa --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create azure aks --install-kac --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create azure aks --install-iar --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create azure aks --install-detections-container\n
+abstrakt create azure aks --install-vulnerable-apps\n"""
 
-@create_azure_app.command(help='Install Azure AKS Cluster', rich_help_panel='Azure Kubernetes Clusters')
+
+@create_azure_app.command(help=help_message, rich_help_panel='Azure Kubernetes Clusters')
 def aks(
   config_file: Annotated[str, typer.Option(help='Cluster Configuration File', show_default=True,
                                            rich_help_panel='AKS Configuration File'
                                            )] = './abstrakt/conf/azure/aks.conf',
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
-                                                      help='Install Falcon Sensor -> Requires: '
-                                                           '--kernel-mode OR --ebpf-mode, '
-                                                           '--falcon-client-id, '
-                                                           '--falcon-client-secret, '
-                                                           '--falcon-cid, '
-                                                           '--falcon-cloud-region, '
-                                                           '--falcon-api), '
-                                                           '(Optional: --proxy-server, '
-                                                           '--proxy-port '
-                                                           '--falcon-sensor-tags',
+                                                      help='Install Falcon Sensor',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
+  install_kpa: Annotated[bool, typer.Option('--install-kpa',
+                                            help='Install Kubernetes Protection Agent',
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
+  install_kac: Annotated[bool, typer.Option('--install-kac',
+                                            help='Install Kubernetes Admission Controller',
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
+  install_iar: Annotated[bool, typer.Option('--install-iar',
+                                            help='Install Image Assessment at Runtime',
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
   kernel_mode: Annotated[bool, typer.Option('--kernel-mode', help='Install Falcon Sensor in Kernel mode',
-                                            rich_help_panel='CrowdStrike EDR Sensor Options')] = False,
+                                            rich_help_panel='CrowdStrike EDR Sensor')] = False,
   ebpf_mode: Annotated[bool, typer.Option('--ebpf-mode', help='Install Falcon Sensor in ebpf mode',
-                                          rich_help_panel='CrowdStrike EDR Sensor Options')] = False,
+                                          rich_help_panel='CrowdStrike EDR Sensor')] = False,
   falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
                                                 help='Client ID to Install Falcon Sensor | Example: QWERT',
-                                                rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
+                                                rich_help_panel='CrowdStrike Sensor Options')] = None,
   falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
                                                     help='Client Secret to Install Falcon Sensor | Example: QWERT',
-                                                    rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
+                                                    rich_help_panel='CrowdStrike Sensor Options')] = None,
   # falcon_cid: Annotated[str, typer.Option('--falcon-cid',
   #                                         help='Customer ID to install Falcon Sensor |  Example: QWERT-AB',
   #                                         rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
@@ -54,22 +76,20 @@ def aks(
   #                                         rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
   proxy_server: Annotated[str, typer.Option('--proxy-server', help='Proxy Server IP or FQDN | '
                                                                    'Example: 10.10.10.10 OR proxy.internal.com',
-                                            rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+                                            rich_help_panel="CrowdStrike EDR Sensor")] = None,
   proxy_port: Annotated[str, typer.Option('--proxy-port', help='Proxy Server Port | Example: 8080',
-                                          rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+                                          rich_help_panel="CrowdStrike EDR Sensor")] = None,
   falcon_sensor_tags: Annotated[str, typer.Option('--falcon-sensor-tags', help='Falcon Sensor Tags | '
                                                                                'Example: Tag1,Tag2',
-                                                  rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
-  install_kpa: Annotated[bool, typer.Option('--install-kpa',
-                                            help='Install Kubernetes Protection Agent',
-                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
-  install_kac: Annotated[bool, typer.Option('--install-kac',
-                                            help='Install Kubernetes Admission Controller',
-                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
+                                                  rich_help_panel="CrowdStrike EDR Sensor")] = None,
   install_detections_container: Annotated[bool, typer.Option('--install-detections-container',
                                                              help='Install CrowdStrike Detections Container',
                                                              rich_help_panel='CrowdStrike Artificial '
-                                                                             'Detections Generator')] = False
+                                                                             'Detections Generator')] = False,
+  install_vulnerable_apps: Annotated[bool, typer.Option('--install-vulnerable-apps',
+                                                        help='Install Vulnerable Apps',
+                                                        rich_help_panel='CrowdStrike Artificial '
+                                                                        'Detections Generator')] = False,
 ):
   azure_log_filename = f'/var/logs/crowdstrike/azure/aks-{uk_time_str}.log'
   aks_logger = CustomLogger(__name__, azure_log_filename).logger
@@ -88,7 +108,9 @@ def aks(
                                      falcon_sensor_tags=falcon_sensor_tags,
                                      install_kpa=install_kpa,
                                      install_kac=install_kac,
+                                     install_iar=install_iar,
                                      install_detections_container=install_detections_container,
+                                     install_vulnerable_apps=install_vulnerable_apps,
                                      cloud_type='azure',
                                      cluster_type='aks',
                                      logger=aks_logger)
