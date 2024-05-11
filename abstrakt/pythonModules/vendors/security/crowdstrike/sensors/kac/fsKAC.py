@@ -2,20 +2,20 @@ import subprocess
 import json
 import base64
 
-from time import sleep
+# from time import sleep
 
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
+from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import CrowdStrike
 
 
-class FalconKAC:
-  def __init__(self, falcon_client_id: str, falcon_client_secret: str, falcon_cloud_region: str, falcon_cid: str,
-               logger):
+class FalconKAC(CrowdStrike):
+  def __init__(self, falcon_client_id: str, falcon_client_secret: str, logger):
+    super().__init__(falcon_client_id, falcon_client_secret, logger)
     self.falcon_client_id = falcon_client_id
     self.falcon_client_secret = falcon_client_secret
-    self.falcon_cloud_region = falcon_cloud_region
-    self.falcon_cid = falcon_cid
+    self.falcon_cid, self.falcon_cloud_api, self.falcon_cloud_region = self.get_cid_api_region()
     self.logger = logger
 
   def deploy_falcon_kac(self):

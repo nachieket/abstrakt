@@ -72,7 +72,7 @@ class ExecuteTerraform:
 
       # Check if 'terraform plan' failed
       if process.returncode != 0:
-        printf("Command 'terraform plan' failed\n", logger=self.logger)
+        printf("\nCommand 'terraform plan' failed\n", logger=self.logger)
         return 0
 
       # Search for 'No changes.' in the output

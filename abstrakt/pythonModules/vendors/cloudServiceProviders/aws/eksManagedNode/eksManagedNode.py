@@ -10,6 +10,8 @@ class EKSManagedNode:
     self.logger = logger
 
   def deploy_eks_managed_node_cluster(self, config_file):
+    path = './abstrakt/terraformModules/aws/eks/eks-managed-node/'
+
     # get eks managed node config file parameters
     conf = ParseConfigFile(logger=self.logger)
     managed_node_parameters, node_groups, tags = conf.read_eks_managed_node_config_file(config_file)
@@ -23,7 +25,7 @@ class EKSManagedNode:
 
     # execution of terraform commands if aws profile validation is successful and valid saml or default
     # profile is found
-    if cli.ensure_valid_aws_profile():
+    if cli.check_aws_login():
       print('+' * 10)
       print('Terraform')
       print('+' * 10, '\n')
@@ -32,16 +34,16 @@ class EKSManagedNode:
 
       # execute terraform commands to deploy eks managed node cluster
       if (
-        tf.execute_terraform_get(path='./abstrakt/terraformModules/aws/eks/eks_managed_node/') and
-        tf.execute_terraform_init(path='./abstrakt/terraformModules/aws/eks/eks_managed_node/')
+        tf.execute_terraform_get(path=path) and
+        tf.execute_terraform_init(path=path)
       ):
-        plan_status = tf.execute_terraform_plan(path='./abstrakt/terraformModules/aws/eks/eks_managed_node/')
+        plan_status = tf.execute_terraform_plan(path=path)
 
         if plan_status == 0:
           print('Terraform execution to deploy eks managed node cluster failed. Exiting the program.\n')
           exit()
         elif plan_status == 1:
-          if tf.execute_terraform_apply(path='./abstrakt/terraformModules/aws/eks/eks_managed_node/'):
+          if tf.execute_terraform_apply(path=path):
             kube_config = UpdateKubeConfig(self.logger)
             kube_config.update_kubeconfig(cloud='aws', region=managed_node_parameters['region'],
                                           cluster_name=managed_node_parameters['cluster_name'])

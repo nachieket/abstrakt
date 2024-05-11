@@ -5,19 +5,19 @@ import subprocess
 import inspect
 
 from requests.auth import HTTPBasicAuth
+from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import CrowdStrike
 
 
-class CrowdStrikeSensors:
-  def __init__(self, falcon_client_id, falcon_client_secret, falcon_cid,
-               falcon_cloud_region, falcon_cloud_api, sensor_mode, logger,
-               proxy_server=None, proxy_port=None, tags=None):
+class CrowdStrikeSensors(CrowdStrike):
+  def __init__(self, falcon_client_id, falcon_client_secret, logger,
+               sensor_mode, falcon_image_tag=None, proxy_server=None, proxy_port=None, tags=None):
+    super().__init__(falcon_client_id, falcon_client_secret, logger)
     self.falcon_client_id = falcon_client_id
     self.falcon_client_secret = falcon_client_secret
-    self.falcon_cid = falcon_cid
-    self.falcon_cloud_region = falcon_cloud_region
-    self.falcon_cloud_api = falcon_cloud_api
-    self.sensor_mode = sensor_mode
+    self.falcon_cid, self.falcon_cloud_api, self.falcon_cloud_region = self.get_cid_api_region()
     self.logger = logger
+    self.sensor_mode = sensor_mode
+    self.falcon_image_tag = falcon_image_tag
     self.proxy_server = proxy_server
     self.proxy_port = proxy_port
     self.tags = tags
@@ -83,7 +83,11 @@ class CrowdStrikeSensors:
 
   @staticmethod
   def get_sensor_type(sensor_type):
-    return 'falcon-sensor' if sensor_type == 'kernel' or 'bpf' else 'falcon-container'
+    if sensor_type == 'kernel' or sensor_type == 'bpf':
+      return 'falcon-sensor'
+    elif sensor_type == 'sidecar':
+      return 'falcon-container'
+    # return 'falcon-sensor' if sensor_type == 'kernel' or 'bpf' else 'falcon-container'
 
   def get_registry_bearer_token(self):
     try:
@@ -120,7 +124,10 @@ class CrowdStrikeSensors:
         response = requests.get(latest_sensor_url, headers=headers)
         latest_sensor = response.json()['tags'][-1]
 
-        return latest_sensor
+        if self.falcon_image_tag:
+          return self.falcon_image_tag
+        else:
+          return latest_sensor
       else:
         return False
     except Exception as e:

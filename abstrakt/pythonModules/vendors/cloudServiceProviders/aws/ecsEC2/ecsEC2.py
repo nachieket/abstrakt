@@ -23,7 +23,7 @@ class ECSec2:
     ecs_ec2_terraform_module = './abstrakt/terraformModules/aws/ecs/ecs-ec2/'
 
     # execution of terraform commands if aws profile validation is successful and valid saml or default profile is found
-    if cli.ensure_valid_aws_profile():
+    if cli.check_aws_login():
       tf = ExecuteTerraform(logger=self.logger)
 
       # execute terraform commands to deploy eks managed node cluster

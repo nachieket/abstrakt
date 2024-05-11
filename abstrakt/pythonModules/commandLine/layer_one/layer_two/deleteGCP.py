@@ -26,15 +26,16 @@ def gke_cos():
   # Delete a YAML file with kubectl
   kube = KubectlOps(logger=gke_cos_logger)
   kube.run_kubectl_command(
-    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml'
+    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml'
   )
-  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml")
+  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml")
 
   # Delete Helm releases
   helm = HelmOps(logger=gke_cos_logger)
   helm.run_helm_delete("falcon-kac", "falcon-kac")
   helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
   helm.run_helm_delete("falcon-helm", "falcon-system")
+  helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
   printf('CrowdStrike sensors and agents deleted\n', logger=gke_cos_logger)
 

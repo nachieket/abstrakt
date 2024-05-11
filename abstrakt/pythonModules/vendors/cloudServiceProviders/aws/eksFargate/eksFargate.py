@@ -11,6 +11,8 @@ class EKSFargate:
     self.logger = logger
 
   def deploy_eks_fargate_cluster(self, config_file):
+    path = './abstrakt/terraformModules/aws/eks/eks-fargate/'
+
     # get eks fargate config file parameters
     parser = ParseConfigFile(logger=self.logger)
     fargate_parameters, tags = parser.read_aws_k8s_cluster_config_file(cluster_type='EKS Fargate', config_file=config_file)
@@ -24,23 +26,23 @@ class EKSFargate:
 
     # execution of terraform commands if aws profile validation is successful and valid saml or default
     # profile is found
-    if cli.ensure_valid_aws_profile():
+    if cli.check_aws_login():
       tf = ExecuteTerraform(logger=self.logger)
 
       # execute terraform commands to deploy eks managed node cluster
       if (
-        tf.execute_terraform_get(path='./abstrakt/terraformModules/aws/eks/eks_fargate/') and
-        tf.execute_terraform_init(path='./abstrakt/terraformModules/aws/eks/eks_fargate/')
+        tf.execute_terraform_get(path=path) and
+        tf.execute_terraform_init(path=path)
       ):
-        plan_status = tf.execute_terraform_plan(path='./abstrakt/terraformModules/aws/eks/eks_fargate/')
+        plan_status = tf.execute_terraform_plan(path=path)
 
         if plan_status == 0:
           print('Terraform execution to deploy eks fargate cluster failed. Exiting the program.\n')
           exit()
         elif plan_status == 1:
-          tf.execute_terraform_apply(path='./abstrakt/terraformModules/aws/eks/eks_fargate')
+          tf.execute_terraform_apply(path=path)
 
-          if tf.execute_terraform_apply(path='./abstrakt/terraformModules/aws/eks/eks_fargate'):
+          if tf.execute_terraform_apply(path=path):
             kube_config = UpdateKubeConfig(self.logger)
             kube_config.update_kubeconfig(cloud='aws', region=fargate_parameters['region'],
                                           cluster_name=fargate_parameters['cluster_name'])

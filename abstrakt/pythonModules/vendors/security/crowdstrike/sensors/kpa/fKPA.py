@@ -1,92 +1,139 @@
 import subprocess
-
-from time import sleep
+import json
+# import os
+import random
+import string
 
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
-from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
+from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import CrowdStrike
 
 
-class FalconKPA:
-  def __init__(self, logger, config_file_path="./abstrakt/conf/crowdstrike/kpa/config_value.yaml"):
-    self.add_helm_repo_cmd = ["helm", "repo", "add", "kpagent-helm", "https://registry.crowdstrike.com/kpagent-helm"]
-    self.update_helm_repo_cmd = ["helm", "repo", "update"]
-    self.config_file_path = config_file_path
-    self.helm_upgrade_install_cmd = [
-      "helm", "upgrade", "--install",
-      "-f", self.config_file_path,
-      "--create-namespace",
-      "-n", "falcon-kubernetes-protection",
-      "kpagent", "kpagent-helm/cs-k8s-protection-agent",
-    ]
+class FalconKPA(CrowdStrike):
+  def __init__(self, falcon_client_id, falcon_client_secret, logger):
+    super().__init__(falcon_client_id, falcon_client_secret, logger)
+    self.falcon_client_id = falcon_client_id
+    self.falcon_client_secret = falcon_client_secret
     self.logger = logger
 
-  def deploy_kpa(self):
-    printf(f"\n{'+' * 40}\nCrowdStrike Kubernetes Protection Agent\n{'+' * 40}\n", logger=self.logger)
-
-    print('Installing Kubernetes Protection Agent...\n')
-
+  def get_api_access_token(self, falcon_cloud_api):
     try:
-      add_helm_repo = subprocess.run(self.add_helm_repo_cmd, stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE, check=True)
+      result = subprocess.run([
+        "curl", "-sL", "-X", "POST", f"https://{falcon_cloud_api}/oauth2/token",
+        "-H", "Content-Type: application/x-www-form-urlencoded",
+        "--data-urlencode", f"client_id={self.falcon_client_id}",
+        "--data-urlencode", f"client_secret={self.falcon_client_secret}"
+      ], capture_output=True, text=True)
 
-      if add_helm_repo.stdout:
-        self.logger.info(add_helm_repo.stdout)
+      access_token = json.loads(result.stdout)['access_token']
+      return access_token
+    except Exception as e:
+      self.logger.error(e)
+      return ""
 
-      if add_helm_repo.stderr:
-        self.logger.info(add_helm_repo.stderr)
+  def execute_kpa_installation_process(self):
+    falcon_cid, falcon_cloud_api, falcon_cloud_region = self.get_cid_api_region()
 
-      update_helm_repo = subprocess.run(self.update_helm_repo_cmd, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE, check=True)
+    if (falcon_cid or falcon_cloud_api or falcon_cloud_region) is None:
+      return False
 
-      if update_helm_repo.stdout:
-        self.logger.info(update_helm_repo.stdout)
+    if access_token := self.get_api_access_token(falcon_cloud_api):
+      try:
+        # Set FALCON_API_ACCESS_TOKEN
+        # os.environ['FALCON_API_ACCESS_TOKEN'] = access_token
 
-      if update_helm_repo.stderr:
-        self.logger.info(update_helm_repo.stderr)
+        # Get FALCON_CCID and set FALCON_CID, FALCON_KPA_USERNAME
+        # ccid_command = [
+        #   "curl", "-sL", "-X", "GET", f"https://{falcon_cloud_api}/sensors/queries/installers/ccid/v1",
+        #   "-H", f"Authorization: Bearer {access_token}"
+        # ]
 
-      printf('Helm repo added and updated successfully', logger=self.logger)
-    except subprocess.CalledProcessError as e:
-      printf(f"error: {e}. failed to add and update helm repo.\n", logger=self.logger)
-      return
+        # ccid_result = subprocess.run(ccid_command, capture_output=True, text=True)
 
-    try:
-      def thread():
-        helm_install = subprocess.run(self.helm_upgrade_install_cmd, stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE, check=True)
-        if helm_install.stdout:
-          self.logger.info(helm_install.stdout)
+        # if ccid_result.stdout:
+        #   self.logger.info(ccid_result.stdout)
+        # if ccid_result.stderr:
+        #   self.logger.error(ccid_result.stderr)
+        #
+        # falcon_ccid = json.loads(ccid_result.stdout)['resources'][0].lower()
 
-        if helm_install.stderr:
-          self.logger.info(helm_install.stderr)
+        # os.environ['FALCON_CCID'] = falcon_ccid
+        # os.environ['FALCON_CID'] = falcon_cid.split('-')[0]
+        # os.environ['FALCON_KPA_USERNAME'] = f"kp-{falcon_ccid.split('-')[0]}"
 
-      with MultiThreading() as mt:
-        mt.run_with_progress_indicator(thread, 1)
+        # Get FALCON_KPA_PASSWORD
+        kpa_password_command = [
+          "curl", "-sL", "-X", "GET",
+          f"https://{falcon_cloud_api}/"
+          f"kubernetes-protection/entities/integration/agent/v1?cluster_name=&is_self_managed_cluster=true",
+          "-H", "Accept: application/yaml",
+          "-H", f"Authorization: Bearer {access_token}"
+        ]
 
-      printf('Kubernetes protection agent installation successful\n', logger=self.logger)
+        kpa_password_result = subprocess.run(kpa_password_command, capture_output=True, text=True)
 
-      # print('Waiting for kubernetes protection agent pod to come up...')
-      #
-      # with MultiThreading() as mt:
-      #   mt.run_with_progress_indicator(sleep, 1, 10)
+        if kpa_password_result.stdout:
+          self.logger.info(kpa_password_result.stdout)
+        if kpa_password_result.stderr:
+          self.logger.error(kpa_password_result.stderr)
 
-      # print('Checking Kubernetes Protection Agent status...\n')
+        falcon_kpa_password = kpa_password_result.stdout.split('dockerAPIToken:')[1].strip()
+
+        # os.environ['FALCON_KPA_PASSWORD'] = falcon_kpa_password
+
+        cluster_name_command = [
+          "kubectl", "config", "view", "--minify", "--output", "jsonpath={..cluster}"
+        ]
+
+        process = subprocess.run(cluster_name_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 text=True, check=True)
+
+        # Generate a random 4-character string including letters and digits
+        random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+        cluster_name = f"random_{random_string}_cluster"
+
+        if process.stdout:
+          for x in process.stdout.split(' '):
+            if 'certificate-authority-data' not in x:
+              cluster_name = x
+
+        # Run Helm upgrade/install command
+        process = subprocess.run([
+          "helm", "upgrade", "--install", "kpagent", "kpagent-helm/cs-k8s-protection-agent",
+          "-n", "falcon-kubernetes-protection", "--create-namespace",
+          "--set", f"crowdstrikeConfig.clientID={self.falcon_client_id}",
+          "--set", f"crowdstrikeConfig.clientSecret={self.falcon_client_secret}",
+          "--set", f"crowdstrikeConfig.clusterName={cluster_name}",
+          "--set", f"crowdstrikeConfig.env={falcon_cloud_region}",
+          "--set", f"crowdstrikeConfig.cid={falcon_cid.split('-')[0]}",
+          "--set", f"crowdstrikeConfig.dockerAPIToken={falcon_kpa_password}"
+        ], capture_output=True, text=True)
+
+        if process.stdout:
+          self.logger.info(process.stdout)
+          return True
+        if process.stderr:
+          self.logger.error(process.stderr)
+          return False
+      except Exception as e:
+        self.logger.error(e)
+        return False
+    else:
+      return False
+
+  def deploy_falcon_kpa(self):
+    print(f"\n{'+' * 40}\nCrowdStrike Kubernetes Protection Agent\n{'+' * 40}\n")
+
+    print('Installing Kubernetes Protection Agent...')
+
+    with MultiThreading() as mt:
+      status = mt.run_with_progress_indicator(self.execute_kpa_installation_process, 1)
+
+    if status:
+      print('Kubernetes protection agent installation successful\n')
 
       container = ContainerOps(logger=self.logger)
       container.pod_checker(pod_name='kpagent', namespace='falcon-kubernetes-protection',
                             kubeconfig_path='~/.kube/config')
-
-      # container = ContainerOps(logger=self.logger)
-      # sensors = container.get_running_container_name('kpagent', 'falcon-kubernetes-protection')
-
-      # if sensors != 'None':
-      #   printf('Kubernetes Protection Agent deployed and running successfully:', logger=self.logger)
-      #   for sensor in sensors:
-      #     printf(sensor, logger=self.logger)
-      #   else:
-      #     print()
-      # else:
-      #   printf('No running Kubernetes Protection Agent found. Ensure it is up and running with kubectl get pods -n',
-      #          'falcon-kubernetes-protection command\n', logger=self.logger)
-    except subprocess.CalledProcessError as e:
-      printf(f"Error: {e}. failed to install Kubernetes Protection Agent.\n", logger=self.logger)
+    else:
+      print('Failed to install kubernetes protection agent\n')

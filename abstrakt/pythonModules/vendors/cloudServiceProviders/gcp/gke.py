@@ -27,7 +27,7 @@ class GKE:
       self.logger.error(e)
       return False
 
-  def deploy_gke_cos_cluster(self, config_file):
+  def deploy_gke_cos_cluster(self, config_file, gcp_project_id):
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -36,6 +36,8 @@ class GKE:
     print('Deploying GKE COS Cluster...\n')
 
     try:
+      print('Checking GCP login...\n')
+
       if not self.check_gcloud_login():
         print('You are not logged in to gcloud. Exiting program.')
         print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
@@ -44,7 +46,8 @@ class GKE:
       # Get GKE COS config file parameters
       gke_cos_parameters, tags = conf.read_gke_cos_config_file(config_file)
 
-      convert.convert_gke_cos_to_tfvars(gke_cos_parameters, tags)
+      convert.convert_gke_cos_to_tfvars(terraform_variables=gke_cos_parameters, gcp_project_id=gcp_project_id,
+                                        common_tags=tags)
 
       gke_cos_terraform_code_path = './abstrakt/terraformModules/gcp/gke/cos/'
 
@@ -81,7 +84,7 @@ class GKE:
       self.logger.error('Exiting the program.\n')
       exit()
 
-  def deploy_gke_autopilot_cluster(self, config_file):
+  def deploy_gke_autopilot_cluster(self, config_file, gcp_project_id):
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -90,6 +93,8 @@ class GKE:
     print('Deploying GKE Autopilot Cluster...\n')
 
     try:
+      print('Checking GCP login...\n')
+
       if not self.check_gcloud_login():
         print('You are not logged in to gcloud. Exiting program.')
         print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
@@ -98,7 +103,7 @@ class GKE:
       # Get GKE Autopilot config file parameters
       gke_autopilot_parameters = conf.read_gke_autopilot_config_file(config_file)
 
-      convert.convert_gke_autopilot_to_tfvars(gke_autopilot_parameters)
+      convert.convert_gke_autopilot_to_tfvars(gke_autopilot_parameters, gcp_project_id)
 
       gke_autopilot_terraform_code_path = './abstrakt/terraformModules/gcp/gke/autopilot/'
 

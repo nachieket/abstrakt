@@ -8,7 +8,7 @@ class ToTFVars:
   def convert_eks_managed_node_to_tfvars(self, parameters, managed_node_groups, tags):
     self.logger.info('Converting EKS Managed Node configuration file to terraform tfvars file')
 
-    with open("./abstrakt/terraformModules/aws/eks/eks_managed_node/variables.tfvars", "w") as tfvars_file:
+    with open("./abstrakt/terraformModules/aws/eks/eks-managed-node/variables.tfvars", "w") as tfvars_file:
       for key, value in parameters.items():
         if key in ["private_subnets", "public_subnets"]:
           value_list = value.split(",")
@@ -19,14 +19,14 @@ class ToTFVars:
           tfvars_file.write(f'{key} = "{value}"\n')
 
       tfvars_file.write(f'common_tags = {json.dumps(tags)}\n')
-      tfvars_file.write(f'eks_managed_node_groups = {json.dumps(managed_node_groups)}\n')
+      # tfvars_file.write(f'eks_managed_node_groups = {json.dumps(managed_node_groups)}\n')
 
     self.logger.info('Finished converting EKS Managed Node configuration file to terraform tfvars file')
 
   def convert_eks_fargate_to_tfvars(self, terraform_variables, common_tags):
     self.logger.info('Converting EKS Fargate configuration file to terraform tfvars file')
 
-    with open("./abstrakt/terraformModules/aws/eks/eks_fargate/variables.tfvars", "w") as tfvars_file:
+    with open("./abstrakt/terraformModules/aws/eks/eks-fargate/variables.tfvars", "w") as tfvars_file:
       for key, value in terraform_variables.items():
         if value.lower() in ["true", "false"]:
           tfvars_file.write(f'{key} = {value.lower()}\n')
@@ -37,7 +37,7 @@ class ToTFVars:
 
     self.logger.info('Finished converting EKS Fargate configuration file to terraform tfvars file')
 
-  def convert_gke_cos_to_tfvars(self, terraform_variables, common_tags):
+  def convert_gke_cos_to_tfvars(self, terraform_variables, gcp_project_id, common_tags):
     self.logger.info('Converting GKE COS configuration file to terraform tfvars file')
 
     with open("./abstrakt/terraformModules/gcp/gke/cos/variables.tfvars", "w") as tfvars_file:
@@ -51,19 +51,22 @@ class ToTFVars:
       common_tags = str(common_tags).replace("'", '"')
       common_tags = str(common_tags).replace(" ", '')
 
+      tfvars_file.write(f'project_id = "{gcp_project_id}"\n')
       tfvars_file.write(f'common_tags = {common_tags}')
 
     self.logger.info('Finished converting GKE COS configuration file to terraform tfvars file')
 
-  def convert_gke_autopilot_to_tfvars(self, terraform_variables):
+  def convert_gke_autopilot_to_tfvars(self, terraform_variables, gcp_project_id):
     self.logger.info('Converting GKE Autopilot configuration file to terraform tfvars file')
 
-    with open("./abstrakt/terraformModules/gcp/gke/cos/variables.tfvars", "w") as tfvars_file:
+    with open("./abstrakt/terraformModules/gcp/gke/autopilot/variables.tfvars", "w") as tfvars_file:
       for key, value in terraform_variables.items():
         if value.lower() in ["true", "false"]:
           tfvars_file.write(f'{key} = {value.lower()}\n')
         else:
           tfvars_file.write(f'{key} = "{value}"\n')
+
+      tfvars_file.write(f'project_id = "{gcp_project_id}"')
 
     self.logger.info('Finished converting GKE Autopilot configuration file to terraform tfvars file')
 

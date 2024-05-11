@@ -9,15 +9,15 @@ from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 
 
 class FalconSensorSidecar(CrowdStrikeSensors):
-  def __init__(self, falcon_client_id, falcon_client_secret, falcon_cid, falcon_cloud_region,
-               falcon_cloud_api, monitor_namespaces, exclude_namespaces, sensor_mode, logger):
-    super().__init__(falcon_client_id, falcon_client_secret, falcon_cid,
-                     falcon_cloud_region, falcon_cloud_api, sensor_mode, logger)
+  def __init__(self, falcon_client_id, falcon_client_secret, logger, sensor_mode, falcon_image_tag=None,
+               proxy_server=None, proxy_port=None, tags=None, monitor_namespaces=None, exclude_namespaces=None):
+    super().__init__(falcon_client_id, falcon_client_secret, logger, sensor_mode, falcon_image_tag, proxy_server,
+                     proxy_port, tags)
 
     self.monitor_namespaces = monitor_namespaces
     self.exclude_namespaces = exclude_namespaces
 
-  def get_helm_chart(self, namespaces=None, proxy_ip=None, proxy_port=None, tags=None):
+  def get_helm_chart(self, namespaces=None):
     falcon_image_repo = self.get_falcon_image_repo()
     falcon_image_tag = self.get_falcon_image_tag()
     falcon_image_pull_token = self.get_falcon_image_pull_token()
@@ -72,16 +72,16 @@ class FalconSensorSidecar(CrowdStrikeSensors):
           helm_chart.append("--set")
           helm_chart.append(f'container.image.pullSecrets.namespaces={temp}')
 
-      if proxy_ip and proxy_port:
+      if self.proxy_server and self.proxy_port:
         helm_chart.append("--set")
         helm_chart.append(f'falcon.apd=false')
         helm_chart.append("--set")
-        helm_chart.append(f'falcon.aph=http://{proxy_ip}')
+        helm_chart.append(f'falcon.aph=http://{self.proxy_server}')
         helm_chart.append("--set")
-        helm_chart.append(f'falcon.app={proxy_port}')
+        helm_chart.append(f'falcon.app={self.proxy_port}')
 
-      if tags:
-        tags = '\\,'.join(tags)
+      if self.tags:
+        tags = '\\,'.join(self.tags)
         helm_chart.append("--set")
         helm_chart.append(f"falcon.tags={tags}")
 
@@ -89,9 +89,9 @@ class FalconSensorSidecar(CrowdStrikeSensors):
     else:
       return False
 
-  def execute_helm_chart(self, namespaces=None, proxy_ip=None, proxy_port=None, tags=None):
+  def execute_helm_chart(self, namespaces=None):
     try:
-      helm_chart = self.get_helm_chart(namespaces, proxy_ip, proxy_port, tags)
+      helm_chart = self.get_helm_chart(namespaces)
 
       if helm_chart is not False:
         helm_process = subprocess.run(helm_chart, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -109,8 +109,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
     else:
       return True
 
-  def deploy_falcon_sensor_sidecar(self, cloud, region=None, cluster_name=None, resource_group=None,
-                                   proxy_ip=None, proxy_port=None, tags=None):
+  def deploy_falcon_sensor_sidecar(self, cloud, region=None, cluster_name=None, resource_group=None):
     """Deploys the CrowdStrike Falcon Sensor sidecar on a Kubernetes cluster."""
 
     def thread():
@@ -125,7 +124,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
 
       kube = KubectlOps(logger=self.logger)
 
-      crowdstrike_namespaces = ['falcon-kubernetes-protection', 'falcon-kac', 'crowdstrike-detections']
+      crowdstrike_namespaces = ['falcon-kubernetes-protection', 'falcon-kac', 'falcon-image-analyzer']
 
       try:
         for namespace in crowdstrike_namespaces:
@@ -136,7 +135,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
       except Exception as e:
         self.logger.error(f'{e}')
 
-      generic_namespaces = ['ns1', 'ns2']
+      generic_namespaces = ['crowdstrike-detections', 'ns1', 'ns2']
 
       try:
         for namespace in generic_namespaces:
@@ -148,14 +147,14 @@ class FalconSensorSidecar(CrowdStrikeSensors):
       namespaces = [ns for ns in namespaces if 'kube-' not in ns]
       namespaces = [ns for ns in namespaces if ns not in crowdstrike_namespaces]
 
-      if self.execute_helm_chart(namespaces, proxy_ip, proxy_port, tags):
+      if self.execute_helm_chart(namespaces):
         return True
       else:
         return False
 
-    printf(f"\n{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n", logger=self.logger)
+    print(f"{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n")
 
-    printf("Installing Falcon Sensor...", logger=self.logger)
+    print("Installing Falcon Sensor...")
 
     with MultiThreading() as mt:
       if mt.run_with_progress_indicator(thread, 1):
