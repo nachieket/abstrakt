@@ -9,11 +9,12 @@ from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 
 
 class FalconSensorDaemonset(CrowdStrikeSensors):
-  def __init__(self, falcon_client_id, falcon_client_secret, sensor_mode, logger,
+  def __init__(self, falcon_client_id, falcon_client_secret, logger, sensor_mode, falcon_image_tag=None,
                proxy_server=None, proxy_port=None, tags=None):
-    super().__init__(falcon_client_id, falcon_client_secret, sensor_mode, logger, proxy_server, proxy_port, tags)
+    super().__init__(falcon_client_id, falcon_client_secret, logger, sensor_mode, falcon_image_tag, proxy_server,
+                     proxy_port, tags)
 
-  def get_helm_chart(self):
+  def get_helm_chart(self, cluster_type=None):
     falcon_image_repo = self.get_falcon_image_repo()
     falcon_image_tag = self.get_falcon_image_tag()
     falcon_image_pull_token = self.get_falcon_image_pull_token()
@@ -28,6 +29,10 @@ class FalconSensorDaemonset(CrowdStrikeSensors):
         "--set", f"node.image.registryConfigJSON={falcon_image_pull_token}",
         "--set", f'node.backend={self.sensor_mode}'
       ]
+
+      if cluster_type == 'gke-autopilot':
+        helm_chart.append('--set')
+        helm_chart.append('node.gke.autopilot=true')
 
       if self.proxy_server and self.proxy_port:
         helm_chart.append("--set")
@@ -47,10 +52,10 @@ class FalconSensorDaemonset(CrowdStrikeSensors):
     else:
       return False
 
-  def execute_helm_chart(self):
+  def execute_helm_chart(self, cluster_type=None):
     try:
       def thread():
-        helm_chart = self.get_helm_chart()
+        helm_chart = self.get_helm_chart(cluster_type=cluster_type)
 
         if helm_chart is not False:
           helm_process = subprocess.run(helm_chart, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -72,7 +77,8 @@ class FalconSensorDaemonset(CrowdStrikeSensors):
     else:
       return True
 
-  def deploy_falcon_sensor_daemonset(self, cloud, region=None, cluster_name=None, resource_group=None):
+  def deploy_falcon_sensor_daemonset(self, cloud_type, cluster_type=None, region=None, cluster_name=None,
+                                     resource_group=None):
     """Deploys the CrowdStrike Falcon Sensor daemonset on a Kubernetes cluster."""
 
     printf(f"{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n", logger=self.logger)
@@ -83,12 +89,14 @@ class FalconSensorDaemonset(CrowdStrikeSensors):
     elif cluster_name and resource_group:
       kube = UpdateKubeConfig(logger=self.logger)
       kube.update_kubeconfig(cloud='azure', cluster_name=cluster_name, resource_group=resource_group)
-    elif cloud == 'gcp':
+    elif cloud_type == 'gcp':
       pass
+      # kube = UpdateKubeConfig(logger=self.logger)
+      # kube.update_kubeconfig(cloud='gcp', cluster_name=cluster_name, region=region)
 
     printf("Installing Falcon Sensor...", logger=self.logger)
 
-    if self.execute_helm_chart():
+    if self.execute_helm_chart(cluster_type=cluster_type):
       printf("Falcon sensor installation successful\n", logger=self.logger)
 
       container = ContainerOps(logger=self.logger)

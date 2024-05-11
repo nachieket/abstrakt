@@ -13,42 +13,55 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 
 create_aws_app = typer.Typer()
 
+eks_managed_node_help_message = """
+Install EKS Managed Node Cluster\n
+_                              _\n\n\n
 
-@create_aws_app.command(help='Install EKS Managed Node Cluster', rich_help_panel="AWS Kubernetes Clusters")
+Example Usages:\n\n
+abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --install-kpa --install-kac --install-iar
+--install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --proxy-server 10.10.10.11 --proxy-port 
+8080 --falcon-sensor-tags tag1,tag2  --install-kpa --install-kac --install-iar --install-detections-container 
+--install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
+
+Examples with Falcon Image Tag:\n
+abstrakt create aws eks-managed-node --install-falcon-sensor --falcon-image-tag 
+7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --kernel-mode --install-kpa --install-kac --install-iar
+--install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-managed-node --install-falcon-sensor --falcon-image-tag 
+7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --kernel-mode --proxy-server 10.10.10.11 --proxy-port  8080 
+--falcon-sensor-tags tag1,tag2 --install-kpa --install-kac --install-iar --install-detections-container 
+--install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
+
+Other Examples:\n
+abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-managed-node --install-kpa --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-managed-node --install-kac --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-managed-node --install-iar --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-managed-node --install-detections-container\n
+abstrakt create aws eks-managed-node --install-vulnerable-apps\n"""
+
+
+@create_aws_app.command(help=eks_managed_node_help_message, rich_help_panel="AWS Kubernetes Clusters")
 def eks_managed_node(
   config_file: Annotated[str, typer.Option(help='Cluster Configuration File', show_default=True,
-                                           rich_help_panel="EKS Managed Node Configuration File"
+                                           rich_help_panel='AKS Configuration File'
                                            )] = './abstrakt/conf/aws/eks/eks-managed-node.conf',
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
-                                                      help='Install Falcon Sensor -> Requires: '
-                                                           '--kernel-mode OR --ebpf-mode, '
-                                                           '--falcon-client-id, '
-                                                           '--falcon-client-secret), '
-                                                           '(Optional: --proxy-server, '
-                                                           '--proxy-port '
-                                                           '--falcon-sensor-tags)',
-                                                      rich_help_panel="CrowdStrike EDR Sensor")] = False,
+                                                      help='Install Falcon Sensor',
+                                                      rich_help_panel='CrowdStrike EDR Sensor')] = False,
+  falcon_image_tag: Annotated[str, typer.Option('--falcon-image-tag', help='Falcon Sensor Image Tag | '
+                                                'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
+                                                rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   kernel_mode: Annotated[bool, typer.Option('--kernel-mode', help='Install Falcon Sensor in Kernel mode',
-                                            rich_help_panel="CrowdStrike EDR Sensor Options")] = False,
+                                            rich_help_panel='CrowdStrike EDR Sensor Options')] = False,
   ebpf_mode: Annotated[bool, typer.Option('--ebpf-mode', help='Install Falcon Sensor in ebpf mode',
-                                          rich_help_panel="CrowdStrike EDR Sensor Options")] = False,
-  falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
-                                                help='Client ID to Install Falcon Sensor | Example: QWERT',
-                                                rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
-                                                    help='Client Secret to Install Falcon Sensor | Example: QWERT',
-                                                    rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  # falcon_cid: Annotated[str, typer.Option('--falcon-cid',
-  #                                         help='Customer ID to install Falcon Sensor |  Example: QWERT-AB',
-  #                                         rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  # falcon_cloud_region: Annotated[str, typer.Option('--falcon-cloud-region',
-  #                                                  help='Falcon Cloud Region: us-1, us-2, eu-1',
-  #                                                  rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
-  # falcon_api: Annotated[str, typer.Option('--falcon-api',
-  #                                         help='Possible Values: api.crowdstrike.com (us-1), '
-  #                                              'api.us-2.crowdstrike.com (us-2), '
-  #                                              'api.eu-1.crowdstrike.com (eu-1)',
-  #                                         rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+                                          rich_help_panel='CrowdStrike EDR Sensor Options')] = False,
   proxy_server: Annotated[str, typer.Option('--proxy-server', help='Proxy Server IP or FQDN | '
                                                                    'Example: 10.10.10.10 OR proxy.internal.com',
                                             rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
@@ -57,77 +70,108 @@ def eks_managed_node(
   falcon_sensor_tags: Annotated[str, typer.Option('--falcon-sensor-tags', help='Falcon Sensor Tags | '
                                                                                'Example: Tag1,Tag2',
                                                   rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+  falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
+                                                help='Client ID to Install Falcon Sensor | Example: QWERT',
+                                                rich_help_panel='CrowdStrike API Keys')] = None,
+  falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
+                                                    help='Client Secret to Install Falcon Sensor | Example: QWERT',
+                                                    rich_help_panel='CrowdStrike API Keys')] = None,
   install_kpa: Annotated[bool, typer.Option('--install-kpa',
                                             help='Install Kubernetes Protection Agent',
-                                            rich_help_panel="CrowdStrike Kubernetes Agents")] = False,
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
   install_kac: Annotated[bool, typer.Option('--install-kac',
                                             help='Install Kubernetes Admission Controller',
-                                            rich_help_panel="CrowdStrike Kubernetes Agents")] = False,
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
+  install_iar: Annotated[bool, typer.Option('--install-iar',
+                                            help='Install Image Assessment at Runtime',
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
   install_detections_container: Annotated[bool, typer.Option('--install-detections-container',
                                                              help='Install CrowdStrike Detections Container',
-                                                             rich_help_panel="CrowdStrike Artificial "
-                                                                             "Detections Generator")] = False,
-  # install_vulnerable_apps: Annotated[bool, typer.Option('--install-vulnerable-apps',
-  #                                                       help='Install Vulnerable Applications')] = False,
-  # install_load_test_apps: Annotated[bool, typer.Option('--install-load-test-apps',
-  #                                                      help='Install Load Test Applications',
-  #                                                      rich_help_panel="Generic Load Test Apps")] = False
+                                                             rich_help_panel='CrowdStrike Artificial '
+                                                                             'Detections Generator')] = False,
+  install_vulnerable_apps: Annotated[bool, typer.Option('--install-vulnerable-apps',
+                                                        help='Install Vulnerable Apps',
+                                                        rich_help_panel='CrowdStrike Artificial '
+                                                                        'Detections Generator')] = False,
 ):
   eks_managed_node_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-managed-node-{uk_time_str}.log'
-  managed_node_logger = CustomLogger('eks_managed_node', eks_managed_node_log_filename).logger
+  eks_managed_node_logger = CustomLogger('eks_managed_node', eks_managed_node_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
                                      install_falcon_sensor=install_falcon_sensor,
+                                     falcon_image_tag=falcon_image_tag,
                                      kernel_mode=kernel_mode,
                                      ebpf_mode=ebpf_mode,
                                      falcon_client_id=falcon_client_id,
                                      falcon_client_secret=falcon_client_secret,
-                                     # falcon_cid=falcon_cid,
-                                     # falcon_cloud_region=falcon_cloud_region,
-                                     # falcon_api=falcon_api,
                                      proxy_server=proxy_server,
                                      proxy_port=proxy_port,
                                      falcon_sensor_tags=falcon_sensor_tags,
                                      install_kpa=install_kpa,
                                      install_kac=install_kac,
+                                     install_iar=install_iar,
                                      install_detections_container=install_detections_container,
+                                     install_vulnerable_apps=install_vulnerable_apps,
                                      cloud_type='aws',
                                      cluster_type='eks-managed-node',
-                                     logger=managed_node_logger)
+                                     logger=eks_managed_node_logger)
 
   manager.start_cluster_operations()
 
 
-@create_aws_app.command(help='Install EKS Fargate Cluster', rich_help_panel="AWS Kubernetes Clusters")
+eks_fargate_help_message = """
+Install EKS Fargate Cluster\n
+_                         _\n\n
+
+Example Usages:\n\n
+abstrakt create aws eks-fargate --install-falcon-sensor --install-kpa --install-kac --install-iar
+--install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-falcon-sensor --proxy-server 10.10.10.11 --proxy-port 8080 
+--falcon-sensor-tags tag1,tag2  --install-kpa --install-kac --install-iar --install-detections-container 
+--install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
+
+Examples with Monitored/Excluded Namespaces:\n
+abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces ns1,ns2,ns4,ns5 --falcon-sensor-tags 
+tag1,tag2 --install-kpa --install-kac  --install-iar --install-detections-container --install-vulnerable-apps 
+--falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,
+ns2 --falcon-sensor-tags tag1,tag2  --install-kpa --install-kac  --install-iar --install-detections-container 
+--install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
+
+Examples with Falcon Image Tag:\n
+abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces ns1,ns2,ns4,ns5 --falcon-image-tag 
+7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-sensor-tags tag1,tag2 --install-kpa --install-kac 
+--install-iar --install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,
+ns2 --falcon-image-tag  7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-sensor-tags tag1,tag2 --install-kpa 
+--install-kac --install-iar --install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 
+--falcon-client-secret vlTpn372s\n\n
+
+Other Examples:\n
+abstrakt create aws eks-fargate --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-kpa --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-kac --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-iar --falcon-client-id 3af74117
+--falcon-client-secret vlTpn372s\n
+abstrakt create aws eks-fargate --install-detections-container\n
+abstrakt create aws eks-fargate --install-vulnerable-apps\n"""
+
+
+@create_aws_app.command(help=eks_fargate_help_message, rich_help_panel="AWS Kubernetes Clusters")
 def eks_fargate(
-  config_file: Annotated[str, typer.Option(help='(Cluster Configuration File', show_default=True,
+  config_file: Annotated[str, typer.Option(help='Cluster Configuration File', show_default=True,
                                            rich_help_panel="EKS Fargate Configuration File"
                                            )] = './abstrakt/conf/aws/eks/eks-fargate.conf',
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
-                                                      help='Install Falcon Sensor -> (Requires: '
-                                                           '--falcon-client-id, '
-                                                           '--falcon-client-secret), '
-                                                           '(Optional: --proxy-server, '
-                                                           '--proxy-port '
-                                                           '--falcon-sensor-tags)',
+                                                      help='Install Falcon Sensor',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
-  falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
-                                                help='Client ID to Install Falcon Sensor | Example: QWERT',
-                                                rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
-                                                    help='Client Secret to Install Falcon Sensor | Example: QWERT',
-                                                    rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  # falcon_cid: Annotated[str, typer.Option('--falcon-cid',
-  #                                         help='Customer ID to install Falcon Sensor |  Example: QWERT-AB',
-  #                                         rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  # falcon_cloud_region: Annotated[str, typer.Option('--falcon-cloud-region',
-  #                                                  help='Falcon Cloud Region: us-1, us-2, eu-1',
-  #                                                  rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
-  # falcon_api: Annotated[str, typer.Option('--falcon-api',
-  #                                         help='Possible Values: api.crowdstrike.com (us-1), '
-  #                                              'api.us-2.crowdstrike.com (us-2), '
-  #                                              'api.eu-1.crowdstrike.com (eu-1)',
-  #                                         rich_help_panel='CrowdStrike EDR Sensor Options')] = None,
+  falcon_image_tag: Annotated[str, typer.Option('--falcon-image-tag', help='Falcon Sensor Image Tag | '
+                                                'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
+                                                rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   monitor_namespaces: Annotated[str, typer.Option('--monitor-namespaces',
                                                   help='Namespaces to monitor to inject falcon sensor '
                                                        '| Example: All or ns1,ns2,ns3',
@@ -144,29 +188,38 @@ def eks_fargate(
   falcon_sensor_tags: Annotated[str, typer.Option('--falcon-sensor-tags',
                                                   help='Falcon Sensor Tags | Example: Tag1,Tag2',
                                                   rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+  falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
+                                                help='Client ID to Install Falcon Sensor | Example: QWERT',
+                                                rich_help_panel='CrowdStrike API Keys')] = None,
+  falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
+                                                    help='Client Secret to Install Falcon Sensor | Example: QWERT',
+                                                    rich_help_panel='CrowdStrike API Keys')] = None,
   install_kpa: Annotated[bool, typer.Option('--install-kpa',
                                             help='Install Kubernetes Protection Agent',
                                             rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
   install_kac: Annotated[bool, typer.Option('--install-kac',
                                             help='Install Kubernetes Admission Controller',
                                             rich_help_panel="CrowdStrike Kubernetes Agents")] = False,
+  install_iar: Annotated[bool, typer.Option('--install-iar',
+                                            help='Install Image Assessment at Runtime',
+                                            rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
   install_detections_container: Annotated[bool, typer.Option('--install-detections-container',
                                                              help='Install CrowdStrike Detections Container',
-                                                             rich_help_panel='CrowdStrike Kubernetes Agents')] = False
+                                                             rich_help_panel='CrowdStrike Artificial '
+                                                                             'Detections Generator')] = False,
+  install_vulnerable_apps: Annotated[bool, typer.Option('--install-vulnerable-apps',
+                                                        help='Install Vulnerable Apps',
+                                                        rich_help_panel='CrowdStrike Artificial '
+                                                                        'Detections Generator')] = False,
 ):
-  # TODO: Automate KPA via API
-  # TODO: Check KAC on EKS Fargate
-
   eks_fargate_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-fargate-{uk_time_str}.log'
   eks_fargate_logger = CustomLogger('eks_fargate', eks_fargate_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
                                      install_falcon_sensor=install_falcon_sensor,
+                                     falcon_image_tag=falcon_image_tag,
                                      falcon_client_id=falcon_client_id,
                                      falcon_client_secret=falcon_client_secret,
-                                     # falcon_cid=falcon_cid,
-                                     # falcon_cloud_region=falcon_cloud_region,
-                                     # falcon_api=falcon_api,
                                      monitor_namespaces=monitor_namespaces,
                                      exclude_namespaces=exclude_namespaces,
                                      proxy_server=proxy_server,
@@ -174,7 +227,9 @@ def eks_fargate(
                                      falcon_sensor_tags=falcon_sensor_tags,
                                      install_kpa=install_kpa,
                                      install_kac=install_kac,
+                                     install_iar=install_iar,
                                      install_detections_container=install_detections_container,
+                                     install_vulnerable_apps=install_vulnerable_apps,
                                      cloud_type='aws',
                                      cluster_type='eks-fargate',
                                      logger=eks_fargate_logger)
@@ -182,7 +237,15 @@ def eks_fargate(
   manager.start_cluster_operations()
 
 
-@create_aws_app.command(help='Install ECS Fargate Cluster', rich_help_panel="AWS Kubernetes Clusters")
+ecs_fargate_help_message = """
+Install ECS Fargate Cluster\n
+_                              _\n\n\n
+
+Example Usages:\n\n
+abstrakt create aws ecs-fargate"""
+
+
+@create_aws_app.command(help=ecs_fargate_help_message, rich_help_panel="AWS Kubernetes Clusters")
 def ecs_fargate(
   config_file: Annotated[str, typer.Option(help='(Cluster Configuration File', show_default=True,
                                            rich_help_panel="ECS Fargate Configuration File"
@@ -199,7 +262,15 @@ def ecs_fargate(
   manager.start_cluster_operations()
 
 
-@create_aws_app.command(help='Install ECS with EC2 Cluster', rich_help_panel="AWS Kubernetes Clusters")
+ecs_ec2_help_message = """
+Install ECS with EC2 Cluster\n
+_                              _\n\n\n
+
+Example Usages:\n\n
+abstrakt create aws ecs-with-ec2"""
+
+
+@create_aws_app.command(help=ecs_ec2_help_message, rich_help_panel="AWS Kubernetes Clusters")
 def ecs_with_ec2(
   config_file: Annotated[str, typer.Option(help='(Cluster Configuration File', show_default=True,
                                            rich_help_panel="ECS with EC2 Configuration File"

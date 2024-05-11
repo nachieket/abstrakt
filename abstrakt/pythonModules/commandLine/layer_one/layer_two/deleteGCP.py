@@ -26,9 +26,9 @@ def gke_cos():
   # Delete a YAML file with kubectl
   kube = KubectlOps(logger=gke_cos_logger)
   kube.run_kubectl_command(
-    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml'
+    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml'
   )
-  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml")
+  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml")
 
   # Delete Helm releases
   helm = HelmOps(logger=gke_cos_logger)

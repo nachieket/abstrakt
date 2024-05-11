@@ -43,9 +43,9 @@ def eks_managed_node():
   # Delete a YAML file with kubectl
   kube = KubectlOps(logger=managed_node_logger)
   kube.run_kubectl_command(
-    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml'
+    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml'
   )
-  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml")
+  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml")
 
   # Delete Helm releases
   helm = HelmOps(logger=managed_node_logger)
@@ -78,9 +78,9 @@ def eks_fargate():
   # Delete a YAML file with kubectl
   kube = KubectlOps(logger=fargate_logger)
   kube.run_kubectl_command(
-    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml'
+    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml'
   )
-  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections_container.yaml")
+  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml")
 
   # Delete Helm releases
   helm = HelmOps(logger=fargate_logger)
