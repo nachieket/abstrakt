@@ -1,0 +1,2 @@
+nginx:1.21.1
+quay.io/petr_ruzicka/malware-cryptominer-container:2.0.2

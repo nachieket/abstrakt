@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: generic-tools
+  namespace: crowdstrike-detections
+spec:
+  selector:
+   matchLabels:
+      app: generic-tools
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: generic-tools
+    spec:
+      containers:
+          - name: generic-tools
+            image: nachiketj/abstraktubuntu:06
+            command: ["sleep", "2592000"]
