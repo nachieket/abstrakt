@@ -1,7 +1,8 @@
 import subprocess
 import configparser
+import yaml
 import os
-from datetime import datetime
+# from datetime import datetime
 # from typing import Dict, Optional
 
 
@@ -58,10 +59,11 @@ class AWSCliProfile:
         return False
       elif method == 'saml2aws':
         if self.configure_saml2aws():
-          os.environ['AWS_PROFILE'] = 'saml'
+          if self.saml2aws_login():
+            os.environ['AWS_PROFILE'] = 'saml'
 
-          if self.check_credentials_validity():
-            return True
+            if self.check_credentials_validity():
+              return True
 
         print('Configured aws credentials are not valid.\n')
         return False
@@ -116,6 +118,44 @@ class AWSCliProfile:
 
   @staticmethod
   def configure_saml2aws():
+    try:
+      subprocess.run(['saml2aws', 'configure'], check=True)
+      return True
+    except subprocess.CalledProcessError as e:
+      print(f"Failed to refresh credentials using saml2aws: {e}")
+      return False
+
+  @staticmethod
+  def is_saml2aws_profile_configured(profile_name='default'):
+    config_path = os.path.expanduser('~/.saml2aws')
+
+    # Check if the configuration file exists
+    if not os.path.exists(config_path):
+      print(f"Configuration file '{config_path}' does not exist.")
+      return False
+
+    # Read the configuration file
+    with open(config_path, 'r') as config_file:
+      try:
+        config = yaml.safe_load(config_file)
+      except yaml.YAMLError as e:
+        print(f"Error reading YAML file: {e}")
+        return False
+
+    # Check if the profile exists in the configuration
+    profiles = config.get('profiles', [])
+    for profile in profiles:
+      if profile.get('name') == profile_name:
+        if (profile.get('url') and profile.get('username') and profile.get('provider') and profile.get('mfa') and
+                profile.get('aws_urn') and profile.get('aws_profile')):
+          print(f"The saml2aws Profile '{profile_name}' is configured.")
+        return True
+
+    print(f"Profile 'The saml2aws {profile_name}' is not configured.")
+    return False
+
+  @staticmethod
+  def saml2aws_login():
     try:
       subprocess.run(['saml2aws', 'login'], check=True)
       return True

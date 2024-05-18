@@ -28,7 +28,7 @@ class RuntimeParameterVerification:
       exit()
 
     if install_falcon_sensor and (cluster_type == 'eks-managed-node' or cluster_type == 'aks'):
-      if (not kernel_mode or not ebpf_mode) or (not falcon_client_id or not falcon_client_secret):
+      if (not kernel_mode and not ebpf_mode) or (not falcon_client_id or not falcon_client_secret):
         print('Error:')
         print('Usage: --install-falcon-sensor --kernel-mode --falcon-client-id --falcon-client-secret')
         print('OR')

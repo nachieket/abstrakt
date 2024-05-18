@@ -81,4 +81,4 @@ def check_and_update_aws_credentials():
 
 
 # Usage
-check_and_update_aws_credentials()
+# check_and_update_aws_credentials()

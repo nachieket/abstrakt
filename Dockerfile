@@ -13,7 +13,11 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     git \
     neovim \
-    vim
+    vim \
+    apt-transport-https \
+    lsb-release \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python 3.10
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -65,6 +69,39 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
     echo "deb [arch=arm64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
     apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
 
+# Begin Azure CLI Installation
+# Install dependencies for apt-transport-https
+RUN apt-get install -y apt-transport-https gnupg software-properties-common
+# Add the Microsoft repository for the Azure CLI
+RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.asc
+# Configure the Azure CLI repository
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/azure-cli.list
+# Update package lists again
+RUN apt-get update
+# Install the Azure CLI
+RUN apt-get install -y azure-cli
+# Finish Azure CLI Installation
+
+# Begin GCP CLI Installation
+# Add the Google Cloud SDK distribution URI as a package source
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+# Import the Google Cloud public key
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add -
+# Install the Google Cloud CLI
+RUN apt-get update && apt-get install -y google-cloud-cli
+# Clean up APT when done
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Finish GCP CLI Installation
+
+# Add the SAML2AWS repository and install saml2aws
+RUN curl -s https://api.github.com/repos/Versent/saml2aws/releases/latest \
+    | grep "browser_download_url.*linux_amd64.tar.gz" \
+    | cut -d '"' -f 4 \
+    | wget -qi - \
+    && tar -xzf saml2aws_*_linux_amd64.tar.gz \
+    && mv saml2aws /usr/local/bin/ \
+    && rm saml2aws_*_linux_amd64.tar.gz
+
 # Create a user called "crowdstrike" with password "crowdstrike"
 RUN useradd -ms /bin/bash crowdstrike
 RUN echo 'crowdstrike:crowdstrike' | chpasswd
@@ -89,10 +126,10 @@ COPY abstrakt.sh /root/.bash_completions/abstrakt.sh
 RUN python3.10 -m pip install pytz
 RUN python3.10 -m pip install requests
 RUN python3.10 -m pip install pydantic
-RUN python3.10 -m pip install azure
 RUN python3.10 -m pip install azure-identity
 RUN python3.10 -m pip install kubernetes
 RUN python3.10 -m pip install crowdstrike-falconpy
+RUN python3.10 -m pip install pyyaml
 RUN python3.10 -m pip install /tmp/crowdstrike/abstrakt-0.1.0-py3-none-any.whl
 
 # Add the line to ~/.bashrc
