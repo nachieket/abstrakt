@@ -86,10 +86,16 @@ class FalconKPA(CrowdStrike):
               # Debug Log
               self.logger.info(cluster_name)
 
-        command = [
-          "helm", "repo", "add", "kpagent-helm", "https://registry.crowdstrike.com/kpagent-helm", "&&",
-          "helm", "repo", "update"
-        ]
+        command = ["helm", "repo", "add", "kpagent-helm", "https://registry.crowdstrike.com/kpagent-helm"]
+
+        process = subprocess.run(command, capture_output=True, text=True)
+
+        if process.stdout:
+          self.logger.info(process.stdout)
+        if process.stderr:
+          self.logger.error(process.stderr)
+
+        command = ["helm", "repo", "update"]
 
         process = subprocess.run(command, capture_output=True, text=True)
 
