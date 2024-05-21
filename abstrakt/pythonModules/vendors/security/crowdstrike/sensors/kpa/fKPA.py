@@ -88,7 +88,7 @@ class FalconKPA(CrowdStrike):
 
         command = ["helm", "repo", "add", "kpagent-helm", "https://registry.crowdstrike.com/kpagent-helm"]
 
-        process = subprocess.run(command, capture_output=True, text=True)
+        process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
 
         if process.stdout:
           self.logger.info(process.stdout)
@@ -97,7 +97,7 @@ class FalconKPA(CrowdStrike):
 
         command = ["helm", "repo", "update"]
 
-        process = subprocess.run(command, capture_output=True, text=True)
+        process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
 
         if process.stdout:
           self.logger.info(process.stdout)
@@ -118,7 +118,7 @@ class FalconKPA(CrowdStrike):
         self.logger.info(command)
 
         # Run Helm upgrade/install command
-        process = subprocess.run(command, capture_output=True, text=True)
+        process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
 
         if process.stdout:
           self.logger.info(process.stdout)
