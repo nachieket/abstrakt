@@ -10,7 +10,7 @@ from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import Crow
 
 
 class FalconKPA(CrowdStrike):
-  def __init__(self, falcon_client_id, falcon_client_secret, logger):
+  def __init__(self, falcon_client_id: str, falcon_client_secret: str, logger):
     super().__init__(falcon_client_id, falcon_client_secret, logger)
     self.falcon_client_id = falcon_client_id
     self.falcon_client_secret = falcon_client_secret
@@ -35,33 +35,12 @@ class FalconKPA(CrowdStrike):
     falcon_cid, falcon_cloud_api, falcon_cloud_region = self.get_cid_api_region()
 
     if (falcon_cid or falcon_cloud_api or falcon_cloud_region) is None:
+      self.logger.info(falcon_cid, falcon_cloud_api, falcon_cloud_region)
+      self.logger.error('Either of falcon_cid, falcon_cloud_api, or falcon_cloud_region not found.')
       return False
 
     if access_token := self.get_api_access_token(falcon_cloud_api):
       try:
-        # Set FALCON_API_ACCESS_TOKEN
-        # os.environ['FALCON_API_ACCESS_TOKEN'] = access_token
-
-        # Get FALCON_CCID and set FALCON_CID, FALCON_KPA_USERNAME
-        # ccid_command = [
-        #   "curl", "-sL", "-X", "GET", f"https://{falcon_cloud_api}/sensors/queries/installers/ccid/v1",
-        #   "-H", f"Authorization: Bearer {access_token}"
-        # ]
-
-        # ccid_result = subprocess.run(ccid_command, capture_output=True, text=True)
-
-        # if ccid_result.stdout:
-        #   self.logger.info(ccid_result.stdout)
-        # if ccid_result.stderr:
-        #   self.logger.error(ccid_result.stderr)
-        #
-        # falcon_ccid = json.loads(ccid_result.stdout)['resources'][0].lower()
-
-        # os.environ['FALCON_CCID'] = falcon_ccid
-        # os.environ['FALCON_CID'] = falcon_cid.split('-')[0]
-        # os.environ['FALCON_KPA_USERNAME'] = f"kp-{falcon_ccid.split('-')[0]}"
-
-        # Get FALCON_KPA_PASSWORD
         kpa_password_command = [
           "curl", "-sL", "-X", "GET",
           f"https://{falcon_cloud_api}/"
@@ -69,6 +48,9 @@ class FalconKPA(CrowdStrike):
           "-H", "Accept: application/yaml",
           "-H", f"Authorization: Bearer {access_token}"
         ]
+
+        # Debug Log
+        self.logger.info(kpa_password_command)
 
         kpa_password_result = subprocess.run(kpa_password_command, capture_output=True, text=True)
 
@@ -79,26 +61,44 @@ class FalconKPA(CrowdStrike):
 
         falcon_kpa_password = kpa_password_result.stdout.split('dockerAPIToken:')[1].strip()
 
-        # os.environ['FALCON_KPA_PASSWORD'] = falcon_kpa_password
+        # Debug Log
+        self.logger.info(falcon_kpa_password)
 
         cluster_name_command = [
           "kubectl", "config", "view", "--minify", "--output", "jsonpath={..cluster}"
         ]
 
-        process = subprocess.run(cluster_name_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                 text=True, check=True)
-
         # Generate a random 4-character string including letters and digits
         random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
         cluster_name = f"random_{random_string}_cluster"
 
+        process = subprocess.run(cluster_name_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 text=True, check=True)
+
         if process.stdout:
+          # Debug Log
+          self.logger.info(process.stdout)
           for x in process.stdout.split(' '):
             if 'certificate-authority-data' not in x:
               cluster_name = x
+              if '/' in cluster_name:
+                  cluster_name = cluster_name.split('/')[-1]
+              # Debug Log
+              self.logger.info(cluster_name)
 
-        # Run Helm upgrade/install command
-        process = subprocess.run([
+        command = [
+          "helm", "repo", "add", "kpagent-helm", "https://registry.crowdstrike.com/kpagent-helm", "&&",
+          "helm", "repo", "update"
+        ]
+
+        process = subprocess.run(command, capture_output=True, text=True)
+
+        if process.stdout:
+          self.logger.info(process.stdout)
+        if process.stderr:
+          self.logger.error(process.stderr)
+
+        command = [
           "helm", "upgrade", "--install", "kpagent", "kpagent-helm/cs-k8s-protection-agent",
           "-n", "falcon-kubernetes-protection", "--create-namespace",
           "--set", f"crowdstrikeConfig.clientID={self.falcon_client_id}",
@@ -107,7 +107,12 @@ class FalconKPA(CrowdStrike):
           "--set", f"crowdstrikeConfig.env={falcon_cloud_region}",
           "--set", f"crowdstrikeConfig.cid={falcon_cid.split('-')[0]}",
           "--set", f"crowdstrikeConfig.dockerAPIToken={falcon_kpa_password}"
-        ], capture_output=True, text=True)
+        ]
+
+        self.logger.info(command)
+
+        # Run Helm upgrade/install command
+        process = subprocess.run(command, capture_output=True, text=True)
 
         if process.stdout:
           self.logger.info(process.stdout)

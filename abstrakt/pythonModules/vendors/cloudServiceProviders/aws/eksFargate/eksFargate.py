@@ -1,6 +1,6 @@
 from abstrakt.pythonModules.parseConfigFile.parseConfigFile import ParseConfigFile
 from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
-from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCliProfile.awsCliProfile import AWSCliProfile
+from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
 from abstrakt.pythonModules.kubernetesOps.updateKubeConfig import UpdateKubeConfig
@@ -22,11 +22,16 @@ class EKSFargate:
     convert.convert_eks_fargate_to_tfvars(fargate_parameters, tags)
 
     # cli object to validate aws credentials profile
-    cli = AWSCliProfile()
+    cli = AWSOps()
 
     # execution of terraform commands if aws profile validation is successful and valid saml or default
     # profile is found
     if cli.check_aws_login():
+      print()
+      print('+' * 10)
+      print('Terraform')
+      print('+' * 10, '\n')
+
       tf = ExecuteTerraform(logger=self.logger)
 
       # execute terraform commands to deploy eks managed node cluster

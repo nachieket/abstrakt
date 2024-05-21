@@ -8,7 +8,7 @@ from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import Crow
 
 
 class IAR(CrowdStrike):
-  def __init__(self, falcon_client_id, falcon_client_secret, logger):
+  def __init__(self, falcon_client_id: str, falcon_client_secret: str, logger):
     super().__init__(falcon_client_id, falcon_client_secret, logger)
     self.falcon_cid, _, self.falcon_cloud_region = self.get_cid_api_region()
     self.logger = logger

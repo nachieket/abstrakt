@@ -1,6 +1,7 @@
 import typer
 from abstrakt.pythonModules.commandLine.layer_one.create import app as create_app
 from abstrakt.pythonModules.commandLine.layer_one.delete import app as delete_app
+from abstrakt.pythonModules.commandLine.layer_one.install import runtime_sensor_app
 
 
 class InfrastructureManager:
@@ -9,6 +10,8 @@ class InfrastructureManager:
         self.app.add_typer(create_app, name="create", help='Create AWS/Azure/GCP Infrastructure',
                            rich_help_panel='Operations')
         self.app.add_typer(delete_app, name="delete", help='Delete AWS/Azure/GCP Infrastructure',
+                           rich_help_panel='Operations')
+        self.app.add_typer(runtime_sensor_app, name="install", help='Install Runtime Agents and Sensors',
                            rich_help_panel='Operations')
 
     def run(self):

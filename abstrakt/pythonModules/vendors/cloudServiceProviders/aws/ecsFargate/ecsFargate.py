@@ -1,6 +1,6 @@
 from abstrakt.pythonModules.parseConfigFile.parseConfigFile import ParseConfigFile
 from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
-from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCliProfile.awsCliProfile import AWSCliProfile
+from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
 
 
@@ -18,7 +18,7 @@ class ECSFargate:
     convert.convert_eks_fargate_to_tfvars(ecs_fargate_parameters, tags)
 
     # cli object to validate aws credentials profile
-    cli = AWSCliProfile()
+    cli = AWSOps()
 
     ecs_fargate_terraform_module = './abstrakt/terraformModules/aws/ecs/ecs_fargate/'
 

@@ -8,7 +8,8 @@ log_dirs = ['/var/logs/',
             '/var/logs/crowdstrike/aws/eks',
             '/var/logs/crowdstrike/aws/ecs',
             '/var/logs/crowdstrike/azure',
-            '/var/logs/crowdstrike/gcp/gke']
+            '/var/logs/crowdstrike/gcp/gke',
+            '/var/logs/crowdstrike/sensors']
 
 for log_dir in log_dirs:
     if not os.path.exists(log_dir):

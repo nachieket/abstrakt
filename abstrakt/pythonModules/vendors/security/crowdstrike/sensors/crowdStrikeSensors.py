@@ -122,7 +122,7 @@ class CrowdStrikeSensors(CrowdStrike):
                             f"/release/falcon-sensor/tags/list"
         headers = {"authorization": f"Bearer {registry_bearer}"}
         response = requests.get(latest_sensor_url, headers=headers)
-        latest_sensor = response.json()['tags'][-1]
+        latest_sensor = response.json()['tags'][-3]
 
         if self.falcon_image_tag:
           return self.falcon_image_tag

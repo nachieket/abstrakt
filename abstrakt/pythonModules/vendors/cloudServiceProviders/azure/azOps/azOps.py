@@ -28,7 +28,7 @@ class AZOps:
 
     process.wait()  # Wait for the login process to complete
 
-  def is_az_logged_in(self):
+  def check_azure_login(self):
     """Checks if the user is logged in with 'az login'."""
 
     try:

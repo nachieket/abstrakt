@@ -1,6 +1,6 @@
 from abstrakt.pythonModules.parseConfigFile.parseConfigFile import ParseConfigFile
 from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
-from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCliProfile.awsCliProfile import AWSCliProfile
+from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
 from abstrakt.pythonModules.kubernetesOps.updateKubeConfig import UpdateKubeConfig
 
@@ -21,11 +21,12 @@ class EKSManagedNode:
     convert.convert_eks_managed_node_to_tfvars(managed_node_parameters, node_groups, tags)
 
     # cli object to validate aws credentials profile
-    cli = AWSCliProfile()
+    cli = AWSOps()
 
     # execution of terraform commands if aws profile validation is successful and valid saml or default
     # profile is found
     if cli.check_aws_login():
+      print()
       print('+' * 10)
       print('Terraform')
       print('+' * 10, '\n')

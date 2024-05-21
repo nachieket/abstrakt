@@ -18,7 +18,7 @@ delete_gcp_app = typer.Typer()
 
 @delete_gcp_app.command(help='Delete GKE COS Cluster', rich_help_panel="GCP Kubernetes Clusters")
 def gke_cos():
-  gke_cos_log_filename = f'/var/logs/crowdstrike/gcp/gke/cos/gke-cos-{uk_time_str}.log'
+  gke_cos_log_filename = f'/var/logs/crowdstrike/gcp/gke/standard/gke-standard-{uk_time_str}.log'
   gke_cos_logger = CustomLogger('gke_cos', gke_cos_log_filename).logger
 
   print('Deleting CrowdStrike sensors and agents\n')
@@ -43,7 +43,7 @@ def gke_cos():
 
   tf = ExecuteTerraform(logger=gke_cos_logger)
 
-  if tf.execute_terraform_destroy(path='./abstrakt/terraformModules/gcp/gke/cos/'):
+  if tf.execute_terraform_destroy(path='./abstrakt/terraformModules/gcp/gke/standard/'):
     printf('GKE COS cluster successfully deleted\n', logger=gke_cos_logger)
   else:
     printf('The program failed to delete GKE COS cluster. Exiting the program.\n',

@@ -40,7 +40,7 @@ class ToTFVars:
   def convert_gke_cos_to_tfvars(self, terraform_variables, gcp_project_id, common_tags):
     self.logger.info('Converting GKE COS configuration file to terraform tfvars file')
 
-    with open("./abstrakt/terraformModules/gcp/gke/cos/variables.tfvars", "w") as tfvars_file:
+    with open("./abstrakt/terraformModules/gcp/gke/standard/variables.tfvars", "w") as tfvars_file:
       for key, value in terraform_variables.items():
         if value.lower() in ["true", "false"]:
           tfvars_file.write(f'{key} = {value.lower()}\n')

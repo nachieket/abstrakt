@@ -1,6 +1,11 @@
 __pycache__
 *.pyc
-.terraform
-.terraform.lock.hcl
-terraform.tfstate
-terraform.tfstate.backup
+**/.terraform/
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/.terraform.lock.hcl
+**/variables.tfvars
+**/__pycache__
+**/__pycache__/
+**/*.pyc
+**/__pycache__/*

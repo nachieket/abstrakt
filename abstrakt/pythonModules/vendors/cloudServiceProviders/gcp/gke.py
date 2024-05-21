@@ -1,31 +1,13 @@
-import subprocess
-
 from abstrakt.pythonModules.parseConfigFile.parseConfigFile import ParseConfigFile
 from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
 from abstrakt.pythonModules.kubernetesOps.updateKubeConfig import UpdateKubeConfig
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
+from abstrakt.pythonModules.vendors.cloudServiceProviders.gcp.gcpOps import GCPOps
 
 
 class GKE:
   def __init__(self, logger):
     self.logger = logger
-
-  def check_gcloud_login(self) -> bool:
-    """Checks if gcloud is logged in and prompts for login if needed."""
-    try:
-      # Attempt to retrieve account information
-      account = subprocess.check_output(["gcloud", "config", "get-value", "account"],
-                                        stderr=subprocess.PIPE, text=True)
-      if not account:
-        print('You are not logged in to gcloud. Logging in...')
-        subprocess.call(["gcloud", "auth", "login"])
-      else:
-        print(f"You are currently logged in to gcloud as: {account}")
-
-      return True
-    except subprocess.CalledProcessError as e:
-      self.logger.error(e)
-      return False
 
   def deploy_gke_cos_cluster(self, config_file, gcp_project_id):
     # Initialize necessary modules
@@ -38,7 +20,9 @@ class GKE:
     try:
       print('Checking GCP login...\n')
 
-      if not self.check_gcloud_login():
+      gcp = GCPOps(logger=self.logger)
+
+      if not gcp.check_gcloud_login():
         print('You are not logged in to gcloud. Exiting program.')
         print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
         exit()
@@ -49,7 +33,7 @@ class GKE:
       convert.convert_gke_cos_to_tfvars(terraform_variables=gke_cos_parameters, gcp_project_id=gcp_project_id,
                                         common_tags=tags)
 
-      gke_cos_terraform_code_path = './abstrakt/terraformModules/gcp/gke/cos/'
+      gke_cos_terraform_code_path = './abstrakt/terraformModules/gcp/gke/standard/'
 
       # Execute Terraform commands to deploy AKS cluster
       if (
@@ -95,7 +79,9 @@ class GKE:
     try:
       print('Checking GCP login...\n')
 
-      if not self.check_gcloud_login():
+      gcp = GCPOps(logger=self.logger)
+
+      if not gcp.check_gcloud_login():
         print('You are not logged in to gcloud. Exiting program.')
         print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
         exit()

@@ -6,7 +6,7 @@ import os
 # from typing import Dict, Optional
 
 
-class AWSCliProfile:
+class AWSOps:
   @staticmethod
   def check_credentials_validity():
     # Check if the credentials are still valid by attempting to list S3 buckets (or other simple AWS command)
@@ -43,7 +43,7 @@ class AWSCliProfile:
 
     return existing_profiles, config
 
-  def configure_aws_profile(self) -> bool:
+  def configure_aws_profile(self, exists) -> bool:
     while True:
       method = input('Select the method to configure AWS credentials [static/saml2aws]: ')
       print()
@@ -58,7 +58,17 @@ class AWSCliProfile:
         print('Configured aws credentials are not valid.\n')
         return False
       elif method == 'saml2aws':
-        if self.configure_saml2aws():
+        if exists == 'yes':
+          if self.configure_saml2aws():
+            if self.saml2aws_login():
+              os.environ['AWS_PROFILE'] = 'saml'
+
+              if self.check_credentials_validity():
+                return True
+
+          print('Configured aws credentials are not valid.\n')
+          return False
+        else:
           if self.saml2aws_login():
             os.environ['AWS_PROFILE'] = 'saml'
 
@@ -171,17 +181,17 @@ class AWSCliProfile:
         os.environ['AWS_PROFILE'] = profile
 
         if self.check_credentials_validity():
-          print(f'Profile {profile} has valid aws credentials\n')
+          print(f'Profile {profile} has valid aws credentials')
           return True
         else:
-          print(f'Profile {profile} does not have valid aws credentials\n')
+          print(f'Profile {profile} does not have valid aws credentials')
 
       print("No valid AWS profile found.\n")
       answer = input("Do you want to configure an AWS profile? (y/n): ")
       print()
 
       if answer.lower() == "y":
-        if self.configure_aws_profile():
+        if self.configure_aws_profile(exists='no'):
           print('Successfully configured aws profile.\n')
           return True
         else:
@@ -196,7 +206,7 @@ class AWSCliProfile:
       print()
 
       if answer.lower() == "y":
-        if self.configure_aws_profile():
+        if self.configure_aws_profile(exists='yes'):
           print('Successfully configured aws profile.\n')
           return True
         else:

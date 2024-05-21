@@ -20,7 +20,7 @@ class ACI:
 
     try:
       # Ensure Azure login
-      az.is_az_logged_in()
+      az.check_azure_login()
 
       # Get AKS config file parameters
       aci_parameters = conf.read_aci_config_file(config_file)

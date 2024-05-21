@@ -5,19 +5,17 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update the package list and install essential packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     wget \
     unzip \
-    curl \
     gnupg \
+    apt-transport-https \
     software-properties-common \
     git \
     neovim \
-    vim \
-    apt-transport-https \
-    lsb-release \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    vim && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install Python 3.10
 RUN add-apt-repository ppa:deadsnakes/ppa && \
