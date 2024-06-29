@@ -514,7 +514,7 @@ class CrowdStrikeSensors(CrowdStrike):
           if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
             return 'crwd_registry', crowdstrike_image_repo, crowdstrike_image_tag, crowdstrike_repo_image_pull_token
 
-    return None, None, None
+    return None, None, None, None
 
   def execute_image_repo_image_tag(self):
     image_registry_type = self.check_registry_url(url=self.falcon_image_repo)
@@ -554,7 +554,7 @@ class CrowdStrikeSensors(CrowdStrike):
                   partial_pull_token=partial_ecr_pull_token)) is not None:
                   return 'ecr_registry', ecr_registry_uri, ecr_image_tag, falcon_ecr_image_pull_token
 
-    return None, None, None
+    return None, None, None, None
 
   def execute_image_repo_no_tag(self):
     image_registry_type = self.check_registry_url(url=self.falcon_image_repo)
@@ -587,7 +587,7 @@ class CrowdStrikeSensors(CrowdStrike):
                     partial_pull_token=partial_ecr_pull_token)) is not None:
                     return 'ecr_registry', ecr_registry_uri, ecr_image_tag, falcon_ecr_image_pull_token
 
-    return None, None, None
+    return None, None, None, None
 
   def execute_no_repo_no_tag(self):
     if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
@@ -595,116 +595,23 @@ class CrowdStrikeSensors(CrowdStrike):
         if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
           return 'crwd_registry', crowdstrike_image_repo, crowdstrike_image_tag, crowdstrike_repo_image_pull_token
 
-    return None, None, None
+    return None, None, None, None
 
   def get_image_repo_tag_pull_token(self) -> tuple:
     if self.falcon_image_tag and not self.falcon_image_repo:
       registry_type, image_repo, image_tag, image_pull_token = self.execute_image_tag_no_repo()
       return registry_type, image_repo, image_tag, image_pull_token
-      # if self.check_valid_falcon_sensor_image_tag(tag=self.falcon_image_tag):
-      #   if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-      #     if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
-      #       return 'crwd_registry', crowdstrike_image_repo, self.falcon_image_tag, crowdstrike_repo_image_pull_token
-      # else:
-      #   self.logger.error('Falcon image tag passed at runtime is not valid. Abstrakt will use latest image tag.')
-      #
-      #   if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-      #     if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-      #       if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
-      #         return 'crwd_registry', crowdstrike_image_repo, crowdstrike_image_tag, crowdstrike_repo_image_pull_token
     elif self.falcon_image_repo and self.falcon_image_tag:
       registry_type, image_repo, image_tag, image_pull_token = self.execute_image_repo_image_tag()
       return registry_type, image_repo, image_tag, image_pull_token
-      # image_registry_type = self.check_registry_url(url=self.falcon_image_repo)
-      #
-      # if image_registry_type == 'crwd_registry' and self.check_valid_falcon_sensor_image_tag(tag=self.falcon_image_tag):
-      #   crowdstrike_repo_image_pull_token = self.get_crowdstrike_image_pull_token()
-      #
-      #   return 'crwd_registry', self.falcon_image_repo, self.falcon_image_tag, crowdstrike_repo_image_pull_token
-      # elif image_registry_type == 'crwd_registry' and not self.check_valid_falcon_sensor_image_tag(
-      #   tag=self.falcon_image_tag):
-      #   self.logger.error('Falcon image tag passed at runtime is not valid. Abstrakt will use latest image tag.')
-      #
-      #   if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-      #     if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
-      #       return 'crwd_registry', self.falcon_image_repo, crowdstrike_image_tag, crowdstrike_repo_image_pull_token
-      # elif image_registry_type == 'ecr_registry':
-      #   if (self.check_ecr_repository_exists(ecr_registry=self.falcon_image_repo) and self.check_ecr_image_exists(
-      #     ecr_registry=self.falcon_image_repo, ecr_image_tag=self.falcon_image_tag)):
-      #     if (partial_ecr_pull_token := (self.get_ecr_partial_pull_token(ecr_registry_uri=self.falcon_image_repo)) is
-      #        not None):
-      #       if (falcon_ecr_image_pull_token := self.get_ecr_image_pull_token(
-      #         partial_pull_token=partial_ecr_pull_token)) is not None:
-      #         return 'ecr_registry', self.falcon_image_repo, self.falcon_image_tag, falcon_ecr_image_pull_token
-      #   elif (self.check_ecr_repository_exists(ecr_registry=self.falcon_image_repo) and not
-      #         self.check_ecr_image_exists(ecr_registry=self.falcon_image_repo, ecr_image_tag=self.falcon_image_tag)):
-      #     if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-      #       if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-      #         ecr_registry_uri, ecr_image_tag = self.download_crwd_image_and_push_to_ecr(
-      #           falcon_art_username=self.falcon_art_username, falcon_art_password=self.falcon_art_password,
-      #           crowdstrike_image_repo=crowdstrike_image_repo, crowdstrike_image_tag=crowdstrike_image_tag,
-      #           ecr_image_repo=self.falcon_image_repo, ecr_image_tag=self.falcon_image_tag)
-      #
-      #         if ecr_registry_uri is not None and ecr_image_tag is not None:
-      #           if ((partial_ecr_pull_token := (self.get_ecr_partial_pull_token(ecr_registry_uri=ecr_registry_uri))) is
-      #              not None):
-      #             if (falcon_ecr_image_pull_token := self.get_ecr_image_pull_token(
-      #               partial_pull_token=partial_ecr_pull_token)) is not None:
-      #               return 'ecr_registry', ecr_registry_uri, ecr_image_tag, falcon_ecr_image_pull_token
     elif self.falcon_image_repo and not self.falcon_image_tag:
       registry_type, image_repo, image_tag, image_pull_token = self.execute_image_repo_no_tag()
       return registry_type, image_repo, image_tag, image_pull_token
-      # image_registry_type = self.check_registry_url(url=self.falcon_image_repo)
-      #
-      # if image_registry_type == 'crwd_registry':
-      #   if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-      #     if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-      #       if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
-      #         return 'crwd_registry', crowdstrike_image_repo, crowdstrike_image_tag, crowdstrike_repo_image_pull_token
-      # elif image_registry_type == 'ecr_registry':
-      #   if self.check_ecr_repository_exists(ecr_registry=self.falcon_image_repo):
-      #     if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-      #       if self.check_ecr_image_exists(ecr_registry=self.falcon_image_repo, ecr_image_tag=crowdstrike_image_tag):
-      #         if ((partial_ecr_pull_token := self.get_ecr_partial_pull_token(
-      #           ecr_registry_uri=self.falcon_image_repo)) is not None):
-      #           if (falcon_ecr_image_pull_token := self.get_ecr_image_pull_token(
-      #             partial_pull_token=partial_ecr_pull_token)) is not None:
-      #             return 'ecr_registry', self.falcon_image_repo, crowdstrike_image_tag, falcon_ecr_image_pull_token
-      #       else:
-      #         if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-      #           ecr_registry_uri, ecr_image_tag = self.download_crwd_image_and_push_to_ecr(
-      #             falcon_art_username=self.falcon_art_username, falcon_art_password=self.falcon_art_password,
-      #             crowdstrike_image_repo=crowdstrike_image_repo, crowdstrike_image_tag=crowdstrike_image_tag,
-      #             ecr_image_repo=self.falcon_image_repo, ecr_image_tag=self.falcon_image_tag)
-      #
-      #           if ecr_registry_uri is not None and ecr_image_tag is not None:
-      #             if ((partial_ecr_pull_token := self.get_ecr_partial_pull_token(ecr_registry_uri=ecr_registry_uri))
-      #                is not None):
-      #               if (falcon_ecr_image_pull_token := self.get_ecr_image_pull_token(
-      #                 partial_pull_token=partial_ecr_pull_token)) is not None:
-      #                 return 'ecr_registry', ecr_registry_uri, ecr_image_tag, falcon_ecr_image_pull_token
-        # if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-        #   if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-        #     ecr_registry_uri, ecr_image_tag = self.download_crwd_image_and_push_to_ecr(
-        #       falcon_art_username=self.falcon_art_username, falcon_art_password=self.falcon_art_password,
-        #       crowdstrike_image_repo=crowdstrike_image_repo, crowdstrike_image_tag=crowdstrike_image_tag,
-        #       ecr_image_repo=self.falcon_image_repo, ecr_image_tag=self.falcon_image_tag)
-        #
-        #     if ecr_registry_uri is not None and ecr_image_tag is not None:
-        #       if ((partial_ecr_pull_token := self.get_ecr_partial_pull_token(ecr_registry_uri=ecr_registry_uri)) is
-        #          not None):
-        #         if (falcon_ecr_image_pull_token := self.get_ecr_image_pull_token(
-        #           partial_pull_token=partial_ecr_pull_token)) is not None:
-        #           return ecr_registry_uri, ecr_image_tag, falcon_ecr_image_pull_token
     elif not self.falcon_image_repo and not self.falcon_image_tag:
       registry_type, image_repo, image_tag, image_pull_token = self.execute_no_repo_no_tag()
       return registry_type, image_repo, image_tag, image_pull_token
-      # if (crowdstrike_image_repo := self.get_crowdstrike_image_repo()) is not None:
-      #   if (crowdstrike_image_tag := self.get_falcon_image_tag()) is not None:
-      #     if (crowdstrike_repo_image_pull_token := self.get_crowdstrike_image_pull_token()) is not None:
-      #       return 'crwd_registry', crowdstrike_image_repo, crowdstrike_image_tag, crowdstrike_repo_image_pull_token
     else:
-      return None, None, None
+      return None, None, None, None
 
   def get_helm_chart(self):
     pass
