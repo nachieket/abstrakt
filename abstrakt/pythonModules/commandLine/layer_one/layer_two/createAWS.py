@@ -55,6 +55,9 @@ def eks_managed_node(
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
                                                       help='Install Falcon Sensor',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
+  falcon_image_repo: Annotated[str, typer.Option('--falcon-image-repo', help='Falcon Sensor Image Repository | '
+                                                 'Example: 123456789012.dkr.ecr.eu-west-2.amazonaws.com/ecr',
+                                                 rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   falcon_image_tag: Annotated[str, typer.Option('--falcon-image-tag', help='Falcon Sensor Image Tag | '
                                                 'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
                                                 rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
@@ -99,6 +102,7 @@ def eks_managed_node(
 
   manager = ClusterOperationsManager(config_file=config_file,
                                      install_falcon_sensor=install_falcon_sensor,
+                                     falcon_image_repo=falcon_image_repo,
                                      falcon_image_tag=falcon_image_tag,
                                      kernel_mode=kernel_mode,
                                      ebpf_mode=ebpf_mode,
@@ -169,6 +173,9 @@ def eks_fargate(
   install_falcon_sensor: Annotated[bool, typer.Option('--install-falcon-sensor',
                                                       help='Install Falcon Sensor',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
+  falcon_image_repo: Annotated[str, typer.Option('--falcon-image-repo', help='Falcon Sensor Image Repository | '
+                                                 'Example: 123456789012.dkr.ecr.eu-west-2.amazonaws.com/ecr',
+                                                 rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   falcon_image_tag: Annotated[str, typer.Option('--falcon-image-tag', help='Falcon Sensor Image Tag | '
                                                 'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
                                                 rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
@@ -211,12 +218,17 @@ def eks_fargate(
                                                         help='Install Vulnerable Apps',
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
+  ecr_iam_policy_name: Annotated[str, typer.Option('--ecr-iam-policy-name', help='AWS IAM Policy Name',
+                                                   rich_help_panel='AWS Options')] = 'CrowdStrikeFalconContainerEcrPull',
+  ecr_iam_role_name: Annotated[str, typer.Option('--ecr-iam-role-name', help='AWS IAM Role Name',
+                                                 rich_help_panel='AWS Options')] = 'CrowdStrikeFalconContainerIAMRole'
 ):
   eks_fargate_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-fargate-{uk_time_str}.log'
   eks_fargate_logger = CustomLogger('eks_fargate', eks_fargate_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
                                      install_falcon_sensor=install_falcon_sensor,
+                                     falcon_image_repo=falcon_image_repo,
                                      falcon_image_tag=falcon_image_tag,
                                      falcon_client_id=falcon_client_id,
                                      falcon_client_secret=falcon_client_secret,
@@ -232,7 +244,9 @@ def eks_fargate(
                                      install_vulnerable_apps=install_vulnerable_apps,
                                      cloud_type='aws',
                                      cluster_type='eks-fargate',
-                                     logger=eks_fargate_logger)
+                                     logger=eks_fargate_logger,
+                                     ecr_iam_policy_name=ecr_iam_policy_name,
+                                     ecr_iam_role_name=ecr_iam_role_name)
 
   manager.start_cluster_operations()
 

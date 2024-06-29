@@ -67,7 +67,7 @@ class ParseConfigFile:
 
     return terraform_variables, tags
 
-  def read_gke_cos_config_file(self, file_path):
+  def read_gke_standard_config_file(self, file_path):
     self.logger.info('Reading GKE COS Configuration File')
 
     config = configparser.ConfigParser()

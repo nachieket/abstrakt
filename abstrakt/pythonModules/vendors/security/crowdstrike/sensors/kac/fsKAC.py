@@ -4,6 +4,7 @@ import base64
 
 # from time import sleep
 
+from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
@@ -23,32 +24,47 @@ class FalconKAC(CrowdStrike):
 
     printf('Installing Kubernetes Admission Controller...', logger=self.logger)
 
+    k8s = KubectlOps(logger=self.logger)
+
+    if k8s.namespace_exists(namespace_name='falcon-kac'):
+      captured_pods, status = k8s.find_pods_with_status(pod_string='falcon-kac', namespace='falcon-kac')
+
+      if (status is True) and (len(captured_pods['running']) > 0):
+        print('Kubernetes Admission Controller found up and running in falcon-system namespace. Not proceeding with '
+              'installation.')
+
+        for pod in captured_pods['running']:
+          print(pod)
+
+        print()
+        return
+
     try:
       def thread():
         # Step 1: Download falcon-container-sensor-pull.sh
-        process = subprocess.run(["curl", "-sSL", "-o", "falcon-container-sensor-pull.sh",
-                                  "https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/main/bash/containers/"
-                                  "falcon-container-sensor-pull/falcon-container-sensor-pull.sh"],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-
-        if process.stdout:
-          self.logger.info(process.stdout)
-
-        if process.stderr:
-          self.logger.info(process.stderr)
-
-        # Step 2: Make the script executable
-        process = subprocess.run(["chmod", "+x", "falcon-container-sensor-pull.sh"],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-
-        if process.stdout:
-          self.logger.info(process.stdout)
-
-        if process.stderr:
-          self.logger.info(process.stderr)
+        # process = subprocess.run(["curl", "-sSL", "-o", "falcon-container-sensor-pull.sh",
+        #                           "https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/main/bash/containers/"
+        #                           "falcon-container-sensor-pull/falcon-container-sensor-pull.sh"],
+        #                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        #
+        # if process.stdout:
+        #   self.logger.info(process.stdout)
+        #
+        # if process.stderr:
+        #   self.logger.info(process.stderr)
+        #
+        # # Step 2: Make the script executable
+        # process = subprocess.run(["chmod", "+x", "falcon-container-sensor-pull.sh"],
+        #                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        #
+        # if process.stdout:
+        #   self.logger.info(process.stdout)
+        #
+        # if process.stderr:
+        #   self.logger.info(process.stderr)
 
         # Step 3: Run falcon-container-sensor-pull.sh with the required arguments to get KAC version
-        process = subprocess.run(["./falcon-container-sensor-pull.sh",
+        process = subprocess.run(["./abstrakt/conf/crowdstrike/scripts/falcon-container-sensor-pull.sh",
                                   "-u", f"{self.falcon_client_id}",
                                   "-s", f"{self.falcon_client_secret}",
                                   "--list-tags",
@@ -69,7 +85,7 @@ class FalconKAC(CrowdStrike):
         falcon_image_tag = f"{kac_version}"
 
         # Step 5: Run falcon-container-sensor-pull.sh to dump credentials
-        process = subprocess.run(["./falcon-container-sensor-pull.sh",
+        process = subprocess.run(["./abstrakt/conf/crowdstrike/scripts/falcon-container-sensor-pull.sh",
                                   "-u", f"{self.falcon_client_id}",
                                   "-s", f"{self.falcon_client_secret}",
                                   "--dump-credentials"],

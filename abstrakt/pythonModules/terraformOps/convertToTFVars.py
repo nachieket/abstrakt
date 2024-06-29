@@ -1,4 +1,5 @@
 import json
+import os
 
 
 class ToTFVars:
@@ -31,13 +32,15 @@ class ToTFVars:
         if value.lower() in ["true", "false"]:
           tfvars_file.write(f'{key} = {value.lower()}\n')
         else:
+          if key == 'cluster_name':
+            os.environ['EKS_FARGATE_CLUSTER_NAME'] = value
           tfvars_file.write(f'{key} = "{value}"\n')
 
       tfvars_file.write(f'common_tags = {json.dumps(common_tags)}\n')
 
     self.logger.info('Finished converting EKS Fargate configuration file to terraform tfvars file')
 
-  def convert_gke_cos_to_tfvars(self, terraform_variables, gcp_project_id, common_tags):
+  def convert_gke_standard_to_tfvars(self, terraform_variables, gcp_project_id, common_tags):
     self.logger.info('Converting GKE COS configuration file to terraform tfvars file')
 
     with open("./abstrakt/terraformModules/gcp/gke/standard/variables.tfvars", "w") as tfvars_file:

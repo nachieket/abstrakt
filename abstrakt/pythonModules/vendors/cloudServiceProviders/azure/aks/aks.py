@@ -7,7 +7,7 @@ from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
 from abstrakt.pythonModules.kubernetesOps.updateKubeConfig import UpdateKubeConfig
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
-from abstrakt.pythonModules.vendors.cloudServiceProviders.azure.azOps.azOps import AZOps
+# from abstrakt.pythonModules.vendors.cloudServiceProviders.azure.azOps.azOps import AZOps
 
 
 class AKS:
@@ -107,13 +107,13 @@ class AKS:
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
     tf = ExecuteTerraform(self.logger)
-    az = AZOps(logger=self.logger)
+    # az = AZOps(logger=self.logger)
 
     printf('Deploying Azure AKS Cluster...\n', logger=self.logger)
 
     try:
-      # Ensure Azure login
-      az.check_azure_login()
+      # # Ensure Azure login
+      # az.check_azure_login()
 
       # Get AKS config file parameters
       aks_parameters, tags = conf.read_aks_config_file(config_file)

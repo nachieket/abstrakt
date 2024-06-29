@@ -7,6 +7,8 @@ class GCPOps:
 
   def check_gcloud_login(self) -> bool:
     """Checks if gcloud is logged in and prompts for login if needed."""
+    print('Checking GCP login...\n')
+
     try:
       # Attempt to retrieve account information
       account = subprocess.check_output(["gcloud", "config", "get-value", "account"],

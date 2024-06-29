@@ -17,36 +17,32 @@ class ECSec2:
     convert = ToTFVars(logger=self.logger)
     convert.convert_eks_fargate_to_tfvars(ecs_ec2_parameters, tags)
 
-    # cli object to validate aws credentials profile
-    cli = AWSOps()
-
     ecs_ec2_terraform_module = './abstrakt/terraformModules/aws/ecs/ecs-ec2/'
 
-    # execution of terraform commands if aws profile validation is successful and valid saml or default profile is found
-    if cli.check_aws_login():
-      tf = ExecuteTerraform(logger=self.logger)
+    print()
+    print('+' * 10)
+    print('Terraform')
+    print('+' * 10, '\n')
 
-      # execute terraform commands to deploy eks managed node cluster
-      if (
-        tf.execute_terraform_get(path=ecs_ec2_terraform_module) and
-        tf.execute_terraform_init(path=ecs_ec2_terraform_module)
-      ):
-        plan_status = tf.execute_terraform_plan(path=ecs_ec2_terraform_module)
+    tf = ExecuteTerraform(logger=self.logger)
 
-        if plan_status == 0:
-          print('Terraform execution to deploy ecs with ec2 cluster failed. Exiting the program.\n')
-          exit()
-        elif plan_status == 1:
-          if tf.execute_terraform_apply(path=ecs_ec2_terraform_module):
-            print('Terraform execution to deploy ecs with ec2 cluster completed successfully.\n')
-          else:
-            print('Terraform execution to deploy ecs with ec2 cluster failed. Exiting the program.\n')
-            exit()
-        elif plan_status == 2:
-          print('Terraform execution to create ecs with ec2 cluster did not need any changes.\n')
-      else:
+    if (
+      tf.execute_terraform_get(path=ecs_ec2_terraform_module) and
+      tf.execute_terraform_init(path=ecs_ec2_terraform_module)
+    ):
+      plan_status = tf.execute_terraform_plan(path=ecs_ec2_terraform_module)
+
+      if plan_status == 0:
         print('Terraform execution to deploy ecs with ec2 cluster failed. Exiting the program.\n')
         exit()
+      elif plan_status == 1:
+        if tf.execute_terraform_apply(path=ecs_ec2_terraform_module):
+          print('Terraform execution to deploy ecs with ec2 cluster completed successfully.\n')
+        else:
+          print('Terraform execution to deploy ecs with ec2 cluster failed. Exiting the program.\n')
+          exit()
+      elif plan_status == 2:
+        print('Terraform execution to create ecs with ec2 cluster did not need any changes.\n')
     else:
-      print('AWS credentials profile validation failed. No valid default or saml profile found. Existing the Program.\n')
+      print('Terraform execution to deploy ecs with ec2 cluster failed. Exiting the program.\n')
       exit()

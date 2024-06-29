@@ -2,6 +2,7 @@ import random
 import string
 import subprocess
 
+from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import CrowdStrike
@@ -34,24 +35,24 @@ class IAR(CrowdStrike):
 
   def execute_iar_installation_process(self):
     try:
-      self.run_command(
-        'curl -sSL -o falcon-container-sensor-pull.sh '
-        '"https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/main/bash/containers/falcon-container-sensor'
-        '-pull/falcon-container-sensor-pull.sh"')
-
-      self.run_command("chmod +x falcon-container-sensor-pull.sh")
+      # self.run_command(
+      #   'curl -sSL -o falcon-container-sensor-pull.sh '
+      #   '"https://raw.githubusercontent.com/CrowdStrike/falcon-scripts/main/bash/containers/falcon-container-sensor'
+      #   '-pull/falcon-container-sensor-pull.sh"')
+      #
+      # self.run_command("chmod +x falcon-container-sensor-pull.sh")
 
       falcon_image_full_path = self.run_command(
-        f"./falcon-container-sensor-pull.sh --client-id {self.falcon_client_id} --client-secret "
-        f"{self.falcon_client_secret} -t falcon-imageanalyzer --get-image-path"
+        f"./abstrakt/conf/crowdstrike/scripts/falcon-container-sensor-pull.sh --client-id {self.falcon_client_id} "
+        f"--client-secret {self.falcon_client_secret} -t falcon-imageanalyzer --get-image-path"
       )
 
       falcon_image_repo = falcon_image_full_path.split(':')[0]
       falcon_image_tag = falcon_image_full_path.split(':')[1]
 
       falcon_image_pull_token = self.run_command(
-        f"./falcon-container-sensor-pull.sh --client-id {self.falcon_client_id} --client-secret "
-        f"{self.falcon_client_secret} -t falcon-imageanalyzer --get-pull-token")
+        f"./abstrakt/conf/crowdstrike/scripts/falcon-container-sensor-pull.sh --client-id {self.falcon_client_id} "
+        f"--client-secret {self.falcon_client_secret} -t falcon-imageanalyzer --get-pull-token")
 
       self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm")
       self.run_command("helm repo update")
@@ -92,6 +93,21 @@ class IAR(CrowdStrike):
     print(f"\n{'+' * 40}\nCrowdStrike Image Assessment at Runtime\n{'+' * 40}\n")
 
     print('Installing IAR...')
+
+    k8s = KubectlOps(logger=self.logger)
+
+    if k8s.namespace_exists(namespace_name='falcon-image-analyzer'):
+      captured_pods, status = k8s.find_pods_with_status(pod_string='image-analyzer', namespace='falcon-image-analyzer')
+
+      if (status is True) and (len(captured_pods['running']) > 0):
+        print('Falcon Image Analyzer found up and running in falcon-system namespace. Not proceeding with '
+              'installation.')
+
+        for pod in captured_pods['running']:
+          print(pod)
+
+        print()
+        return
 
     with MultiThreading() as mt:
       status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1)
