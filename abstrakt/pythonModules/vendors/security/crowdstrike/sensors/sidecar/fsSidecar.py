@@ -8,7 +8,6 @@ from botocore.exceptions import ClientError
 
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.crowdStrikeSensors import CrowdStrikeSensors
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
-from abstrakt.pythonModules.kubernetesOps.updateKubeConfig import UpdateKubeConfig
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
@@ -284,15 +283,6 @@ class FalconSensorSidecar(CrowdStrikeSensors):
     k8s = KubectlOps(logger=self.logger)
 
     def thread():
-      # if region and cluster_name:
-      #   kube = UpdateKubeConfig(logger=self.logger)
-      #   kube.update_kubeconfig(cloud='aws', region=region, cluster_name=cluster_name)
-      # elif cluster_name and resource_group:
-      #   kube = UpdateKubeConfig(logger=self.logger)
-      #   kube.update_kubeconfig(cloud='azure', cluster_name=cluster_name, resource_group=resource_group)
-      # elif cloud_provider == 'gcp':
-      #   pass
-
       kube = KubectlOps(logger=self.logger)
 
       crowdstrike_namespaces = ['falcon-system', 'falcon-kubernetes-protection', 'falcon-kac', 'falcon-image-analyzer']

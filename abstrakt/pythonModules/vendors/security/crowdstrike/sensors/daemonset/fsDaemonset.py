@@ -84,17 +84,6 @@ class FalconSensorDaemonset(CrowdStrikeSensors):
 
     printf(f"{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n", logger=self.logger)
 
-    # if region and cluster_name:
-    #   kube = UpdateKubeConfig(logger=self.logger)
-    #   kube.update_kubeconfig(cloud='aws', region=region, cluster_name=cluster_name)
-    # elif cluster_name and resource_group:
-    #   kube = UpdateKubeConfig(logger=self.logger)
-    #   kube.update_kubeconfig(cloud='azure', cluster_name=cluster_name, resource_group=resource_group)
-    # elif cloud_type == 'gcp':
-    #   pass
-    #   kube = UpdateKubeConfig(logger=self.logger)
-    #   kube.update_kubeconfig(cloud='gcp', cluster_name=cluster_name, region=region)
-
     printf("Installing Falcon Sensor...", logger=self.logger)
 
     k8s = KubectlOps(logger=self.logger)
