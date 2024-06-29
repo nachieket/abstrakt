@@ -37,7 +37,7 @@ class AZOps:
       result.check_returncode()  # Raise an exception if the command fails
       printf('Azure is logged in\n')
 
-      return
+      return True
     except subprocess.CalledProcessError:
       try:
         printf('Azure is not logged in. Attempting login...\n')
@@ -46,7 +46,7 @@ class AZOps:
         result = subprocess.run(["az", "account", "show"], capture_output=True, text=True)
         result.check_returncode()  # Raise an exception if the command fails
         printf('\nSuccessfully logged in to Azure CLI\n', logger=self.logger)
-        return
+        return True
       except Exception as e:
         print(f"Failed to login to Azure. Login manually with 'az login' and try again.{e}")
         exit()

@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::517716713836:oidc-provider/oidc.eks.eu-west-2.amazonaws.com/id/4C4BB85AAC1F05785621E200D9C4D702"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.eu-west-2.amazonaws.com/id/4C4BB85AAC1F05785621E200D9C4D702:aud": "sts.amazonaws.com",
+          "oidc.eks.eu-west-2.amazonaws.com/id/4C4BB85AAC1F05785621E200D9C4D702:sub": "system:serviceaccount:falcon-system:crowdstrike-falcon-sa"
+        }
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import subprocess
-from time import sleep
 
+from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
@@ -28,6 +28,22 @@ class DetectionsContainer:
     print(f"\n{'+' * 33}\nCrowdStrike Detections Containers\n{'+' * 33}\n")
 
     print('Installing Detections Containers...')
+
+    k8s = KubectlOps(logger=self.logger)
+
+    if k8s.namespace_exists(namespace_name='crowdstrike-detections'):
+      captured_pods, status = k8s.find_pods_with_status(pod_string='detections-container',
+                                                        namespace='crowdstrike-detections')
+
+      if (status is True) and (len(captured_pods['running']) > 0):
+        print('Detections container found up and running in falcon-system namespace. Not proceeding with '
+              'installation.')
+
+        for pod in captured_pods['running']:
+          print(pod)
+
+        print()
+        return
 
     path = './abstrakt/conf/crowdstrike/detections-container/'
 
@@ -71,7 +87,7 @@ class DetectionsContainer:
                                                                           namespace='crowdstrike-detections')
 
       print('Generating artificial detections...')
-      print('This may take a few minutes (normally, not more than five).')
+      print('This may take a few minutes.')
 
       if pods['detections-container'][0] and pods['vulnerable.example.com'][0] and pods['generic-tools'][0]:
         with MultiThreading() as mt:
@@ -155,62 +171,3 @@ class DetectionsContainer:
       self.generate_curl_detections(service_ip_address=service_ip_address, service_port=service_port,
                                     execution_container=execution_container, mode=mode)
       self.generate_sh_detections(detections_container=detections_container)
-
-  # def generate_artificial_detections(self, service_ip_address, service_port, execution_container,
-  #                                    detections_container, mode):
-  #   curl_commands: list = [
-  #     f'curl http://{service_ip_address}:{service_port}/ps',
-  #     f'curl http://{service_ip_address}:{service_port}/rootkit',
-  #     f'curl http://{service_ip_address}:{service_port}/masquerading',
-  #     f'curl http://{service_ip_address}:{service_port}/data_exfiltration',
-  #     f'curl http://{service_ip_address}:{service_port}/deploy_malware',
-  #     f'curl http://{service_ip_address}:{service_port}/reverse_shell',
-  #     f'curl http://{service_ip_address}:{service_port}/reverse_shell-obfuscated',
-  #     f'curl http://{service_ip_address}:{service_port}/credentials_dumping',
-  #     f'curl http://{service_ip_address}:{service_port}/credentials_dumping_collection',
-  #     f'curl http://{service_ip_address}:{service_port}/suspicious_commands',
-  #     f'curl http://{service_ip_address}:{service_port}/container_drift'
-  #   ]
-  #
-  #   for command in curl_commands:
-  #     shell, script = command.split(' ')
-  #
-  #     if mode == 'sidecar':
-  #       kubectl_command: list = ["kubectl", "exec", "-it", execution_container, "-c", "generic-tools", "-n",
-  #                                "crowdstrike-detections", "--", shell, script]
-  #
-  #       self.logger.info(f'Executing command: {kubectl_command}')
-  #     else:
-  #       kubectl_command: list = ["kubectl", "exec", "-it", execution_container, "-n", "crowdstrike-detections",
-  #                                "--", shell, script]
-  #
-  #       self.logger.info(f'Executing command: {kubectl_command}')
-  #
-  #     try:
-  #       process = subprocess.run(kubectl_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
-  #                                text=True)
-  #
-  #       if process.stdout:
-  #         self.logger.info(process.stdout)
-  #
-  #       if process.stderr:
-  #         self.logger.info(process.stderr)
-  #
-  #       sleep(1)
-  #     except Exception as e:
-  #       self.logger.error(f"Error executing command {command}: {str(e)}")
-  #
-  #   if mode == 'daemonset':
-  #     kubectl_command: list = ["kubectl", "exec", "-it", detections_container, "-n", "crowdstrike-detections",
-  #                              "--", "sh", "/home/eval/bin/evil/Linux_Malware_High"]
-  #
-  #     self.logger.info(f'Executing command: {kubectl_command}')
-  #
-  #     process = subprocess.run(kubectl_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
-  #                              text=True)
-  #
-  #     if process.stdout:
-  #       self.logger.info(process.stdout)
-  #
-  #     if process.stderr:
-  #       self.logger.info(process.stderr)

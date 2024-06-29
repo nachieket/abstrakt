@@ -1,7 +1,7 @@
 import subprocess
 
-import kubernetes.client
-from kubernetes import config
+from kubernetes import client, config
+from kubernetes.client.rest import ApiException
 
 
 class KubectlOps:
@@ -32,7 +32,7 @@ class KubectlOps:
       config.load_kube_config(kubeconfig_path)
 
       # Create a Kubernetes client object
-      v1 = kubernetes.client.CoreV1Api()
+      v1 = client.CoreV1Api()
 
       # Get a list of all namespaces
       namespaces = v1.list_namespace()
@@ -44,6 +44,69 @@ class KubectlOps:
     except Exception as e:
       self.logger.error(f'{e}')
       return []
+
+  def namespace_exists(self, namespace_name):
+    try:
+      # Load the kubeconfig file
+      config.load_kube_config()
+
+      # Create a client for the CoreV1Api
+      v1 = client.CoreV1Api()
+
+      # Try to get the namespace
+      v1.read_namespace(name=namespace_name)
+      return True
+    except ApiException as e:
+      if e.status == 404:
+        self.logger.error(f"Namespace '{namespace_name}' does not exist.")
+        return False
+      else:
+        self.logger.error(f"An error occurred: {e}")
+        return False
+
+  def find_pods_with_status(self, pod_string, namespace):
+    try:
+      status = True
+
+      # Load the kubeconfig file
+      config.load_kube_config()
+
+      # Create a client for the CoreV1Api
+      v1 = client.CoreV1Api()
+
+      # List all pods in the specified namespace
+      pods = v1.list_namespaced_pod(namespace)
+
+      captured_pods = {'running': [], 'initiating': [], 'failed': [], 'succeeded': [], 'terminated': [], 'evicted': []}
+
+      for pod in pods.items:
+        if pod_string in pod.metadata.name:
+          if pod.status.phase == 'Running':
+            captured_pods['running'].append(pod.metadata.name)
+          elif pod.status.phase == ('Pending' or 'ContainerCreating'):
+            captured_pods['initiating'].append(pod.metadata.name)
+            status = False
+          elif pod.status.phase == ('Failed' or 'CrashLoopBackOff' or 'ImagePullBackOff' or 'Unknown'):
+            captured_pods['failed'].append(pod.metadata.name)
+            status = False
+          elif pod.status.phase == 'Succeeded':
+            captured_pods['succeeded'].append(pod.metadata.name)
+            status = False
+          elif pod.status.phase == 'ContainerTerminated':
+            captured_pods['terminated'].append(pod.metadata.name)
+            status = False
+          elif pod.status.phase == 'Evicted':
+            captured_pods['evicted'].append(pod.metadata.name)
+            status = False
+
+      self.logger.info(captured_pods)
+
+      # Return the count of running pods
+      return captured_pods, status
+
+    except client.exceptions.ApiException as e:
+      self.logger.error(f"An error occurred: {e}")
+      return None, False
 
 # def run_kubectl_delete(self, yaml_file):
 #   try:

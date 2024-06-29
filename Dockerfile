@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     binfmt-support \
     curl \
     wget \
+    skopeo \
     unzip \
     gnupg \
     apt-transport-https \
@@ -108,7 +109,9 @@ COPY ./abstrakt/terraformModules /crowdstrike/abstrakt/terraformModules
 COPY abstrakt.sh /root/.bash_completions/abstrakt.sh
 
 # Install Python packages
-RUN python3.10 -m pip install pytz requests pydantic azure-identity kubernetes crowdstrike-falconpy pyyaml /tmp/crowdstrike/abstrakt-0.1.0-py3-none-any.whl
+RUN python3.10 -m pip install pytz boto3 requests pydantic azure-identity kubernetes boto3 \
+    azure-mgmt-containerservice azure-mgmt-compute crowdstrike-falconpy pyyaml /tmp/crowdstrike/abstrakt-0.1 \
+    .0-py3-none-any.whl
 
 # Add the line to ~/.bashrc for bash completion
 RUN echo 'source /root/.bash_completions/abstrakt.sh' >> /root/.bashrc

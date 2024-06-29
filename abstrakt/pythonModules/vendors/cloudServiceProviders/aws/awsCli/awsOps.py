@@ -57,7 +57,7 @@ class AWSOps:
 
         print('Configured aws credentials are not valid.\n')
         return False
-      elif method == 'saml2aws':
+      elif method == 'saml2aws' or method == '':
         if exists == 'yes':
           if self.configure_saml2aws():
             if self.saml2aws_login():
@@ -181,10 +181,10 @@ class AWSOps:
         os.environ['AWS_PROFILE'] = profile
 
         if self.check_credentials_validity():
-          print(f'Profile {profile} has valid aws credentials')
+          print(f'Profile {profile} has valid aws credentials\n')
           return True
         else:
-          print(f'Profile {profile} does not have valid aws credentials')
+          print(f'Profile {profile} does not have valid aws credentials\n')
 
       print("No valid AWS profile found.\n")
       answer = input("Do you want to configure an AWS profile? (y/n): ")

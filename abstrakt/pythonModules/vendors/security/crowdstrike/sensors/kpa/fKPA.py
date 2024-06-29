@@ -4,6 +4,7 @@ import json
 import random
 import string
 
+from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 from abstrakt.pythonModules.vendors.security.crowdstrike.crowdstrike import CrowdStrike
@@ -81,8 +82,8 @@ class FalconKPA(CrowdStrike):
           for x in process.stdout.split(' '):
             if 'certificate-authority-data' not in x:
               cluster_name = x
-              if '/' in cluster_name:
-                  cluster_name = cluster_name.split('/')[-1]
+              # if '/' in cluster_name:
+              #     cluster_name = cluster_name.split('/')[-1]
               # Debug Log
               self.logger.info(cluster_name)
 
@@ -136,6 +137,21 @@ class FalconKPA(CrowdStrike):
     print(f"\n{'+' * 40}\nCrowdStrike Kubernetes Protection Agent\n{'+' * 40}\n")
 
     print('Installing Kubernetes Protection Agent...')
+
+    k8s = KubectlOps(logger=self.logger)
+
+    if k8s.namespace_exists(namespace_name='falcon-kubernetes-protection'):
+      captured_pods, status = k8s.find_pods_with_status(pod_string='kpagent', namespace='falcon-kubernetes-protection')
+
+      if (status is True) and (len(captured_pods['running']) > 0):
+        print('Kubernetes Protection Agent found up and running in falcon-system namespace. Not proceeding with '
+              'installation.')
+
+        for pod in captured_pods['running']:
+          print(pod)
+
+        print()
+        return
 
     with MultiThreading() as mt:
       status = mt.run_with_progress_indicator(self.execute_kpa_installation_process, 1)

@@ -25,6 +25,9 @@ resource "google_container_cluster" "primary" {
   # Enable Autopilot mode
   enable_autopilot = true
 
+  # Initial Node count
+  initial_node_count       = 1
+
   # Network configuration (if using VPC and subnet)
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name

@@ -1,0 +1,24 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowImagePull",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:BatchGetImage",
+                "ecr:DescribeImages",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:ListImages"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "AllowECRSetup",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

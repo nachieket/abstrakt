@@ -1,6 +1,7 @@
 import subprocess
 
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 
 
 class VulnerableApps:
@@ -35,9 +36,13 @@ class VulnerableApps:
 
               self.run_command(
                 f"kubectl create deploy -n crowdstrike-detections {image_name} --image={image_path.strip()} "
-                f"--replicas 1 --dry-run=client -o yaml > {image_name}.yaml")
+                f"--replicas 1 --dry-run=client -o yaml > ./abstrakt/conf/vulnerableImages/{image_name}.yaml")
 
-              self.run_command(f"kubectl apply -f {image_name}.yaml")
+              if self.run_command(f"kubectl apply -f ./abstrakt/conf/vulnerableImages/{image_name}.yaml") is not None:
+                # container = ContainerOps(logger=self.logger)
+                # container.pod_checker(pod_name=image_name, namespace='crowdstrike-detections',
+                #                       kubeconfig_path='~/.kube/config')
+                pass
 
           return True
         except Exception as e:
