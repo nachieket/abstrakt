@@ -185,7 +185,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error: use --help parameter to understand the right usage of interface.')
+          print('Error1: use --help parameter to understand the right usage of interface.')
           exit()
 
       if kac:
@@ -220,7 +220,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error: use --help parameter to understand the right usage of interface.')
+          print('Error2: use --help parameter to understand the right usage of interface.')
           exit()
 
       if iar:
@@ -255,7 +255,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error: use --help parameter to understand the right usage of interface.')
+          print('Error3: use --help parameter to understand the right usage of interface.')
           exit()
 
       if detections_container:
@@ -285,7 +285,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error: use --help parameter to understand the right usage of interface.')
+          print('Error4: use --help parameter to understand the right usage of interface.')
           exit()
 
       if vulnerable_apps:
@@ -315,5 +315,5 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error: use --help parameter to understand the right usage of interface.')
+          print('Error5: use --help parameter to understand the right usage of interface.')
           exit()
