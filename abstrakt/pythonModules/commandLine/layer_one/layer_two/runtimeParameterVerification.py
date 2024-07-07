@@ -101,6 +101,7 @@ class RuntimeParameterVerification:
           exit()
     else:
       if falcon_sensor:
+        print(cluster_type)
         if cluster_type == 'eks-managed-node' or cluster_type == 'eks-self-managed-node':
           if (not kernel_mode and not ebpf_mode) or (not aws_cluster_name or not aws_region or not falcon_client_secret
                                                      or not falcon_client_id):
