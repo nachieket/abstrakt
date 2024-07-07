@@ -75,7 +75,7 @@ class RuntimeParameterVerification:
                                            azure_cluster_name=None,
                                            gcp_region=None,
                                            gcp_cluster_name=None,
-                                           gcp_project_name=None,
+                                           gcp_project_id=None,
                                            kpa=None,
                                            kac=None,
                                            iar=None,
@@ -93,7 +93,7 @@ class RuntimeParameterVerification:
           return
         elif azure_cluster_name and azure_resource_group_name:
           return
-        elif gcp_project_name and gcp_region and gcp_project_name:
+        elif gcp_project_id and gcp_region and gcp_project_id:
           return
         else:
           print('Error:')
@@ -142,7 +142,7 @@ class RuntimeParameterVerification:
               '--azure-resource-group-name uksouth --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s')
             exit()
         elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-          if (not gcp_cluster_name or not gcp_region or not gcp_project_name or not falcon_client_secret or not
+          if (not gcp_cluster_name or not gcp_region or not gcp_project_id or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
             print(
@@ -176,7 +176,7 @@ class RuntimeParameterVerification:
               '--azure-resource-group-name azure-resource-group --falcon-client-id 3af74117 --falcon-client-secret '
               'vlTpn372s')
         elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-          if (not gcp_cluster_name or not gcp_region or not gcp_project_name or not falcon_client_secret or not
+          if (not gcp_cluster_name or not gcp_region or not gcp_project_id or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
             print(
@@ -211,7 +211,7 @@ class RuntimeParameterVerification:
               '--azure-resource-group-name azure-resource-group --falcon-client-id 3af74117 --falcon-client-secret '
               'vlTpn372s')
         elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-          if (not gcp_cluster_name or not gcp_region or not gcp_project_name or not falcon_client_secret or not
+          if (not gcp_cluster_name or not gcp_region or not gcp_project_id or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
             print(
@@ -246,7 +246,7 @@ class RuntimeParameterVerification:
               '--azure-resource-group-name azure-resource-group --falcon-client-id 3af74117 --falcon-client-secret '
               'vlTpn372s')
         elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-          if (not gcp_cluster_name or not gcp_region or not gcp_project_name or not falcon_client_secret or not
+          if (not gcp_cluster_name or not gcp_region or not gcp_project_id or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
             print(
@@ -276,7 +276,7 @@ class RuntimeParameterVerification:
               '--azure-resource-group-name azure-resource-group --falcon-client-id 3af74117 --falcon-client-secret '
               'vlTpn372s')
         elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-          if (not gcp_cluster_name or not gcp_region or not gcp_project_name or not falcon_client_secret or not
+          if (not gcp_cluster_name or not gcp_region or not gcp_project_id or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
             print(
@@ -306,7 +306,7 @@ class RuntimeParameterVerification:
               '--azure-resource-group-name azure-resource-group --falcon-client-id 3af74117 --falcon-client-secret '
               'vlTpn372s')
         elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-          if (not gcp_cluster_name or not gcp_region or not gcp_project_name or not falcon_client_secret or not
+          if (not gcp_cluster_name or not gcp_region or not gcp_project_id or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
             print(

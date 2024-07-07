@@ -38,7 +38,7 @@ class CrowdStrikeSensorOperationsManager:
                azure_cluster_name=None,
                gcp_region=None,
                gcp_cluster_name=None,
-               gcp_project_name=None,
+               gcp_project_id=None,
                kpa=None,
                kac=None,
                iar=None,
@@ -65,7 +65,7 @@ class CrowdStrikeSensorOperationsManager:
     self.azure_cluster_name = azure_cluster_name
     self.gcp_region = gcp_region
     self.gcp_cluster_name = gcp_cluster_name
-    self.gcp_project_name = gcp_project_name
+    self.gcp_project_id = gcp_project_id
     self.kpa = kpa
     self.kac = kac
     self.iar = iar
@@ -127,7 +127,7 @@ class CrowdStrikeSensorOperationsManager:
                                                  azure_cluster_name=self.azure_cluster_name,
                                                  gcp_region=self.gcp_region,
                                                  gcp_cluster_name=self.gcp_cluster_name,
-                                                 gcp_project_name=self.gcp_project_name,
+                                                 gcp_project_id=self.gcp_project_id,
                                                  kpa=self.kpa,
                                                  kac=self.kac,
                                                  iar=self.iar,
@@ -147,9 +147,9 @@ class CrowdStrikeSensorOperationsManager:
     elif self.azure_cluster_name and self.azure_resource_group_name:
       command = (f'az aks get-credentials --resource-group {self.azure_resource_group_name} --name'
                  f' {self.azure_cluster_name}')
-    elif self.gcp_cluster_name and self.gcp_region and self.gcp_project_name:
+    elif self.gcp_cluster_name and self.gcp_region and self.gcp_project_id:
       command = (f'gcloud container clusters get-credentials {self.gcp_cluster_name} --zone {self.gcp_region} --project'
-                 f' {self.gcp_project_name}')
+                 f' {self.gcp_project_id}')
     else:
       print(f"Couldn't get the cluster credentials. One of the required runtime parameters may be missing Existing the "
             f"program.")
@@ -229,13 +229,13 @@ class CrowdStrikeSensorOperationsManager:
       self.logger.error(e)
       return None
 
-  def get_gke_clusters(self, project_name):
+  def get_gke_clusters(self, gcp_project_id):
     try:
       standard_gke_clusters = {}
       autopilot_gke_clusters = {}
 
       try:
-        command = f'gcloud container clusters list --project {project_name} --format="json()"'
+        command = f'gcloud container clusters list --project {gcp_project_id} --format="json()"'
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
         output, err = process.communicate()
 
@@ -263,11 +263,11 @@ class CrowdStrikeSensorOperationsManager:
         return standard_gke_clusters, autopilot_gke_clusters
 
       except subprocess.CalledProcessError as err:
-        self.logger.error(f"Error processing cluster information for project {project_name}: {err.output}\n")
+        self.logger.error(f"Error processing cluster information for project {gcp_project_id}: {err.output}\n")
         return None, None
       except json.decoder.JSONDecodeError as err:
         self.logger.error(f'Error: {err}')
-        self.logger.error(f'Kubernetes Engine API has not been used in project {project_name}\n')
+        self.logger.error(f'Kubernetes Engine API has not been used in project {gcp_project_id}\n')
         return None, None
       except Exception as err:
         self.logger.error(f'Generic error: {err}\n')
@@ -277,8 +277,8 @@ class CrowdStrikeSensorOperationsManager:
       print(f"An error occurred: {err}")
       return None, None
 
-  def get_gke_cluster_type(self, cluster_name, project_name):
-    gke_standard_clusters, gke_autopilot_clusters = self.get_gke_clusters(project_name=project_name)
+  def get_gke_cluster_type(self, cluster_name, gcp_project_id):
+    gke_standard_clusters, gke_autopilot_clusters = self.get_gke_clusters(gcp_project_id=gcp_project_id)
 
     if cluster_name in gke_standard_clusters:
       return 'gke-standard'
@@ -340,9 +340,9 @@ class CrowdStrikeSensorOperationsManager:
         return 'eks-fargate'
     elif self.azure_cluster_name and self.azure_resource_group_name:
       return 'azure-aks'
-    elif self.gcp_cluster_name and self.gcp_region and self.gcp_project_name:
+    elif self.gcp_cluster_name and self.gcp_region and self.gcp_project_id:
       gke_cluster_type = self.get_gke_cluster_type(cluster_name=self.gcp_cluster_name,
-                                                   project_name=self.gcp_project_name)
+                                                   gcp_project_id=self.gcp_project_id)
       if gke_cluster_type == 'gke-standard':
         return 'gke-standard'
       elif gke_cluster_type == 'gke-autopilot':
@@ -464,7 +464,7 @@ class CrowdStrikeSensorOperationsManager:
 
       if az.check_azure_login():
         return True
-    elif self.gcp_region and self.gcp_cluster_name and self.gcp_project_name:
+    elif self.gcp_region and self.gcp_cluster_name and self.gcp_project_id:
       gcp = GCPOps(logger=self.logger)
 
       if not gcp.check_gcloud_login():
