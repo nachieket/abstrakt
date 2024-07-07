@@ -40,3 +40,7 @@ output "kube_config" {
   value     = azurerm_kubernetes_cluster.k8s.kube_config_raw
   sensitive = true
 }
+
+output "key_data" {
+  value = local.oscheck.mac ? jsondecode(azapi_resource_action.ssh_public_key_gen.output).publicKey : jsondecode(jsonencode(azapi_resource_action.ssh_public_key_gen.output)).publicKey
+}

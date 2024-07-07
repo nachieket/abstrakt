@@ -22,10 +22,8 @@ variable "cidr_range" {
   default = "10.10.0.0/24"
 }
 
-variable "container_node_pool_name" {}
-
 variable "machine_type" {
-  default = "n1-standard-4"
+  default = "n2-standard-8"
 }
 
 variable "gke_num_nodes" {
@@ -46,5 +44,3 @@ variable "gke_password" {
   default     = ""
   description = "gke password"
 }
-
-variable "common_tags" {}

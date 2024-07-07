@@ -149,7 +149,7 @@ class RuntimeParameterVerification:
           exit()
 
       if kpa:
-        if falcon_image_repo or falcon_image_tag:
+        if (falcon_image_repo or falcon_image_tag) and not falcon_sensor:
           print('Error:')
           print('Parameters falcon_image_repo and falcon_image_tag are supported for falcon sensor only.')
           exit()
@@ -184,7 +184,7 @@ class RuntimeParameterVerification:
           exit()
 
       if kac:
-        if falcon_image_repo or falcon_image_tag:
+        if (falcon_image_repo or falcon_image_tag) and not falcon_sensor:
           print('Error:')
           print('Parameters falcon_image_repo and falcon_image_tag are supported for falcon sensor only.')
           exit()
@@ -219,7 +219,7 @@ class RuntimeParameterVerification:
           exit()
 
       if iar:
-        if falcon_image_repo or falcon_image_tag:
+        if (falcon_image_repo or falcon_image_tag) and not falcon_sensor:
           print('Error:')
           print('Parameters falcon_image_repo and falcon_image_tag are supported for falcon sensor only.')
           exit()

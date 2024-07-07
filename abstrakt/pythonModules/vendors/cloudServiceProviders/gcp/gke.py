@@ -58,7 +58,7 @@ class GKE:
         elif plan_status == 2:
           kube_config = UpdateKubeConfig(self.logger)
           kube_config.update_kubeconfig(cloud='gcp', cluster_name=gke_standard_parameters['cluster_name'],
-                                        region=gke_standard_parameters['region'])
+                                        region=gke_standard_parameters['region'], gcp_project_id=gcp_project_id)
           print('Terraform execution to create GKE COS cluster did not need any changes.\n')
       else:
         self.logger.error('Failed to deploy GKE COS cluster. Exiting the program.\n')
@@ -107,7 +107,7 @@ class GKE:
           if tf.execute_terraform_apply(path=gke_autopilot_terraform_code_path):
             kube_config = UpdateKubeConfig(self.logger)
             kube_config.update_kubeconfig(cloud='gcp', cluster_name=gke_autopilot_parameters['cluster_name'],
-                                          region=gke_autopilot_parameters['region'])
+                                          region=gke_autopilot_parameters['region'], gcp_project_id=gcp_project_id)
 
             print('Terraform execution to deploy GKE Autopilot cluster completed successfully.\n')
           else:
@@ -116,7 +116,7 @@ class GKE:
         elif plan_status == 2:
           kube_config = UpdateKubeConfig(self.logger)
           kube_config.update_kubeconfig(cloud='gcp', cluster_name=gke_autopilot_parameters['cluster_name'],
-                                        region=gke_autopilot_parameters['region'])
+                                        region=gke_autopilot_parameters['region'], gcp_project_id=gcp_project_id)
           print('Terraform execution to create GKE Autopilot cluster did not need any changes.\n')
       else:
         self.logger.error('Failed to deploy GKE Autopilot cluster. Exiting the program.\n')
