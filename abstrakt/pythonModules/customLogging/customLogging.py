@@ -2,14 +2,14 @@ import os
 import re
 import logging
 
-log_dirs = ['/var/logs/',
-            '/var/logs/crowdstrike',
-            '/var/logs/crowdstrike/aws',
-            '/var/logs/crowdstrike/aws/eks',
-            '/var/logs/crowdstrike/aws/ecs',
-            '/var/logs/crowdstrike/azure',
-            '/var/logs/crowdstrike/gcp/gke',
-            '/var/logs/crowdstrike/sensors']
+log_dirs = ['/var/log/',
+            '/var/log/crowdstrike',
+            '/var/log/crowdstrike/aws',
+            '/var/log/crowdstrike/aws/',
+            '/var/log/crowdstrike/aws/',
+            '/var/log/crowdstrike/azure',
+            '/var/log/crowdstrike/gcp/',
+            '/var/log/crowdstrike/sensors']
 
 for log_dir in log_dirs:
     if not os.path.exists(log_dir):
@@ -43,26 +43,3 @@ class CustomLogger:
 
   def get_logger(self):
     return self.logger
-
-
-# class CustomLogger:
-#     def __init__(self, logger_name, log_file, level=logging.INFO):
-#         self.logger = logging.getLogger(logger_name)
-#
-#         # Check if handlers are already added
-#         if not self.logger.handlers:
-#             self.logger.setLevel(level)
-#
-#             formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
-#
-#             file_handler = logging.FileHandler(log_file)
-#             file_handler.setFormatter(formatter)
-#
-#             # stream_handler = logging.StreamHandler()
-#             # stream_handler.setFormatter(formatter)
-#
-#             self.logger.addHandler(file_handler)
-#             # self.logger.addHandler(stream_handler)
-#
-#     def get_logger(self):
-#         return self.logger

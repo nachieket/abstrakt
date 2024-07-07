@@ -101,7 +101,7 @@ def gke_standard(
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
 ):
-  gke_standard_log_filename = f'/var/logs/crowdstrike/gcp/gke/gke-standard-{uk_time_str}.log'
+  gke_standard_log_filename = f'/var/log/crowdstrike/gcp/gke-standard-{uk_time_str}.log'
   gke_standard_logger = CustomLogger(__name__, gke_standard_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
@@ -213,7 +213,7 @@ def gke_autopilot(
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
 ):
-  gke_autopilot_log_filename = f'/var/logs/crowdstrike/gcp/gke/gke-autopilot-{uk_time_str}.log'
+  gke_autopilot_log_filename = f'/var/log/crowdstrike/gcp/gke-autopilot-{uk_time_str}.log'
   gke_autopilot_logger = CustomLogger(__name__, gke_autopilot_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,

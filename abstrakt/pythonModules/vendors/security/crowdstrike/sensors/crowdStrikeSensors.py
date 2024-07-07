@@ -338,25 +338,28 @@ class CrowdStrikeSensors(CrowdStrike):
       return None
 
   def get_ecr_image_pull_token(self, partial_pull_token):
-    try:
-      ecr_registry = self.falcon_image_repo.split('/')[0]
+    if self.add_crowdstrike_helm_repo() is True:
+      try:
+        ecr_registry = self.falcon_image_repo.split('/')[0]
 
-      if partial_pull_token is not None:
-        falcon_image_pull_data = {
-          "auths": {
-            f"{ecr_registry}": {
-              "auth": partial_pull_token
+        if partial_pull_token is not None:
+          falcon_image_pull_data = {
+            "auths": {
+              f"{ecr_registry}": {
+                "auth": partial_pull_token
+              }
             }
           }
-        }
 
-        falcon_image_pull_token = base64.b64encode(json.dumps(falcon_image_pull_data).encode()).decode()
+          falcon_image_pull_token = base64.b64encode(json.dumps(falcon_image_pull_data).encode()).decode()
 
-        return falcon_image_pull_token
-      else:
+          return falcon_image_pull_token
+        else:
+          return None
+      except Exception as e:
+        self.logger.error(e)
         return None
-    except Exception as e:
-      self.logger.error(e)
+    else:
       return None
 
   def get_crowdstrike_image_repo(self):

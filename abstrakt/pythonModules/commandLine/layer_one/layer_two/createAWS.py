@@ -97,7 +97,7 @@ def eks_managed_node(
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
 ):
-  eks_managed_node_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-managed-node-{uk_time_str}.log'
+  eks_managed_node_log_filename = f'/var/log/crowdstrike/aws/eks-managed-node-{uk_time_str}.log'
   eks_managed_node_logger = CustomLogger('eks_managed_node', eks_managed_node_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
@@ -223,7 +223,7 @@ def eks_fargate(
   ecr_iam_role_name: Annotated[str, typer.Option('--ecr-iam-role-name', help='AWS IAM Role Name',
                                                  rich_help_panel='AWS Options')] = 'CrowdStrikeFalconContainerIAMRole'
 ):
-  eks_fargate_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-fargate-{uk_time_str}.log'
+  eks_fargate_log_filename = f'/var/log/crowdstrike/aws/eks-fargate-{uk_time_str}.log'
   eks_fargate_logger = CustomLogger('eks_fargate', eks_fargate_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
@@ -265,7 +265,7 @@ def ecs_fargate(
                                            rich_help_panel="ECS Fargate Configuration File"
                                            )] = './abstrakt/conf/aws/ecs/ecs-fargate.conf',
 ):
-  ecs_fargate_log_filename = f'/var/logs/crowdstrike/aws/ecs/ecs-fargate-{uk_time_str}.log'
+  ecs_fargate_log_filename = f'/var/log/crowdstrike/aws/ecs-fargate-{uk_time_str}.log'
   ecs_fargate_logger = CustomLogger('ecs_fargate', ecs_fargate_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
@@ -290,7 +290,7 @@ def ecs_with_ec2(
                                            rich_help_panel="ECS with EC2 Configuration File"
                                            )] = './abstrakt/conf/aws/ecs/ecs-ec2.conf',
 ):
-  ecs_ec2_log_filename = f'/var/logs/crowdstrike/aws/ecs/ecs-ec2-{uk_time_str}.log'
+  ecs_ec2_log_filename = f'/var/log/crowdstrike/aws/ecs-ec2-{uk_time_str}.log'
   ecs_ec2_logger = CustomLogger('ecs_ec2', ecs_ec2_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,

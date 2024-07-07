@@ -16,6 +16,9 @@ class GCPOps:
       if not account:
         print('You are not logged in to gcloud. Logging in...')
         subprocess.call(["gcloud", "auth", "login"])
+
+        print('\nAttempting application-default login.\n')
+        subprocess.call(["gcloud", "auth", "application-default", "login"])
       else:
         print(f"You are currently logged in to gcloud as: {account}")
 

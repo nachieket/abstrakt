@@ -16,9 +16,9 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 delete_gcp_app = typer.Typer()
 
 
-@delete_gcp_app.command(help='Delete GKE COS Cluster', rich_help_panel="GCP Kubernetes Clusters")
-def gke_cos():
-  gke_cos_log_filename = f'/var/logs/crowdstrike/gcp/gke/standard/gke-standard-{uk_time_str}.log'
+@delete_gcp_app.command(help='Delete GKE Standard Cluster', rich_help_panel="GCP Kubernetes Clusters")
+def gke_standard():
+  gke_cos_log_filename = f'/var/log/crowdstrike/gcp/gke-standard-{uk_time_str}.log'
   gke_cos_logger = CustomLogger('gke_cos', gke_cos_log_filename).logger
 
   print('Deleting CrowdStrike sensors and agents\n')
@@ -39,14 +39,14 @@ def gke_cos():
 
   printf('CrowdStrike sensors and agents deleted\n', logger=gke_cos_logger)
 
-  printf('Deleting GKE COS Cluster\n', logger=gke_cos_logger)
+  printf('Deleting GKE Standard Cluster\n', logger=gke_cos_logger)
 
   tf = ExecuteTerraform(logger=gke_cos_logger)
 
   if tf.execute_terraform_destroy(path='./abstrakt/terraformModules/gcp/gke/standard/'):
-    printf('GKE COS cluster successfully deleted\n', logger=gke_cos_logger)
+    printf('GKE Standard cluster successfully deleted\n', logger=gke_cos_logger)
   else:
-    printf('The program failed to delete GKE COS cluster. Exiting the program.\n',
+    printf('The program failed to delete GKE Standard cluster. Exiting the program.\n',
            logger=gke_cos_logger)
     exit()
 

@@ -35,7 +35,7 @@ delete_aws_app = typer.Typer()
 
 @delete_aws_app.command(help='Delete EKS Managed Node Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_managed_node():
-  eks_managed_node_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-managed-node-{uk_time_str}.log'
+  eks_managed_node_log_filename = f'/var/log/crowdstrike/aws/eks-managed-node-{uk_time_str}.log'
   managed_node_logger = CustomLogger('eks_managed_node', eks_managed_node_log_filename).logger
 
   printf('Deleting CrowdStrike sensors and agents\n', logger=managed_node_logger)
@@ -70,7 +70,7 @@ def eks_managed_node():
 
 @delete_aws_app.command(help='Delete EKS Fargate Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_fargate():
-  eks_fargate_log_filename = f'/var/logs/crowdstrike/aws/eks/eks-fargate-{uk_time_str}.log'
+  eks_fargate_log_filename = f'/var/log/crowdstrike/aws/eks-fargate-{uk_time_str}.log'
   fargate_logger = CustomLogger('eks_fargate', eks_fargate_log_filename).logger
 
   printf('Deleting CrowdStrike sensors and agents\n', logger=fargate_logger)

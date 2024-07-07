@@ -5,6 +5,13 @@ resource "azurerm_resource_group" "rg" {
   tags = var.common_tags
 }
 
+locals {
+  oscheck = {
+    mac   = can(file("/System/Library/CoreServices/SystemVersion.plist"))
+    linux = can(file("/etc/os-release"))
+  }
+}
+
 resource "azurerm_kubernetes_cluster" "k8s" {
   location            = var.resource_group_location
   name                = var.cluster_name
@@ -28,9 +35,19 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     admin_username = var.cluster_username
 
     ssh_key {
-      key_data = jsondecode(azapi_resource_action.ssh_public_key_gen.output).publicKey
+      key_data = local.oscheck.mac ? jsondecode(azapi_resource_action.ssh_public_key_gen.output).publicKey : jsondecode(jsonencode(azapi_resource_action.ssh_public_key_gen.output)).publicKey
     }
   }
+
+#   linux_profile {
+#     admin_username = var.cluster_username
+#
+#     ssh_key {
+# #       key_data = jsondecode(azapi_resource_action.ssh_public_key_gen.output).publicKey
+#         key_data = jsondecode(jsonencode(azapi_resource_action.ssh_public_key_gen.output)).publicKey
+#
+#     }
+#   }
 
   network_profile {
     network_plugin    = "kubenet"

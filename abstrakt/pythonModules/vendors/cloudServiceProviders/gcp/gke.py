@@ -49,7 +49,7 @@ class GKE:
           if tf.execute_terraform_apply(path=gke_standard_terraform_code_path):
             kube_config = UpdateKubeConfig(self.logger)
             kube_config.update_kubeconfig(cloud='gcp', cluster_name=gke_standard_parameters['cluster_name'],
-                                          region=gke_standard_parameters['region'])
+                                          region=gke_standard_parameters['region'], gcp_project_id=gcp_project_id)
 
             print('Terraform execution to deploy GKE COS cluster completed successfully.\n')
           else:

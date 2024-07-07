@@ -95,7 +95,7 @@ def aks(
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
 ):
-  azure_log_filename = f'/var/logs/crowdstrike/azure/aks-{uk_time_str}.log'
+  azure_log_filename = f'/var/log/crowdstrike/azure/aks-{uk_time_str}.log'
   aks_logger = CustomLogger(__name__, azure_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,
@@ -134,7 +134,7 @@ def aci(
                                            rich_help_panel='ACI Configuration File'
                                            )] = './abstrakt/conf/azure/aci.conf',
 ):
-  aci_log_filename = f'/var/logs/crowdstrike/azure/aci-{uk_time_str}.log'
+  aci_log_filename = f'/var/log/crowdstrike/azure/aci-{uk_time_str}.log'
   aci_logger = CustomLogger(__name__, aci_log_filename).logger
 
   manager = ClusterOperationsManager(config_file=config_file,

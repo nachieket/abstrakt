@@ -1,26 +1,54 @@
 # Use an Ubuntu base image
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 # Set environment variables to avoid prompts during installations
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Set up QEMU and the necessary packages for multi-architecture support
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    qemu-user-static \
-    binfmt-support \
-    curl \
-    wget \
-    skopeo \
-    unzip \
-    gnupg \
-    apt-transport-https \
-    software-properties-common \
-    git \
-    neovim \
-    vim \
-    ca-certificates \
-    lsb-release \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+# Update package lists and install base dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        software-properties-common \
+        curl \
+        wget \
+        unzip \
+        gnupg \
+        lsb-release \
+        sudo \
+        ca-certificates \
+        neovim \
+        vim \
+        python3-dev \
+        libffi-dev \
+        gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Install dependencies for multi-architecture support
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        qemu-user-static \
+        binfmt-support \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Install build dependencies including make
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        golang-go \
+        git \
+        libostree-dev \
+        libgpgme-dev \
+        libassuan-dev \
+        libbtrfs-dev \
+        pkg-config \
+        btrfs-progs \
+        libdevmapper-dev \
+        libseccomp-dev \
+        libgpgme11-dev \
+        make \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install Python 3.10
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -32,6 +60,19 @@ RUN add-apt-repository ppa:deadsnakes/ppa && \
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3.10 get-pip.py && \
     rm get-pip.py
+
+# Install latest Golang
+RUN curl -fsSL https://golang.org/dl/go1.18.6.linux-amd64.tar.gz | tar -C /usr/local -xz \
+    && export PATH=$PATH:/usr/local/go/bin
+
+# Install Skopeo, Podman, and other tools
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gnupg \
+        skopeo \
+        podman \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install AWS CLI for both architectures
 RUN case $(uname -m) in \
@@ -72,54 +113,47 @@ RUN case $(uname -m) in \
     mv kubectl /usr/local/bin/
 
 # Install Docker for both architectures
-RUN apt-get update && apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    software-properties-common && \
+RUN apt-get update && apt-get install -y && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
     echo "deb [arch=amd64,arm64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
     apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # Install Google Cloud CLI
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
-    apt-get update && apt-get install -y google-cloud-cli
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - \
+    && apt-get update \
+    && apt-get install -y google-cloud-sdk \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Install saml2aws
 RUN curl -s https://api.github.com/repos/Versent/saml2aws/releases/latest \
     | grep "browser_download_url.*linux_amd64.tar.gz" \
     | cut -d '"' -f 4 \
-    | wget -qi - && \
-    tar -xzf saml2aws_*_linux_amd64.tar.gz && \
-    mv saml2aws /usr/local/bin/ && \
-    rm saml2aws_*_linux_amd64.tar.gz
+    | wget -qi - \
+    && tar -xzf saml2aws_*_linux_amd64.tar.gz \
+    && mv saml2aws /usr/local/bin/ \
+    && rm saml2aws*
 
-# Create a user called "crowdstrike" with password "crowdstrike"
-RUN useradd -ms /bin/bash crowdstrike && \
-    echo 'crowdstrike:crowdstrike' | chpasswd
-
-# Create folders
+# Create necessary directories
 RUN mkdir -p /crowdstrike/abstrakt/conf /crowdstrike/abstrakt/terraformModules /tmp/crowdstrike /root/.aws /root/.bash_completions /home/crowdstrike/.aws
 
-# Copy files
+# Copy application files
 COPY ./dist/abstrakt-0.1.0-py3-none-any.whl /tmp/crowdstrike/
 COPY ./abstrakt/conf /crowdstrike/abstrakt/conf
 COPY ./abstrakt/terraformModules /crowdstrike/abstrakt/terraformModules
 COPY abstrakt.sh /root/.bash_completions/abstrakt.sh
 
 # Install Python packages
-RUN python3.10 -m pip install pytz boto3 requests pydantic azure-identity kubernetes boto3 \
-    azure-mgmt-containerservice azure-mgmt-compute crowdstrike-falconpy pyyaml /tmp/crowdstrike/abstrakt-0.1 \
-    .0-py3-none-any.whl
+RUN python3.10 -m pip install --upgrade pip \
+    && python3.10 -m pip install pytz boto3 botocore pathlib requests pydantic azure-identity kubernetes boto3 \
+    cryptography cffi oauthlib azure-mgmt-containerservice azure-mgmt-compute crowdstrike-falconpy pyyaml \
+    /tmp/crowdstrike/abstrakt-0.1.0-py3-none-any.whl
 
-# Add the line to ~/.bashrc for bash completion
+# Configure bash completion
 RUN echo 'source /root/.bash_completions/abstrakt.sh' >> /root/.bashrc
 
-# Give "crowdstrike" user read/write access to directories
-RUN chown -R crowdstrike:crowdstrike /var /crowdstrike /home /tmp
-
-# Set the working directory to the "crowdstrike" folder
+# Set working directory
 WORKDIR /crowdstrike
 
 # Default command

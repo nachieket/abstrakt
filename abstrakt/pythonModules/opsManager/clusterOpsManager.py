@@ -124,9 +124,7 @@ class ClusterOperationsManager:
   def start_falcon_sensor_deployment(self):
     # install falcon sensor in daemonset mode
     if self.cluster_type == 'eks-managed-node' or self.cluster_type == 'aks':
-      if self.ebpf_mode and not self.kernel_mode:
-        sensor_mode = 'bpf'
-      elif self.kernel_mode and self.ebpf_mode:
+      if self.kernel_mode:
         sensor_mode = 'kernel'
       else:
         sensor_mode = 'bpf'

@@ -257,7 +257,7 @@ def crowdstrike(
   ecr_iam_role_name: Annotated[str, typer.Option('--ecr-iam-role-name', help='AWS IAM Role Name [EKS Fargate Only]',
                                                  rich_help_panel='AWS Options')] = 'CrowdStrikeFalconContainerIAMRole'
 ):
-  crwd_sensor_log_filename = f'/var/logs/crowdstrike/sensors/sensor-{uk_time_str}.log'
+  crwd_sensor_log_filename = f'/var/log/crowdstrike/sensors/sensor-{uk_time_str}.log'
   crwd_sensor_logger = CustomLogger(__name__, crwd_sensor_log_filename).logger
 
   manager = CrowdStrikeSensorOperationsManager(falcon_sensor=falcon_sensor,

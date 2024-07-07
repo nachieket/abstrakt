@@ -7,7 +7,7 @@ class UpdateKubeConfig:
   def __init__(self, logger):
     self.logger = logger
 
-  def update_kubeconfig(self, cloud, region=None, cluster_name=None, resource_group=None):
+  def update_kubeconfig(self, cloud, region=None, cluster_name=None, resource_group=None, gcp_project_id=None):
     command = ''
 
     try:
@@ -17,7 +17,8 @@ class UpdateKubeConfig:
         command = ["az", "aks", "get-credentials", "--resource-group", resource_group, "--name", cluster_name,
                    "--overwrite-existing"]
       elif cloud == 'gcp':
-        command = ['gcloud', 'container', 'clusters', 'get-credentials', cluster_name, '--region', region]
+        command = ['gcloud', 'container', 'clusters', 'get-credentials', cluster_name, '--region', region,
+                   '--project', gcp_project_id]
     except Exception as e:
       printf('Kubeconfig update did not receive right parameters. Check log file for more information.\n')
       self.logger.error(f'{e}')
