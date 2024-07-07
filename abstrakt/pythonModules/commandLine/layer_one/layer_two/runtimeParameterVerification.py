@@ -114,6 +114,11 @@ class RuntimeParameterVerification:
               '--aws-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s')
             exit()
         elif cluster_type == 'eks-fargate':
+          if kernel_mode:
+            print('Error:')
+            print('--kernel-mode is not supported with EKS Fargate.')
+            exit()
+
           if not aws_cluster_name or not aws_region or not falcon_client_secret or not falcon_client_id:
             print('Error:')
             print(
