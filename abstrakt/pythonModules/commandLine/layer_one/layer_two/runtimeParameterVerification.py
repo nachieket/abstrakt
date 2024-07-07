@@ -129,7 +129,7 @@ class RuntimeParameterVerification:
               'Usage: abstrakt install crowdstrike --falcon-sensor --aws-cluster-name eks-cluster '
               '--aws-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s')
             exit()
-        elif cluster_type == 'aks':
+        elif cluster_type == 'azure-aks':
           if (not kernel_mode and not ebpf_mode) or (not azure_cluster_name or not azure_resource_group_name or not
              falcon_client_secret or not falcon_client_id):
             print('Error:')
@@ -150,7 +150,7 @@ class RuntimeParameterVerification:
               'us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s')
             exit()
         else:
-          print('Error: use --help parameter to understand the right usage of interface.')
+          print('Error: Unsupported cluster type in use. Exiting the program.')
           exit()
 
       if kpa:

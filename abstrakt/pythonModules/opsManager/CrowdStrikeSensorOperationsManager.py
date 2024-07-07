@@ -146,7 +146,7 @@ class CrowdStrikeSensorOperationsManager:
       command = f'aws eks update-kubeconfig --region {self.aws_region} --name {self.aws_cluster_name}'
     elif self.azure_cluster_name and self.azure_resource_group_name:
       command = (f'az aks get-credentials --resource-group {self.azure_resource_group_name} --name'
-                 f' {self.azure_cluster_name}')
+                 f' {self.azure_cluster_name} --overwrite-existing')
     elif self.gcp_cluster_name and self.gcp_region and self.gcp_project_id:
       command = (f'gcloud container clusters get-credentials {self.gcp_cluster_name} --zone {self.gcp_region} --project'
                  f' {self.gcp_project_id}')
@@ -494,6 +494,10 @@ class CrowdStrikeSensorOperationsManager:
 
     # Get cluster type
     cluster_type = self.get_cluster_type()
+
+    if cluster_type is None:
+      print('Error: Cluster type could not be determined. Exiting the program.')
+      exit()
 
     # ensure required parameters are passed with falcon sensor
     self.verify_parameters(cluster_type=cluster_type)
