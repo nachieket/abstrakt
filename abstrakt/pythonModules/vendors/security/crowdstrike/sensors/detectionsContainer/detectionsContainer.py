@@ -36,7 +36,7 @@ class DetectionsContainer:
                                                         namespace='crowdstrike-detections')
 
       if (status is True) and (len(captured_pods['running']) > 0):
-        print('Detections container found up and running in falcon-system namespace. Not proceeding with '
+        print('Detections container found up and running in crowdstrike-detections namespace. Not proceeding with '
               'installation.')
 
         for pod in captured_pods['running']:

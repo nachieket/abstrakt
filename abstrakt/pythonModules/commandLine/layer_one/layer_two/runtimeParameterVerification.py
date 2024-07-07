@@ -150,7 +150,7 @@ class RuntimeParameterVerification:
               'us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s')
             exit()
         else:
-          print('Error: Unsupported cluster type in use. Exiting the program.')
+          print('Sensor/Error: Unsupported cluster type in use. Exiting the program.')
           exit()
 
       if kpa:
@@ -185,7 +185,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error1: use --help parameter to understand the right usage of interface.')
+          print('KPA/Error: use --help parameter to understand the right usage of interface.')
           exit()
 
       if kac:
@@ -220,7 +220,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error2: use --help parameter to understand the right usage of interface.')
+          print('KAC/Error: use --help parameter to understand the right usage of interface.')
           exit()
 
       if iar:
@@ -255,7 +255,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error3: use --help parameter to understand the right usage of interface.')
+          print('IAR/Error: use --help parameter to understand the right usage of interface.')
           exit()
 
       if detections_container:
@@ -285,7 +285,7 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error4: use --help parameter to understand the right usage of interface.')
+          print('DetectionsContainer/Error: use --help parameter to understand the right usage of interface.')
           exit()
 
       if vulnerable_apps:
@@ -315,5 +315,5 @@ class RuntimeParameterVerification:
               'vlTpn372s')
             exit()
         else:
-          print('Error5: use --help parameter to understand the right usage of interface.')
+          print('Vulnerable Apps/Error: use --help parameter to understand the right usage of interface.')
           exit()

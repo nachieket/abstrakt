@@ -100,7 +100,7 @@ class IAR(CrowdStrike):
       captured_pods, status = k8s.find_pods_with_status(pod_string='image-analyzer', namespace='falcon-image-analyzer')
 
       if (status is True) and (len(captured_pods['running']) > 0):
-        print('Falcon Image Analyzer found up and running in falcon-system namespace. Not proceeding with '
+        print('Falcon Image Analyzer found up and running in falcon-image-analyzer namespace. Not proceeding with '
               'installation.')
 
         for pod in captured_pods['running']:

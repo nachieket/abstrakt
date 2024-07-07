@@ -30,7 +30,7 @@ class FalconKAC(CrowdStrike):
       captured_pods, status = k8s.find_pods_with_status(pod_string='falcon-kac', namespace='falcon-kac')
 
       if (status is True) and (len(captured_pods['running']) > 0):
-        print('Kubernetes Admission Controller found up and running in falcon-system namespace. Not proceeding with '
+        print('Kubernetes Admission Controller found up and running in falcon-kac namespace. Not proceeding with '
               'installation.')
 
         for pod in captured_pods['running']:
