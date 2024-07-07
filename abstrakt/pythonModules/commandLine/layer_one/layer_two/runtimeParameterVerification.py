@@ -27,7 +27,7 @@ class RuntimeParameterVerification:
       print('Usage: create gcp gke-autopilot --gcp-project-id <project-name>')
       exit()
 
-    if install_falcon_sensor and (cluster_type == 'eks-managed-node' or cluster_type == 'aks'):
+    if install_falcon_sensor and (cluster_type == 'eks-managed-node' or cluster_type == 'azure-aks'):
       if (not kernel_mode and not ebpf_mode) or (not falcon_client_id or not falcon_client_secret):
         print('Error:')
         print('Usage: --install-falcon-sensor --kernel-mode --falcon-client-id --falcon-client-secret')
@@ -167,7 +167,7 @@ class RuntimeParameterVerification:
               'Usage: abstrakt install crowdstrike --kpa --aws-cluster-name random_eks_cluster --aws-region eu-west-2 '
               '--falcon-client-id 3af74117 --falcon-client-secret vlTpn372s ')
             exit()
-        elif cluster_type == 'aks':
+        elif cluster_type == 'azure-aks':
           if (not azure_cluster_name or not azure_resource_group_name or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
@@ -202,7 +202,7 @@ class RuntimeParameterVerification:
               'Usage: abstrakt install crowdstrike --kac --aws-cluster-name random_eks_cluster --aws-region eu-west-2 '
               '--falcon-client-id 3af74117 --falcon-client-secret vlTpn372s ')
             exit()
-        elif cluster_type == 'aks':
+        elif cluster_type == 'azure-aks':
           if (not azure_cluster_name or not azure_resource_group_name or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
@@ -237,7 +237,7 @@ class RuntimeParameterVerification:
               'Usage: abstrakt install crowdstrike --iar --aws-cluster-name random_eks_cluster --aws-region '
               'eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s ')
             exit()
-        elif cluster_type == 'aks':
+        elif cluster_type == 'azure-aks':
           if (not azure_cluster_name or not azure_resource_group_name or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
@@ -267,7 +267,7 @@ class RuntimeParameterVerification:
               'Usage: abstrakt install crowdstrike --detections-container --aws-cluster-name random_eks_cluster '
               '--aws-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s ')
             exit()
-        elif cluster_type == 'aks':
+        elif cluster_type == 'azure-aks':
           if (not azure_cluster_name or not azure_resource_group_name or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
@@ -297,7 +297,7 @@ class RuntimeParameterVerification:
               'Usage: abstrakt install crowdstrike --vulnerable-apps --aws-cluster-name random_eks_cluster '
               '--aws-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s ')
             exit()
-        elif cluster_type == 'aks':
+        elif cluster_type == 'azure-aks':
           if (not azure_cluster_name or not azure_resource_group_name or not falcon_client_secret or not
              falcon_client_id):
             print('Error:')
