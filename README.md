@@ -1,64 +1,37 @@
-Install CrowdStrike Sensors
+# Install CrowdStrike Sensors
 
-Example Usages:
-abstrakt install --falcon-sensor --kernel-mode --kpa --kac --iar --detections-container --vulnerable-apps 
---falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-abstrakt install --falcon-sensor --kernel-mode --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags 
-tag1,tag2 --kpa --kac --iar --detections-container --vulnerable-apps --falcon-client-id 3af74117 
+## AWS EKS Managed Node Example
+
+### CrowdStrike Repo
+
+abstrakt install crowdstrike --falcon-sensor --kernel-mode --falcon-sensor-tags CRWD,EKS-MANAGED-NODE 
+--aws-cluster-name random-eks-managed-node-cluster  --aws-region eu-west-2 --kpa --kac --iar --detections-container 
+--vulnerable-apps --falcon-client-id  3af74117 --falcon-client-secret vlTpn372s
+
+### AWS Repo
+
+abstrakt install crowdstrike --falcon-sensor --kernel-mode --falcon-image-repo 123456789012.dkr.ecr.eu-west-2.
+amazonaws.com/ecr --falcon-sensor-tags CRWD,EKS-MANAGED-NODE --aws-cluster-name random-eks-managed-node-cluster 
+--aws-region eu-west-2 --kpa --kac --iar --detections-container --vulnerable-apps --falcon-client-id 
+3af74117 --falcon-client-secret vlTpn372s
+
+## AWS EKS Managed Fargate Example
+
+### CrowdStrike Repo
+
+abstrakt install crowdstrike --falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,ns2 
+--falcon-image-repo --falcon-sensor-tags CRWD,EKS-MANAGED-NODE  --aws-cluster-name random-eks-managed-node-cluster 
+--aws-region eu-west-2 --kpa --kac --iar --detections-container --vulnerable-apps --falcon-client-id 3af74117 
 --falcon-client-secret vlTpn372s
 
-Examples with Monitored/Excluded Namespaces for EKS Fargate:
-abstrakt install --falcon-sensor --monitor-namespaces ns1,ns2,ns4,ns5 --kpa --kac --iar --detections-container 
---vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-abstrakt install --falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,ns2 --proxy-server 10.10.10.11 
---proxy-port 8080 --falcon-sensor-tags tag1,tag2 --kpa --kac --iar --detections-container --vulnerable-apps 
---falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
+### AWS Repo
 
-Examples with Falcon Image Tag:
-abstrakt install --falcon-sensor --kernel-mode --falcon-image-tag 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1
---kpa --kac --iar --detections-container --vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret 
-vlTpn372s
-abstrakt install --falcon-sensor --kernel-mode --falcon-image-tag 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 
---proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 --kpa --kac --iar --detections-container 
+abstrakt install crowdstrike --falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,ns2 
+--falcon-image-repo 123456789012.dkr.ecr.eu-west-2.amazonaws.com/ecr --falcon-sensor-tags CRWD,EKS-MANAGED-NODE 
+--aws-cluster-name random-eks-managed-node-cluster --aws-region eu-west-2 --kpa --kac --iar --detections-container 
 --vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
 
-###########
-### AWS ###
-###########
-
-AWS Example - All CrowdStrike Sensors with Detections Container and Vulnerable Apps:
-abstrakt install crowdstrike --falcon-sensor --kernel-mode --kpa --kac --iar --detections-container 
---vulnerable-apps --cloud-provider aws --cluster-type eks-managed-node --cluster-name random_eks_cluster 
---cloud-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-AWS Example - Falcon Sensor Installation:
-abstrakt install crowdstrike --falcon-sensor --kernel-mode --cloud-provider aws --cluster-type eks-managed-node 
---cluster-name random_eks_cluster --cloud-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret 
-vlTpn372s
-
-AWS Example - Kubernetes Protection Agent Installation:
-abstrakt install crowdstrike --kpa --cloud-provider aws --cluster-type eks-managed-node --cluster-name 
-random_eks_cluster --cloud-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-AWS Example - Kubernetes Admission Controller Installation:
-abstrakt install crowdstrike --kac --cloud-provider aws --cluster-type eks-managed-node --cluster-name 
-random_eks_cluster --cloud-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-AWS Example - Image Assessment at Runtime Installation:
-abstrakt install crowdstrike --iar --cloud-provider aws --cluster-type eks-managed-node --cluster-name 
-random_eks_cluster --cloud-region eu-west-2 --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-AWS Example - Detections Container Installation:
-abstrakt install crowdstrike --detections-container --cloud-provider aws --cluster-type eks-managed-node 
---cluster-name random_eks_cluster --cloud-region eu-west-2
-
-AWS Example - Vulnerable Apps Installation:
-abstrakt install crowdstrike --vulnerable-apps ---cloud-provider aws --cluster-type eks-managed-node --cluster-name 
-random_eks_cluster --cloud-region eu-west-2
-
-#############
-### Azure ###
-#############
+## Azure
 
 Azure Example - All CrowdStrike Sensors with Detections Container and Vulnerable Apps:
 abstrakt install crowdstrike --falcon-sensor --kernel-mode --kpa --kac --iar --detections-container 
@@ -92,9 +65,7 @@ abstrakt install crowdstrike --vulnerable-apps --cloud-provider azure --cluster-
 random_aks_cluster --azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret 
 vlTpn372s
 
-###########
-### GCP ###
-###########
+## GCP
 
 GCP Example - All CrowdStrike Sensors with Detections Container and Vulnerable Apps:
 abstrakt install crowdstrike --falcon-sensor --kpa --kac --iar --detections-container 
