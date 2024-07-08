@@ -1,30 +1,32 @@
 # Install CrowdStrike Sensors
 
-## AWS EKS Managed Node Example
+## AWS
 
-### CrowdStrike Repo
+### AWS EKS Managed Node Example
+
+#### CrowdStrike Repo
 
 abstrakt install crowdstrike --falcon-sensor --kernel-mode --falcon-sensor-tags CRWD,EKS-MANAGED-NODE 
 --aws-cluster-name random-eks-managed-node-cluster  --aws-region eu-west-2 --kpa --kac --iar --detections-container 
 --vulnerable-apps --falcon-client-id  3af74117 --falcon-client-secret vlTpn372s
 
-### AWS Repo
+#### AWS Repo
 
 abstrakt install crowdstrike --falcon-sensor --kernel-mode --falcon-image-repo 123456789012.dkr.ecr.eu-west-2.
 amazonaws.com/ecr --falcon-sensor-tags CRWD,EKS-MANAGED-NODE --aws-cluster-name random-eks-managed-node-cluster 
 --aws-region eu-west-2 --kpa --kac --iar --detections-container --vulnerable-apps --falcon-client-id 
 3af74117 --falcon-client-secret vlTpn372s
 
-## AWS EKS Managed Fargate Example
+### AWS EKS Fargate Example
 
-### CrowdStrike Repo
+#### CrowdStrike Repo
 
 abstrakt install crowdstrike --falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,ns2 
---falcon-image-repo --falcon-sensor-tags CRWD,EKS-MANAGED-NODE  --aws-cluster-name random-eks-managed-node-cluster 
+--falcon-sensor-tags CRWD,EKS-MANAGED-NODE  --aws-cluster-name random-eks-managed-node-cluster 
 --aws-region eu-west-2 --kpa --kac --iar --detections-container --vulnerable-apps --falcon-client-id 3af74117 
 --falcon-client-secret vlTpn372s
 
-### AWS Repo
+#### AWS Repo
 
 abstrakt install crowdstrike --falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,ns2 
 --falcon-image-repo 123456789012.dkr.ecr.eu-west-2.amazonaws.com/ecr --falcon-sensor-tags CRWD,EKS-MANAGED-NODE 
