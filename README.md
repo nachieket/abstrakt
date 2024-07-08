@@ -1,4 +1,4 @@
-# ABSTRAKT - A LAYER OF ABSTRACTION
+# ABSTRAKT
 
 ## Create Public Cloud Clusters with CrowdStrike Sensors
 
