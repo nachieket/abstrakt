@@ -35,68 +35,22 @@ abstrakt install crowdstrike --falcon-sensor --monitor-namespaces all --exclude-
 
 ## Azure
 
-Azure Example - All CrowdStrike Sensors with Detections Container and Vulnerable Apps:
-abstrakt install crowdstrike --falcon-sensor --kernel-mode --kpa --kac --iar --detections-container 
---vulnerable-apps --cloud-provider azure --cluster-type aks --cluster-name random_aks_cluster 
---azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
+### Azure AKS Example
 
-Azure Example - Falcon Sensor Installation:
-abstrakt install crowdstrike --falcon-sensor --kernel-mode --cloud-provider azure --cluster-type aks --cluster-name 
-random_aks_cluster --azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret 
-vlTpn372s
-
-Azure Example - Kubernetes Protection Agent Installation:
-abstrakt install crowdstrike --kpa --cloud-provider azure --cluster-type aks --cluster-name random_aks_cluster 
---azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-Azure Example - Kubernetes Admission Controller Installation:
-abstrakt install crowdstrike --kac --cloud-provider azure --cluster-type aks --cluster-name random_aks_cluster 
---azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-Azure Example - Image Assessment at Runtime Installation:
-abstrakt install crowdstrike --iar --cloud-provider azure --cluster-type aks --cluster-name random_aks_cluster 
---azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-Azure Example - Detections Container Installation:
-abstrakt install crowdstrike --detections-container --cloud-provider azure --cluster-type aks --cluster-name 
-random_aks_cluster --azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret 
-vlTpn372s
-
-Azure Example - Vulnerable Apps Installation:
-abstrakt install crowdstrike --vulnerable-apps --cloud-provider azure --cluster-type aks --cluster-name 
-random_aks_cluster --azure-resource-group-name random_aks_rg --falcon-client-id 3af74117 --falcon-client-secret 
-vlTpn372s
+abstrakt create azure aks --install-falcon-sensor --ebpf-mode --falcon-sensor-tags CRWD,NJ,AKS --install-kpa 
+--install-kac --install-iar --install-detections-container --install-vulnerable-apps --falcon-client-id 
+3af74117 --falcon-client-secret vlTpn372s
 
 ## GCP
 
-GCP Example - All CrowdStrike Sensors with Detections Container and Vulnerable Apps:
-abstrakt install crowdstrike --falcon-sensor --kpa --kac --iar --detections-container 
---vulnerable-apps --cloud-provider gcp --cluster-type gke-standard --cluster-name random_gke_cluster 
---cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
+### GKE Standard Example
 
-GCP Example - Falcon Sensor Installation:
-abstrakt install crowdstrike --falcon-sensor --cloud-provider gcp --cluster-type gke-standard 
---cluster-name random_gke_cluster --cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 
---falcon-client-secret vlTpn372s
+install crowdstrike --falcon-sensor --falcon-sensor-tags CRWD,NJ,GKE-STANDARD --gcp-cluster-name 
+random-gke-standard-cluster --gcp-region europe-west2 --gcp-project-name njcsa-369315 --kpa --kac --iar 
+--detections-container --vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
 
-GCP Example - Kubernetes Protection Agent Installation:
-abstrakt install crowdstrike --kpa --cloud-provider gcp --cluster-type gke-standard --cluster-name random_gke_cluster 
---cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
+### GKE Standard Example
 
-GCP Example - Kubernetes Admission Controller Installation:
-abstrakt install crowdstrike --kac --cloud-provider gcp --cluster-type gke-standard --cluster-name random_gke_cluster 
---cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-GCP Example - Image Assessment at Runtime Installation:
-abstrakt install crowdstrike --iar --cloud-provider gcp --cluster-type gke-standard --cluster-name random_gke_cluster 
---cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
-
-GCP Example - Detections Container Installation:
-abstrakt install crowdstrike --detections-container --cloud-provider gcp --cluster-type gke-standard --cluster-name 
-random_gke_cluster --cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 
---falcon-client-secret vlTpn372s
-
-GCP Example - Vulnerable Apps Installation:
-abstrakt install crowdstrike --vulnerable-apps --cloud-provider gcp --cluster-type gke-standard --cluster-name 
-random_gke_cluster --cloud-region us-central1-c --gcp-project-name xyz --falcon-client-id 3af74117 
---falcon-client-secret vlTpn372s
+abstrakt install crowdstrike --falcon-sensor --falcon-sensor-tags CRWD,NJ,GKE-AUTOPILOT --gcp-cluster-name 
+random-autopilot-cluster --gcp-region europe-west2 --gcp-project-name njcsa-369315 --kpa --kac --iar 
+--detections-container --vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
