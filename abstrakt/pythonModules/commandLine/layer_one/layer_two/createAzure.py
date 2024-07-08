@@ -13,39 +13,7 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 
 create_azure_app = typer.Typer()
 
-help_message = """
-Install Azure AKS Cluster\n
-_                       _\n\n\n
-
-Example Usages:\n\n
-abstrakt create azure aks --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps\n
-abstrakt create azure aks --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
---install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps\n\n
-
-Examples with Falcon Image Tag:\n
-abstrakt create azure aks --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps\n
-abstrakt create azure aks --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
---install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps\n\n
-
-Other Examples:\n
-abstrakt create azure aks --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create azure aks --install-kpa --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create azure aks --install-kac --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create azure aks --install-iar --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create azure aks --install-detections-container\n
-abstrakt create azure aks --install-vulnerable-apps\n"""
+help_message = """Azure AKS Cluster"""
 
 
 @create_azure_app.command(help=help_message, rich_help_panel='Azure Kubernetes Clusters')
@@ -120,12 +88,7 @@ def aks(
   manager.start_cluster_operations()
 
 
-azure_aci_help_message = """
-Install Azure ACI Cluster\n
-_                              _\n\n\n
-
-Example Usages:\n\n
-abstrakt create azure aci"""
+azure_aci_help_message = """Azure ACI Cluster"""
 
 
 @create_azure_app.command(help=azure_aci_help_message, rich_help_panel='Azure Kubernetes Clusters')

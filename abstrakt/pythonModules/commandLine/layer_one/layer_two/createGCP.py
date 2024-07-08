@@ -13,44 +13,10 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 
 create_gke_app = typer.Typer()
 
-gke_cos_help_message = """
-Install GKE Standard Cluster\n
-_                          _\n\n\n
-
-Example Usages:\n\n
-abstrakt create gcp gke-standard --install-falcon-sensor --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --gcp-project-id project-id\n
-abstrakt create gcp gke-standard --install-falcon-sensor --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
---install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps --gcp-project-id 
-project-id \n\n
-
-Examples with Falcon Image Tag:\n
-abstrakt create gcp gke-standard --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --gcp-project-id project-id\n
-abstrakt create gcp gke-standard --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
---install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps --gcp-project-id 
-project-id \n\n
-
-Other Examples:\n
-abstrakt create gcp gke-standard --install-falcon-sensor --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp gke-standard --install-kpa --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp gke-standard --install-kac --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp gke-standard --install-iar --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp gke-standard --install-detections-container\n
-abstrakt create gcp gke-standard --install-vulnerable-apps\n"""
+gke_standard_help_message = """GKE Standard Cluster"""
 
 
-@create_gke_app.command(help=gke_cos_help_message, rich_help_panel='GCP GKE Clusters')
+@create_gke_app.command(help=gke_standard_help_message, rich_help_panel='GCP GKE Clusters')
 def gke_standard(
   config_file: Annotated[str, typer.Option(help='Cluster Configuration File', show_default=True,
                                            rich_help_panel='GKE COS Configuration File'
@@ -125,41 +91,7 @@ def gke_standard(
   manager.start_cluster_operations()
 
 
-gke_autopilot_help_message = """
-Install GKE Autopilot Cluster\n
-_                           _\n\n\n
-
-Example Usages:\n\n
-abstrakt create gcp ake-autopilot --install-falcon-sensor --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --gcp-project-id project-id \n
-abstrakt create gcp ake-autopilot --install-falcon-sensor --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
---install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps --gcp-project-id 
-project-id \n\n
-
-Examples with Falcon Image Tag:\n
-abstrakt create gcp ake-autopilot --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --gcp-project-id project-name \n
-abstrakt create gcp ake-autopilot --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s --proxy-server 10.10.10.11 --proxy-port 8080 --falcon-sensor-tags tag1,tag2 
---install-kpa --install-kac --install-iar --install-detections-container --install-vulnerable-apps --gcp-project-id 
-project-name \n\n
-
-Other Examples:\n
-abstrakt create gcp ake-autopilot --install-falcon-sensor --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp ake-autopilot --install-kpa --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp ake-autopilot --install-kac --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp ake-autopilot --install-iar --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create gcp ake-autopilot --install-detections-container\n
-abstrakt create gcp ake-autopilot --install-vulnerable-apps\n"""
+gke_autopilot_help_message = """GKE Autopilot Cluster"""
 
 
 @create_gke_app.command(help=gke_autopilot_help_message, rich_help_panel='GCP GKE Clusters')

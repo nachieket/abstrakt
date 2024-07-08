@@ -13,41 +13,8 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 
 create_aws_app = typer.Typer()
 
-eks_managed_node_help_message = """
-Install EKS Managed Node Cluster\n
-_                              _\n\n\n
 
-Example Usages:\n\n
-abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --proxy-server 10.10.10.11 --proxy-port 
-8080 --falcon-sensor-tags tag1,tag2  --install-kpa --install-kac --install-iar --install-detections-container 
---install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
-
-Examples with Falcon Image Tag:\n
-abstrakt create aws eks-managed-node --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --kernel-mode --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-managed-node --install-falcon-sensor --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --kernel-mode --proxy-server 10.10.10.11 --proxy-port  8080 
---falcon-sensor-tags tag1,tag2 --install-kpa --install-kac --install-iar --install-detections-container 
---install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
-
-Other Examples:\n
-abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-managed-node --install-kpa --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-managed-node --install-kac --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-managed-node --install-iar --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-managed-node --install-detections-container\n
-abstrakt create aws eks-managed-node --install-vulnerable-apps\n"""
-
-
-@create_aws_app.command(help=eks_managed_node_help_message, rich_help_panel="AWS Kubernetes Clusters")
+@create_aws_app.command(help='EKS Managed Node Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_managed_node(
   config_file: Annotated[str, typer.Option(help='Cluster Configuration File', show_default=True,
                                            rich_help_panel='AKS Configuration File'
@@ -123,49 +90,7 @@ def eks_managed_node(
   manager.start_cluster_operations()
 
 
-eks_fargate_help_message = """
-Install EKS Fargate Cluster\n
-_                         _\n\n
-
-Example Usages:\n\n
-abstrakt create aws eks-fargate --install-falcon-sensor --install-kpa --install-kac --install-iar
---install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-falcon-sensor --proxy-server 10.10.10.11 --proxy-port 8080 
---falcon-sensor-tags tag1,tag2  --install-kpa --install-kac --install-iar --install-detections-container 
---install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
-
-Examples with Monitored/Excluded Namespaces:\n
-abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces ns1,ns2,ns4,ns5 --falcon-sensor-tags 
-tag1,tag2 --install-kpa --install-kac  --install-iar --install-detections-container --install-vulnerable-apps 
---falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,
-ns2 --falcon-sensor-tags tag1,tag2  --install-kpa --install-kac  --install-iar --install-detections-container 
---install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s\n\n
-
-Examples with Falcon Image Tag:\n
-abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces ns1,ns2,ns4,ns5 --falcon-image-tag 
-7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-sensor-tags tag1,tag2 --install-kpa --install-kac 
---install-iar --install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-falcon-sensor --monitor-namespaces all --exclude-namespaces ns1,
-ns2 --falcon-image-tag  7.10.0-16303-1.falcon-linux.x86_64.Release.US-1 --falcon-sensor-tags tag1,tag2 --install-kpa 
---install-kac --install-iar --install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 
---falcon-client-secret vlTpn372s\n\n
-
-Other Examples:\n
-abstrakt create aws eks-fargate --install-falcon-sensor --kernel-mode --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-kpa --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-kac --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-iar --falcon-client-id 3af74117
---falcon-client-secret vlTpn372s\n
-abstrakt create aws eks-fargate --install-detections-container\n
-abstrakt create aws eks-fargate --install-vulnerable-apps\n"""
-
-
-@create_aws_app.command(help=eks_fargate_help_message, rich_help_panel="AWS Kubernetes Clusters")
+@create_aws_app.command(help='EKS Fargate Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_fargate(
   config_file: Annotated[str, typer.Option(help='Cluster Configuration File', show_default=True,
                                            rich_help_panel="EKS Fargate Configuration File"
@@ -251,15 +176,7 @@ def eks_fargate(
   manager.start_cluster_operations()
 
 
-ecs_fargate_help_message = """
-Install ECS Fargate Cluster\n
-_                              _\n\n\n
-
-Example Usages:\n\n
-abstrakt create aws ecs-fargate"""
-
-
-@create_aws_app.command(help=ecs_fargate_help_message, rich_help_panel="AWS Kubernetes Clusters")
+@create_aws_app.command(help='ECS Fargate Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def ecs_fargate(
   config_file: Annotated[str, typer.Option(help='(Cluster Configuration File', show_default=True,
                                            rich_help_panel="ECS Fargate Configuration File"
@@ -276,15 +193,7 @@ def ecs_fargate(
   manager.start_cluster_operations()
 
 
-ecs_ec2_help_message = """
-Install ECS with EC2 Cluster\n
-_                              _\n\n\n
-
-Example Usages:\n\n
-abstrakt create aws ecs-with-ec2"""
-
-
-@create_aws_app.command(help=ecs_ec2_help_message, rich_help_panel="AWS Kubernetes Clusters")
+@create_aws_app.command(help='ECS with EC2 Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def ecs_with_ec2(
   config_file: Annotated[str, typer.Option(help='(Cluster Configuration File', show_default=True,
                                            rich_help_panel="ECS with EC2 Configuration File"
