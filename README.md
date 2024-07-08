@@ -15,7 +15,7 @@ EKS-MANAGED-NODE --install-kpa --install-kac --install-iar --install-detections-
 ##### AWS Repo
 
 abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --falcon-image-repo 123456789012.dkr.ecr.
-eu-west-2.amazonaws.com/njecr --falcon-sensor-tags CRWD,EKS-MANAGED-NODE --install-kpa --install-kac 
+eu-west-2.amazonaws.com/ecr --falcon-sensor-tags CRWD,EKS-MANAGED-NODE --install-kpa --install-kac 
 --install-iar --install-detections-container --install-vulnerable-apps --falcon-client-id 
 3af74117 --falcon-client-secret vlTpn372s
 
@@ -30,7 +30,7 @@ abstrakt create aws eks-fargate --install-falcon-sensor --falcon-sensor-tags CRW
 ##### AWS Repo
 
 abstrakt create aws eks-fargate --install-falcon-sensor --falcon-image-repo 123456789012.dkr.ecr.eu-west-2.amazonaws.
-com/njecr --falcon-sensor-tags CRWD,EKS-FARGATE --install-kpa --install-kac --install-iar 
+com/ecr --falcon-sensor-tags CRWD,EKS-FARGATE --install-kpa --install-kac --install-iar 
 --install-detections-container --install-vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
 
 ### Azure
