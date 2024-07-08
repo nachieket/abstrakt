@@ -109,11 +109,11 @@ abstrakt create azure aks --install-falcon-sensor --ebpf-mode --falcon-sensor-ta
 #### GKE Standard Example
 
 install crowdstrike --falcon-sensor --falcon-sensor-tags CRWD,GKE-STANDARD --gcp-cluster-name 
-random-gke-standard-cluster --gcp-region europe-west2 --gcp-project-name njcsa-369315 --kpa --kac --iar 
+random-gke-standard-cluster --gcp-region europe-west2 --gcp-project-name crwd-234212 --kpa --kac --iar 
 --detections-container --vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
 
 #### GKE Autopilot Example
 
 abstrakt install crowdstrike --falcon-sensor --falcon-sensor-tags CRWD,GKE-AUTOPILOT --gcp-cluster-name 
-random-autopilot-cluster --gcp-region europe-west2 --gcp-project-name njcsa-369315 --kpa --kac --iar 
+random-autopilot-cluster --gcp-region europe-west2 --gcp-project-name crwd-234212 --kpa --kac --iar 
 --detections-container --vulnerable-apps --falcon-client-id 3af74117 --falcon-client-secret vlTpn372s
