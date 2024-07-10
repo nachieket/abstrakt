@@ -582,3 +582,11 @@ class CrowdStrikeSensorOperationsManager:
       if helm.is_helm_chart_deployed(release_name='image-analyzer', namespace='falcon-image-analyzer'):
         print('Deleting Image Assessment at Runtime...')
         helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
+
+    end_time = time.time()
+    time_difference = end_time - start_time
+
+    print(f'{"+" * 39}\n')
+    print("End Time:", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end_time)))
+
+    print(f'Total deployment time: {int(int(time_difference) / 60)} minute/s and {int(time_difference) % 60} seconds\n')
