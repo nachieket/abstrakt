@@ -11,10 +11,10 @@ uk_timezone = pytz.timezone('Europe/London')
 uk_time = datetime.now(uk_timezone)
 uk_time_str = uk_time.strftime('%d%m%Y')
 
-runtime_sensor_app = typer.Typer()
+install_sensor_app = typer.Typer()
 
 
-@runtime_sensor_app.command(rich_help_panel='CrowdStrike Sensors')
+@install_sensor_app.command(rich_help_panel='CrowdStrike Sensors')
 def crowdstrike(
   falcon_sensor: Annotated[bool, typer.Option('--falcon-sensor',
                                               help='Install Falcon Sensor',

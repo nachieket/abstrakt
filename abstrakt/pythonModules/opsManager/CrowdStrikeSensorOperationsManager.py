@@ -14,6 +14,7 @@ from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.iar.fIAR import
 from abstrakt.pythonModules.vendors.generic.VulnerableApps.vulnerableApps import VulnerableApps
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.detectionsContainer.detectionsContainer import \
   DetectionsContainer
+from abstrakt.pythonModules.kubernetesOps.helmOps import HelmOps
 from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 from abstrakt.pythonModules.vendors.cloudServiceProviders.azure.azOps.azOps import AZOps
 from abstrakt.pythonModules.vendors.cloudServiceProviders.gcp.gcpOps import GCPOps
@@ -536,3 +537,48 @@ class CrowdStrikeSensorOperationsManager:
     print("End Time:", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end_time)))
 
     print(f'Total deployment time: {int(int(time_difference) / 60)} minute/s and {int(time_difference) % 60} seconds\n')
+
+  def delete_crowdstrike_sensors(self):
+    start_time = time.time()
+    print("\nStart Time:", time.strftime("%Y-%m-%d %H:%M:%S\n", time.localtime(start_time)))
+
+    # Check Cloud Service Provider Login
+    if not self.check_csp_login():
+      print(f'Cloud provider session is not logged in. Attempt manual login to cloud provider before running '
+            f'Abstrakt. \n')
+      exit()
+
+    # Get cluster credentials
+    self.get_cluster_credentials()
+
+    # Get cluster type
+    cluster_type = self.get_cluster_type()
+
+    if cluster_type is None:
+      print('Error: Cluster type could not be determined. Exiting the program.')
+      exit()
+
+    helm = HelmOps(logger=self.logger)
+
+    if self.falcon_sensor:
+      if helm.is_helm_chart_deployed(release_name='daemonset-falcon-sensor', namespace='falcon-system'):
+        print('Deleting Falcon Sensor...')
+        helm.run_helm_delete("daemonset-falcon-sensor", "falcon-system")
+      elif helm.is_helm_chart_deployed(release_name='falcon-helm', namespace='falcon-system'):
+        print('Deleting Falcon Sensor...')
+        helm.run_helm_delete("falcon-helm", "falcon-system")
+
+    if self.kpa:
+      if helm.is_helm_chart_deployed(release_name='kpagent', namespace='falcon-kubernetes-protection'):
+        print('Deleting Kubernetes Protections Agent...')
+        helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
+
+    if self.kac:
+      if helm.is_helm_chart_deployed(release_name='falcon-kac', namespace='falcon-kac'):
+        print('Deleting Kubernetes Admission Controller...')
+        helm.run_helm_delete("falcon-kac", "falcon-kac")
+
+    if self.iar:
+      if helm.is_helm_chart_deployed(release_name='image-analyzer', namespace='falcon-image-analyzer'):
+        print('Deleting Image Assessment at Runtime...')
+        helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")

@@ -1,13 +1,10 @@
 import typer
-# import subprocess
 import pytz
 
 from datetime import datetime
 
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
-from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.helmOps import HelmOps
-from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 
 uk_timezone = pytz.timezone('Europe/London')
@@ -17,54 +14,41 @@ uk_time_str = uk_time.strftime('%d%m%Y')
 delete_aws_app = typer.Typer()
 
 
-# def run_kubectl_delete(yaml_file, logger):
-#   try:
-#     subprocess.run(["kubectl", "delete", "-f", yaml_file], check=True)
-#     logger.info(f"Deleted {yaml_file} with kubectl")
-#   except subprocess.CalledProcessError as e:
-#     logger.info(f"Error deleting {yaml_file} with kubectl: {e}")
-#
-#
-# def run_helm_delete(release_name, namespace, logger):
-#   try:
-#     subprocess.run(["helm", "delete", release_name, "-n", namespace], check=True)
-#     logger.info(f"Deleted Helm release {release_name} in namespace {namespace}")
-#   except subprocess.CalledProcessError as e:
-#     logger.info(f"Error deleting Helm release {release_name} in namespace {namespace}: {e}")
-
-
 @delete_aws_app.command(help='Delete EKS Managed Node Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_managed_node():
   eks_managed_node_log_filename = f'/var/log/crowdstrike/aws/eks-managed-node-{uk_time_str}.log'
-  managed_node_logger = CustomLogger('eks_managed_node', eks_managed_node_log_filename).logger
-
-  printf('Deleting CrowdStrike sensors and agents\n', logger=managed_node_logger)
-
-  # Delete a YAML file with kubectl
-  kube = KubectlOps(logger=managed_node_logger)
-  kube.run_kubectl_command(
-    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml'
-  )
-  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml")
+  managed_node_logger = CustomLogger('eks-managed-node', eks_managed_node_log_filename).logger
 
   # Delete Helm releases
   helm = HelmOps(logger=managed_node_logger)
-  helm.run_helm_delete("falcon-kac", "falcon-kac")
-  helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
-  helm.run_helm_delete("falcon-helm", "falcon-system")
-  helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
-  printf('\nCrowdStrike sensors and agents deleted\n', logger=managed_node_logger)
+  if helm.is_helm_chart_deployed(release_name='daemonset-falcon-sensor', namespace='falcon-system'):
+    print('Deleting Falcon Sensor...')
+    helm.run_helm_delete("daemonset-falcon-sensor", "falcon-system")
+  elif helm.is_helm_chart_deployed(release_name='falcon-helm', namespace='falcon-system'):
+    print('Deleting Falcon Sensor...')
+    helm.run_helm_delete("falcon-helm", "falcon-system")
 
-  printf('Deleting EKS Managed Node Cluster\n', logger=managed_node_logger)
+  if helm.is_helm_chart_deployed(release_name='kpagent', namespace='falcon-kubernetes-protection'):
+    print('Deleting Kubernetes Protections Agent...')
+    helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
+
+  if helm.is_helm_chart_deployed(release_name='falcon-kac', namespace='falcon-kac'):
+    print('Deleting Kubernetes Admission Controller...')
+    helm.run_helm_delete("falcon-kac", "falcon-kac")
+
+  if helm.is_helm_chart_deployed(release_name='image-analyzer', namespace='falcon-image-analyzer'):
+    print('Deleting Image Assessment at Runtime...')
+    helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
+
+  print('Deleting EKS Managed Node Cluster...')
 
   tf = ExecuteTerraform(logger=managed_node_logger)
 
-  if tf.execute_terraform_destroy('./abstrakt/terraformModules/aws/eks/eks_managed_node/'):
-    printf('EKS Managed Node cluster successfully deleted\n', logger=managed_node_logger)
+  if tf.execute_terraform_destroy('./abstrakt/terraformModules/aws/eks/eks-managed-node/'):
+    print('EKS Managed Node cluster successfully deleted\n')
   else:
-    printf('The program failed to delete EKS Managed Node cluster. Exiting the program.\n',
-           logger=managed_node_logger)
+    print('The program failed to delete EKS Managed Node cluster. Exiting the program.\n')
     exit()
 
 
@@ -73,29 +57,34 @@ def eks_fargate():
   eks_fargate_log_filename = f'/var/log/crowdstrike/aws/eks-fargate-{uk_time_str}.log'
   fargate_logger = CustomLogger('eks_fargate', eks_fargate_log_filename).logger
 
-  printf('Deleting CrowdStrike sensors and agents\n', logger=fargate_logger)
-
-  # Delete a YAML file with kubectl
-  kube = KubectlOps(logger=fargate_logger)
-  kube.run_kubectl_command(
-    'kubectl delete -f ./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml'
-  )
-  # kube.run_kubectl_delete("./abstrakt/conf/crowdstrike/detections-container/detections-container.yaml")
-
   # Delete Helm releases
   helm = HelmOps(logger=fargate_logger)
-  helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
-  helm.run_helm_delete("falcon-container", "falcon-system")
 
-  printf('\nCrowdStrike sensors and agents deleted\n', logger=fargate_logger)
+  if helm.is_helm_chart_deployed(release_name='sidecar-falcon-sensor', namespace='falcon-system'):
+    print('Deleting Falcon Sensor...')
+    helm.run_helm_delete("sidecar-falcon-sensor", "falcon-system")
+  elif helm.is_helm_chart_deployed(release_name='falcon-container', namespace='falcon-system'):
+    print('Deleting Falcon Sensor...')
+    helm.run_helm_delete("falcon-container", "falcon-system")
 
-  printf('Deleting EKS Fargate Cluster\n', logger=fargate_logger)
+  if helm.is_helm_chart_deployed(release_name='kpagent', namespace='falcon-kubernetes-protection'):
+    print('Deleting Kubernetes Protections Agent...')
+    helm.run_helm_delete("kpagent", "falcon-kubernetes-protection")
+
+  if helm.is_helm_chart_deployed(release_name='falcon-kac', namespace='falcon-kac'):
+    print('Deleting Kubernetes Admission Controller...')
+    helm.run_helm_delete("falcon-kac", "falcon-kac")
+
+  if helm.is_helm_chart_deployed(release_name='image-analyzer', namespace='falcon-image-analyzer'):
+    print('Deleting Image Assessment at Runtime...')
+    helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
+
+  print('Deleting EKS Fargate Cluster...')
 
   tf = ExecuteTerraform(logger=fargate_logger)
 
-  if tf.execute_terraform_destroy('./abstrakt/terraformModules/aws/eks/eks_fargate/'):
-    printf('EKS Fargate cluster successfully deleted\n', logger=fargate_logger)
+  if tf.execute_terraform_destroy('./abstrakt/terraformModules/aws/eks/eks-fargate/'):
+    print('EKS Fargate cluster successfully deleted\n')
   else:
-    printf('The program failed to delete EKS Fargate cluster. Exiting the program.\n',
-           logger=fargate_logger)
+    print('The program failed to delete EKS Fargate cluster. Exiting the program.\n')
     exit()

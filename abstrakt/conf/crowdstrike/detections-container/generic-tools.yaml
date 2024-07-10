@@ -15,5 +15,5 @@ spec:
     spec:
       containers:
           - name: generic-tools
-            image: nachiketj/abstraktubuntu:06
+            image: nachiketj/tools:latest
             command: ["sleep", "2592000"]
