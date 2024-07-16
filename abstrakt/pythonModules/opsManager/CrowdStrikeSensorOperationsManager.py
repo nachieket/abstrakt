@@ -532,6 +532,13 @@ class CrowdStrikeSensorOperationsManager:
         print('Deleting Falcon Sensor...')
         helm.run_helm_delete("falcon-helm", "falcon-system")
 
+      if helm.is_helm_chart_deployed(release_name='falcon-sensor-injector', namespace='falcon-system'):
+        print('Deleting Falcon Sensor...')
+        helm.run_helm_delete("falcon-sensor-injector", "falcon-system")
+      elif helm.is_helm_chart_deployed(release_name='sidecar-falcon-sensor', namespace='falcon-system'):
+        print('Deleting Falcon Sensor...')
+        helm.run_helm_delete("sidecar-falcon-sensor", "falcon-system")
+
     if self.kpa:
       if helm.is_helm_chart_deployed(release_name='kpagent', namespace='falcon-kubernetes-protection'):
         print('Deleting Kubernetes Protections Agent...')
