@@ -70,7 +70,7 @@ def aks(
     print('Deleting Image Assessment at Runtime...')
     helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
-  print('Deleting AKS Cluster...')
+  print('\nDeleting AKS Cluster...')
 
   tf = ExecuteTerraform(logger=aks_logger)
 

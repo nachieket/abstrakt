@@ -69,7 +69,7 @@ def gke_standard(
     print('Deleting Image Assessment at Runtime...')
     helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
-  print('Deleting GKE Standard Cluster...')
+  print('\nDeleting GKE Standard Cluster...')
 
   tf = ExecuteTerraform(logger=gke_standard_logger)
 
@@ -125,7 +125,7 @@ def gke_autopilot(
     print('Deleting Image Assessment at Runtime...')
     helm.run_helm_delete("image-analyzer", "falcon-image-analyzer")
 
-  print('Deleting GKE Autopilot Cluster...')
+  print('\nDeleting GKE Autopilot Cluster...')
 
   tf = ExecuteTerraform(logger=gke_autopilot_logger)
 
