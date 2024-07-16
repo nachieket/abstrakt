@@ -92,6 +92,13 @@ def gke_autopilot(
   gke_autopilot_log_filename = f'/var/log/crowdstrike/gcp/gke-autopilot-{uk_time_str}.log'
   gke_autopilot_logger = CustomLogger('gke-autopilot', gke_autopilot_log_filename).logger
 
+  gcp = GCPOps(logger=gke_autopilot_logger)
+
+  if not gcp.check_gcloud_login():
+    print('You are not logged in to gcloud. Exiting program.')
+    print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
+    exit()
+
   try:
     kube_config = UpdateKubeConfig(gke_autopilot_logger)
     if not kube_config.update_kubeconfig(cloud='gcp', cluster_name=cluster_name, region=region,
