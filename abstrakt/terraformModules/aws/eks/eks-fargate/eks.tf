@@ -1,5 +1,12 @@
+# Define a random string resource
+resource "random_string" "suffix" {
+  length  = 5
+  special = false
+  upper   = false
+}
+
 resource "aws_iam_role" "eks-cluster" {
-  name = "eks-fargate-${var.cluster_name}"
+  name = "eks-fargate-${var.cluster_name}${var.random_string}"
 
   assume_role_policy = <<POLICY
     {
@@ -23,7 +30,7 @@ resource "aws_iam_role_policy_attachment" "amazon-eks-cluster-policy" {
 }
 
 resource "aws_eks_cluster" "cluster" {
-  name     = var.cluster_name
+  name     = "${var.cluster_name}${var.random_string}"
   version  = var.cluster_version
   role_arn = aws_iam_role.eks-cluster.arn
 
@@ -45,7 +52,7 @@ resource "aws_eks_cluster" "cluster" {
 }
 
 resource "aws_eks_addon" "example" {
-  cluster_name                = var.cluster_name
+  cluster_name                = "${var.cluster_name}${var.random_string}"
   addon_name                  = "coredns"
 #  resolve_conflicts_on_create = "OVERWRITE"
 #  resolve_conflicts_on_update = "PRESERVE"

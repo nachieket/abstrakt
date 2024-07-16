@@ -3,11 +3,14 @@ resource "aws_subnet" "private-subnet-a" {
   cidr_block        = "10.0.0.0/19"
   availability_zone = "${var.region}a"
 
-  tags = {
-    "Name"                                      = "private-${var.region}a"
-    "kubernetes.io/role/internal-elb"           = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      "Name"                                      = "private-${var.region}a"
+      "kubernetes.io/role/internal-elb"           = "1"
+      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    }
+  )
 }
 
 resource "aws_subnet" "private-subnet-b" {
@@ -15,11 +18,14 @@ resource "aws_subnet" "private-subnet-b" {
   cidr_block        = "10.0.32.0/19"
   availability_zone = "${var.region}b"
 
-  tags = {
-    "Name"                                      = "private-${var.region}b"
-    "kubernetes.io/role/internal-elb"           = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      "Name"                                      = "private-${var.region}b"
+      "kubernetes.io/role/internal-elb"           = "1"
+      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    }
+  )
 }
 
 resource "aws_subnet" "public-subnet-a" {
@@ -28,11 +34,14 @@ resource "aws_subnet" "public-subnet-a" {
   availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
 
-  tags = {
-    "Name"                                      = "public-${var.region}a"
-    "kubernetes.io/role/elb"                    = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      "Name"                                      = "public-${var.region}a"
+      "kubernetes.io/role/elb"                    = "1"
+      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    }
+  )
 }
 
 resource "aws_subnet" "public-subnet-b" {
@@ -41,9 +50,12 @@ resource "aws_subnet" "public-subnet-b" {
   availability_zone       = "${var.region}b"
   map_public_ip_on_launch = true
 
-  tags = {
-    "Name"                                      = "public-${var.region}b"
-    "kubernetes.io/role/elb"                    = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      "Name"                                      = "public-${var.region}b"
+      "kubernetes.io/role/elb"                    = "1"
+      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    }
+  )
 }

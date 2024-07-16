@@ -6,7 +6,10 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = {
-    Name = var.vpc_name
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.vpc_name}${var.random_string}"
+    }
+  )
 }

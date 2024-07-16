@@ -288,42 +288,6 @@ class CrowdStrikeSensorOperationsManager:
     else:
       return None
 
-    # gke_standard = None
-    # gke_autopilot = None
-    #
-    # try:
-    #   gcloud_update_command = (f'gcloud container clusters get-credentials {cluster_name} --zone {region} --project '
-    #                            f'{project_name}')
-    #
-    #   self.logger.info(f'Executing command: {gcloud_update_command}')
-    #
-    #   result = subprocess.run(gcloud_update_command, shell=True, check=True, text=True, stdout=subprocess.PIPE,
-    #                           stderr=subprocess.PIPE)
-    #
-    #   # Load the kubeconfig file
-    #   config.load_kube_config()
-    #
-    #   if result.returncode == 0:
-    #     # Create API clients for different API groups
-    #     v1 = client.CoreV1Api()
-    #
-    #     nodes = v1.list_node()
-    #
-    #     for node in nodes.items:
-    #       if node.metadata.labels.get('addon.gke.io/node-local-dns-ds-ready') is not None:
-    #         gke_autopilot = True
-    #       else:
-    #         gke_standard = True
-    #
-    #     if gke_standard:
-    #       return 'gke-standard'
-    #     elif gke_autopilot:
-    #       return 'gke-autopilot'
-    #
-    # except Exception as e:
-    #   self.logger.error(f'Error: {e}')
-    #   return None
-
   def get_cluster_type(self):
     if self.aws_cluster_name and self.aws_region:
       eks_managed_node, eks_self_managed_node, eks_fargate = self.get_eks_cluster_type(

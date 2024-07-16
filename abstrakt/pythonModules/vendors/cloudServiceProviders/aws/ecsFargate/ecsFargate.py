@@ -8,10 +8,14 @@ class ECSFargate:
   def __init__(self, logger):
     self.logger = logger
 
-  def deploy_ecs_fargate_cluster(self, config_file):
+  def deploy_ecs_fargate_cluster(self, random_string, config_file):
     # get eks fargate config file parameters
     parser = ParseConfigFile(logger=self.logger)
-    ecs_fargate_parameters, tags = parser.read_aws_k8s_cluster_config_file(cluster_type='ECS Fargate', config_file=config_file)
+    ecs_fargate_parameters, tags = parser.read_aws_k8s_cluster_config_file(cluster_type='ECS Fargate',
+                                                                           config_file=config_file)
+
+    if ecs_fargate_parameters['random_string'].lower() != 'no':
+      ecs_fargate_parameters['random_string'] = random_string
 
     # convert eks managed node config file parameters to terraform tfvars format
     convert = ToTFVars(logger=self.logger)

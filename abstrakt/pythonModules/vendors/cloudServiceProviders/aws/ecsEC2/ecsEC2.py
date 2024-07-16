@@ -8,10 +8,13 @@ class ECSec2:
   def __init__(self, logger):
     self.logger = logger
 
-  def deploy_ecs_ec2_cluster(self, config_file):
+  def deploy_ecs_ec2_cluster(self, random_string, config_file):
     # get eks fargate config file parameters
     parser = ParseConfigFile(logger=self.logger)
     ecs_ec2_parameters, tags = parser.read_aws_k8s_cluster_config_file(cluster_type='ECS EC2', config_file=config_file)
+
+    if ecs_ec2_parameters['random_string'].lower() != 'no':
+      ecs_ec2_parameters['random_string'] = random_string
 
     # convert eks managed node config file parameters to terraform tfvars format
     convert = ToTFVars(logger=self.logger)

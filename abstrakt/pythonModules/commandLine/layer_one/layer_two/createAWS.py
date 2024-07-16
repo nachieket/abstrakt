@@ -193,8 +193,8 @@ def ecs_fargate(
   manager.start_cluster_operations()
 
 
-@create_aws_app.command(help='ECS with EC2 Cluster', rich_help_panel="AWS Kubernetes Clusters")
-def ecs_with_ec2(
+@create_aws_app.command(help='ECS EC2 Cluster', rich_help_panel="AWS Kubernetes Clusters")
+def ecs_ec2(
   config_file: Annotated[str, typer.Option(help='(Cluster Configuration File', show_default=True,
                                            rich_help_panel="ECS with EC2 Configuration File"
                                            )] = './abstrakt/conf/aws/ecs/ecs-ec2.conf',

@@ -1,8 +1,6 @@
 from abstrakt.pythonModules.parseConfigFile.parseConfigFile import ParseConfigFile
 from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
-from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
-from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
 from abstrakt.pythonModules.kubernetesOps.updateKubeConfig import UpdateKubeConfig
 
 
@@ -10,12 +8,16 @@ class EKSFargate:
   def __init__(self, logger):
     self.logger = logger
 
-  def deploy_eks_fargate_cluster(self, config_file):
+  def deploy_eks_fargate_cluster(self, random_string, config_file):
     path = './abstrakt/terraformModules/aws/eks/eks-fargate/'
 
     # get eks fargate config file parameters
     parser = ParseConfigFile(logger=self.logger)
-    fargate_parameters, tags = parser.read_aws_k8s_cluster_config_file(cluster_type='EKS Fargate', config_file=config_file)
+    fargate_parameters, tags = parser.read_aws_k8s_cluster_config_file(cluster_type='EKS Fargate',
+                                                                       config_file=config_file)
+
+    if fargate_parameters['random_string'].lower() != 'no':
+      fargate_parameters['random_string'] = random_string
 
     # convert eks managed node config file parameters to terraform tfvars format
     convert = ToTFVars(logger=self.logger)
@@ -43,7 +45,8 @@ class EKSFargate:
         if tf.execute_terraform_apply(path=path):
           kube_config = UpdateKubeConfig(self.logger)
           kube_config.update_kubeconfig(cloud='aws', region=fargate_parameters['region'],
-                                        cluster_name=fargate_parameters['cluster_name'])
+                                        cluster_name=f"{fargate_parameters['cluster_name']}"
+                                                     f"{fargate_parameters['random_string']}")
 
           print('Terraform execution to deploy eks fargate cluster completed successfully.\n')
         else:
@@ -51,6 +54,11 @@ class EKSFargate:
           exit()
       elif plan_status == 2:
         print('Terraform execution to create eks fargate cluster did not need any changes.\n')
+
+        kube_config = UpdateKubeConfig(self.logger)
+        kube_config.update_kubeconfig(cloud='aws', region=fargate_parameters['region'],
+                                      cluster_name=f"{fargate_parameters['cluster_name']}"
+                                                   f"{fargate_parameters['random_string']}")
     else:
       print('Terraform execution to deploy eks fargate cluster failed. Exiting the program.\n')
       exit()

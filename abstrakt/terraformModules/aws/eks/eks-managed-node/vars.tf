@@ -39,3 +39,7 @@ variable "instance_type" {
 variable "ami_type" {
   default = "AL2_x86_64"
 }
+
+variable "random_string" {
+  default = ""
+}

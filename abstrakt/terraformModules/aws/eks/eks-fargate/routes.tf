@@ -6,9 +6,12 @@ resource "aws_route_table" "private" {
     nat_gateway_id = aws_nat_gateway.nat.id
   }
 
-  tags = {
-    Name = "eks-managed-node-private"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "eks-managed-node-private${var.random_string}"
+    }
+  )
 }
 
 resource "aws_route_table" "public" {
@@ -19,9 +22,12 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = {
-    Name = "eks-managed-node-public"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "eks-managed-node-public${var.random_string}"
+    }
+  )
 }
 
 resource "aws_route_table_association" "private-subnet-a" {

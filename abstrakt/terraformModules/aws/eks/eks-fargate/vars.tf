@@ -27,3 +27,7 @@ variable "common_tags" {
 variable "public_access_cidrs" {
   default = "0.0.0.0/0"
 }
+
+variable "random_string" {
+  default = ""
+}

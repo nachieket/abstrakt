@@ -43,3 +43,7 @@ variable "common_tags" {
     vendor = "CrowdStrike"
   }
 }
+
+variable "random_string" {
+  default = ""
+}

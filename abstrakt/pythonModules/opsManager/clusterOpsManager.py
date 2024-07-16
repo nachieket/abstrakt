@@ -1,4 +1,7 @@
+import os
 import time
+import random
+import string
 
 from abstrakt.pythonModules.commandLine.layer_one.layer_two.runtimeParameterVerification import \
   RuntimeParameterVerification
@@ -95,19 +98,43 @@ class ClusterOperationsManager:
                                           gcp_project_id=self.gcp_project_id
                                           )
 
+  def get_random_string(self, length=5):
+    string_file = './abstrakt/conf/aws/eks/string.txt'
+
+    try:
+      if os.path.exists(string_file):
+        with open(string_file, 'r') as file:
+          append_string = file.readline()
+          return append_string
+      else:
+        # Use ascii letters and digits for the string pool
+        characters = string.ascii_letters + string.digits
+        # Generate a random string
+        random_string = ''.join(random.choices(characters, k=length))
+
+        with open(string_file, 'w') as file:
+          file.write(f'-{random_string}')
+
+        return f'-{random_string}'
+    except Exception as e:
+      self.logger.error(e)
+      return '-qwert'
+
   def deploy_cluster(self):
+    random_string = self.get_random_string()
+
     if self.cluster_type == 'eks-managed-node':
       managed_node = EKSManagedNode(logger=self.logger)
-      managed_node.deploy_eks_managed_node_cluster(self.config_file)
+      managed_node.deploy_eks_managed_node_cluster(random_string=random_string, config_file=self.config_file)
     elif self.cluster_type == 'eks-fargate':
       eks_fargate = EKSFargate(logger=self.logger)
-      eks_fargate.deploy_eks_fargate_cluster(self.config_file)
+      eks_fargate.deploy_eks_fargate_cluster(random_string=random_string, config_file=self.config_file)
     elif self.cluster_type == 'ecs-fargate':
       ecs_fargate = ECSFargate(logger=self.logger)
-      ecs_fargate.deploy_ecs_fargate_cluster(self.config_file)
+      ecs_fargate.deploy_ecs_fargate_cluster(random_string=random_string, config_file=self.config_file)
     elif self.cluster_type == 'ecs-ec2':
       ecs_ec2 = ECSec2(logger=self.logger)
-      ecs_ec2.deploy_ecs_ec2_cluster(self.config_file)
+      ecs_ec2.deploy_ecs_ec2_cluster(random_string=random_string, config_file=self.config_file)
     elif self.cluster_type == 'aks':
       aks_cluster = AKS(self.logger)
       aks_cluster.deploy_aks_cluster(self.config_file)

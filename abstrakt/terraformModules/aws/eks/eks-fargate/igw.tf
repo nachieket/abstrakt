@@ -1,7 +1,10 @@
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name = "eks-fargate-igw"
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "eks-fargate-igw${var.random_string}"
+    }
+  )
 }

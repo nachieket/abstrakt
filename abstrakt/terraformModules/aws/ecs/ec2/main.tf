@@ -25,10 +25,11 @@ locals {
 module "ecs_cluster" {
   source = "../modules/cluster"
 
-  cluster_name = var.cluster_name
+  cluster_name = "${var.cluster_name}${var.random_string}"
 
   # Capacity provider - autoscaling groups
   default_capacity_provider_use_fargate = false
+
   autoscaling_capacity_providers = {
     # Spot instances
     ex_1 = {
@@ -160,7 +161,7 @@ module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 9.0"
 
-  name = var.alb_name
+  name = "${var.alb_name}${var.random_string}"
 
   load_balancer_type = "application"
 
@@ -355,7 +356,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
-  name = var.vpc_name
+  name = "${var.vpc_name}${var.random_string}"
   cidr = var.vpc_cidr
 
   azs             = local.azs
