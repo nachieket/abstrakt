@@ -33,10 +33,14 @@ class ToTFVars:
           tfvars_file.write(f'{key} = {value.lower()}\n')
         else:
           if key == 'cluster_name':
-            os.environ['EKS_FARGATE_CLUSTER_NAME'] = value
+            eks_fargate_cluster_name = value
+          elif key == 'random_string':
+            random_string = value
           tfvars_file.write(f'{key} = "{value}"\n')
 
       tfvars_file.write(f'common_tags = {json.dumps(common_tags)}\n')
+
+      os.environ['EKS_FARGATE_CLUSTER_NAME'] = f'{eks_fargate_cluster_name}{random_string}'
 
     self.logger.info('Finished converting EKS Fargate configuration file to terraform tfvars file')
 
