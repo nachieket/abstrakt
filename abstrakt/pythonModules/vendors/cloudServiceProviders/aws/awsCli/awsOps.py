@@ -46,7 +46,7 @@ class AWSOps:
   def configure_aws_profile(self, exists) -> bool:
     while True:
       method = input('Select the method to configure AWS credentials [static/saml2aws]: ')
-      print(self)
+      print()
 
       if method == 'static':
         if self.configure_static_credentials():
@@ -188,7 +188,7 @@ class AWSOps:
 
       print("No valid AWS profile found.\n")
       answer = input("Do you want to configure an AWS profile? (y/n): ")
-      print(self)
+      print()
 
       if answer.lower() == "y":
         if self.configure_aws_profile(exists='no'):
@@ -203,7 +203,7 @@ class AWSOps:
     else:
       print("No existing AWS profile found.\n")
       answer = input("Do you want to configure an AWS profile? (y/n): ")
-      print(self)
+      print()
 
       if answer.lower() == "y":
         if self.configure_aws_profile(exists='yes'):
