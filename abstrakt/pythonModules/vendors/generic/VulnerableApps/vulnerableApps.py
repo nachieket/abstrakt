@@ -1,7 +1,6 @@
 import subprocess
 
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
-from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
 
 
 class VulnerableApps:
@@ -45,8 +44,8 @@ class VulnerableApps:
                 pass
 
           return True
-        except Exception as e:
-          self.logger.error(e)
+        except Exception as f:
+          self.logger.error(f)
           return False
 
       with MultiThreading() as mt:

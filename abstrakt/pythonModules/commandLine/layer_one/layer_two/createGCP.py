@@ -4,7 +4,7 @@ import pytz
 from datetime import datetime
 from typing_extensions import Annotated
 
-from abstrakt.pythonModules.opsManager.clusterOpsManager import ClusterOperationsManager
+from abstrakt.pythonModules.opsManager.GCPOperationsManager import GCPClusterOperationsManager
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 
 uk_timezone = pytz.timezone('Europe/London')
@@ -29,26 +29,17 @@ def gke_standard(
                                                            '--proxy-port '
                                                            '--falcon-sensor-tags)',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
-  falcon_image_tag: Annotated[str, typer.Option('--falcon-image-tag', help='Falcon Sensor Image Tag | '
+  sensor_image_tag: Annotated[str, typer.Option('--sensor-image-tag', help='Falcon Sensor Image Tag | '
                                                 'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
-                                                rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+                                                rich_help_panel="CrowdStrike EDR Sensor Options")] = 'latest',
   proxy_server: Annotated[str, typer.Option('--proxy-server', help='Proxy Server IP or FQDN | '
                                                                    'Example: 10.10.10.10 OR proxy.internal.com',
                                             rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   proxy_port: Annotated[str, typer.Option('--proxy-port', help='Proxy Server Port | Example: 8080',
                                           rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
-  falcon_sensor_tags: Annotated[str, typer.Option('--falcon-sensor-tags', help='Falcon Sensor Tags | '
-                                                                               'Example: Tag1,Tag2',
-                                                  rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
-  falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
-                                                help='Client ID to Install Falcon Sensor | Example: QWERT',
-                                                rich_help_panel='CrowdStrike API Keys')] = None,
-  falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
-                                                    help='Client Secret to Install Falcon Sensor | Example: QWERT',
-                                                    rich_help_panel='CrowdStrike API Keys')] = None,
-  gcp_project_id: Annotated[str, typer.Option('--gcp-project-id',
-                                              help='GCP Project ID',
-                                              rich_help_panel='GCP Options')] = None,
+  sensor_tags: Annotated[str, typer.Option('--sensor-tags', help='Falcon Sensor Tags | '
+                                           'Example: Tag1,Tag2',
+                                           rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   install_kpa: Annotated[bool, typer.Option('--install-kpa',
                                             help='Install Kubernetes Protection Agent',
                                             rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
@@ -58,6 +49,15 @@ def gke_standard(
   install_iar: Annotated[bool, typer.Option('--install-iar',
                                             help='Install Image Assessment at Runtime',
                                             rich_help_panel='CrowdStrike Kubernetes Agents')] = False,
+  falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
+                                                help='Client ID to Install Falcon Sensor | Example: QWERT',
+                                                rich_help_panel='CrowdStrike API Keys')] = None,
+  falcon_client_secret: Annotated[str, typer.Option('--falcon-client-secret',
+                                                    help='Client Secret to Install Falcon Sensor | Example: QWERT',
+                                                    rich_help_panel='CrowdStrike API Keys')] = None,
+  gcp_project_id: Annotated[str, typer.Option('--gcp-project-id',
+                                              help='GCP Project ID',
+                                              rich_help_panel='GCP Options')] = None,
   install_detections_container: Annotated[bool, typer.Option('--install-detections-container',
                                                              help='Install CrowdStrike Detections Container',
                                                              rich_help_panel='CrowdStrike Artificial '
@@ -66,29 +66,34 @@ def gke_standard(
                                                         help='Install Vulnerable Apps',
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
+  generate_misconfigs: Annotated[bool, typer.Option('--generate-misconfigs',
+                                                    help='Generate Misconfigurations',
+                                                    rich_help_panel='CrowdStrike Artificial '
+                                                                    'Detections Generator')] = False,
 ):
   gke_standard_log_filename = f'/var/log/crowdstrike/gcp/gke-standard-{uk_time_str}.log'
   gke_standard_logger = CustomLogger(__name__, gke_standard_log_filename).logger
 
-  manager = ClusterOperationsManager(config_file=config_file,
-                                     install_falcon_sensor=install_falcon_sensor,
-                                     falcon_image_tag=falcon_image_tag,
-                                     falcon_client_id=falcon_client_id,
-                                     falcon_client_secret=falcon_client_secret,
-                                     proxy_server=proxy_server,
-                                     proxy_port=proxy_port,
-                                     falcon_sensor_tags=falcon_sensor_tags,
-                                     install_kpa=install_kpa,
-                                     install_kac=install_kac,
-                                     install_iar=install_iar,
-                                     gcp_project_id=gcp_project_id,
-                                     install_detections_container=install_detections_container,
-                                     install_vulnerable_apps=install_vulnerable_apps,
-                                     cloud_type='gcp',
-                                     cluster_type='gke-standard',
-                                     logger=gke_standard_logger)
+  manager = GCPClusterOperationsManager(config_file=config_file,
+                                        install_falcon_sensor=install_falcon_sensor,
+                                        sensor_image_tag=sensor_image_tag,
+                                        falcon_client_id=falcon_client_id,
+                                        falcon_client_secret=falcon_client_secret,
+                                        proxy_server=proxy_server,
+                                        proxy_port=proxy_port,
+                                        sensor_tags=sensor_tags,
+                                        install_kpa=install_kpa,
+                                        install_kac=install_kac,
+                                        install_iar=install_iar,
+                                        gcp_project_id=gcp_project_id,
+                                        install_detections_container=install_detections_container,
+                                        install_vulnerable_apps=install_vulnerable_apps,
+                                        generate_misconfigs=generate_misconfigs,
+                                        cloud_type='gcp',
+                                        cluster_type='gke-standard',
+                                        logger=gke_standard_logger)
 
-  manager.start_cluster_operations()
+  manager.start_gcp_cluster_operations()
 
 
 gke_autopilot_help_message = """GKE Autopilot Cluster"""
@@ -107,17 +112,17 @@ def gke_autopilot(
                                                            '--proxy-port '
                                                            '--falcon-sensor-tags)',
                                                       rich_help_panel='CrowdStrike EDR Sensor')] = False,
-  falcon_image_tag: Annotated[str, typer.Option('--falcon-image-tag', help='Falcon Sensor Image Tag | '
+  sensor_image_tag: Annotated[str, typer.Option('--sensor-image-tag', help='Falcon Sensor Image Tag | '
                                                 'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
-                                                rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+                                                rich_help_panel="CrowdStrike EDR Sensor Options")] = 'latest',
   proxy_server: Annotated[str, typer.Option('--proxy-server', help='Proxy Server IP or FQDN | '
                                                                    'Example: 10.10.10.10 OR proxy.internal.com',
                                             rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   proxy_port: Annotated[str, typer.Option('--proxy-port', help='Proxy Server Port | Example: 8080',
                                           rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
-  falcon_sensor_tags: Annotated[str, typer.Option('--falcon-sensor-tags', help='Falcon Sensor Tags | '
-                                                                               'Example: Tag1,Tag2',
-                                                  rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+  sensor_tags: Annotated[str, typer.Option('--sensor-tags', help='Falcon Sensor Tags | '
+                                           'Example: Tag1,Tag2',
+                                           rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   falcon_client_id: Annotated[str, typer.Option('--falcon-client-id',
                                                 help='Client ID to Install Falcon Sensor | Example: QWERT',
                                                 rich_help_panel='CrowdStrike API Keys')] = None,
@@ -144,26 +149,31 @@ def gke_autopilot(
                                                         help='Install Vulnerable Apps',
                                                         rich_help_panel='CrowdStrike Artificial '
                                                                         'Detections Generator')] = False,
+  generate_misconfigs: Annotated[bool, typer.Option('--generate-misconfigs',
+                                                    help='Generate Misconfigurations',
+                                                    rich_help_panel='CrowdStrike Artificial '
+                                                                    'Detections Generator')] = False,
 ):
   gke_autopilot_log_filename = f'/var/log/crowdstrike/gcp/gke-autopilot-{uk_time_str}.log'
   gke_autopilot_logger = CustomLogger(__name__, gke_autopilot_log_filename).logger
 
-  manager = ClusterOperationsManager(config_file=config_file,
-                                     install_falcon_sensor=install_falcon_sensor,
-                                     falcon_image_tag=falcon_image_tag,
-                                     falcon_client_id=falcon_client_id,
-                                     falcon_client_secret=falcon_client_secret,
-                                     proxy_server=proxy_server,
-                                     proxy_port=proxy_port,
-                                     falcon_sensor_tags=falcon_sensor_tags,
-                                     gcp_project_id=gcp_project_id,
-                                     install_kpa=install_kpa,
-                                     install_kac=install_kac,
-                                     install_iar=install_iar,
-                                     install_detections_container=install_detections_container,
-                                     install_vulnerable_apps=install_vulnerable_apps,
-                                     cloud_type='gcp',
-                                     cluster_type='gke-autopilot',
-                                     logger=gke_autopilot_logger)
+  manager = GCPClusterOperationsManager(config_file=config_file,
+                                        install_falcon_sensor=install_falcon_sensor,
+                                        sensor_image_tag=sensor_image_tag,
+                                        falcon_client_id=falcon_client_id,
+                                        falcon_client_secret=falcon_client_secret,
+                                        proxy_server=proxy_server,
+                                        proxy_port=proxy_port,
+                                        sensor_tags=sensor_tags,
+                                        gcp_project_id=gcp_project_id,
+                                        install_kpa=install_kpa,
+                                        install_kac=install_kac,
+                                        install_iar=install_iar,
+                                        install_detections_container=install_detections_container,
+                                        install_vulnerable_apps=install_vulnerable_apps,
+                                        generate_misconfigs=generate_misconfigs,
+                                        cloud_type='gcp',
+                                        cluster_type='gke-autopilot',
+                                        logger=gke_autopilot_logger)
 
-  manager.start_cluster_operations()
+  manager.start_gcp_cluster_operations()

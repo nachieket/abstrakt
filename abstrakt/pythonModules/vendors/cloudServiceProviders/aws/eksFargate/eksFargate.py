@@ -8,7 +8,7 @@ class EKSFargate:
   def __init__(self, logger):
     self.logger = logger
 
-  def deploy_eks_fargate_cluster(self, random_string, config_file):
+  def deploy_eks_fargate_cluster(self, random_string, config_file) -> str:
     path = './abstrakt/terraformModules/aws/eks/eks-fargate/'
 
     # get eks fargate config file parameters
@@ -23,7 +23,7 @@ class EKSFargate:
     convert = ToTFVars(logger=self.logger)
     convert.convert_eks_fargate_to_tfvars(fargate_parameters, tags)
 
-    print()
+    print(' ')
     print('+' * 10)
     print('Terraform')
     print('+' * 10, '\n')
@@ -49,6 +49,8 @@ class EKSFargate:
                                                      f"{fargate_parameters['random_string']}")
 
           print('Terraform execution to deploy eks fargate cluster completed successfully.\n')
+
+          return f"{fargate_parameters['cluster_name']}{fargate_parameters['random_string']}"
         else:
           print('Terraform execution to deploy eks fargate cluster failed. Exiting the program.\n')
           exit()
@@ -59,6 +61,8 @@ class EKSFargate:
         kube_config.update_kubeconfig(cloud='aws', region=fargate_parameters['region'],
                                       cluster_name=f"{fargate_parameters['cluster_name']}"
                                                    f"{fargate_parameters['random_string']}")
+
+        return f"{fargate_parameters['cluster_name']}{fargate_parameters['random_string']}"
     else:
       print('Terraform execution to deploy eks fargate cluster failed. Exiting the program.\n')
       exit()

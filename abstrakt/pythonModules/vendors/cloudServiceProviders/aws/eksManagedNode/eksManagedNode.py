@@ -23,7 +23,7 @@ class EKSManagedNode:
     convert = ToTFVars(logger=self.logger)
     convert.convert_eks_managed_node_to_tfvars(managed_node_parameters, node_groups, tags)
 
-    print()
+    print(' ')
     print('+' * 10)
     print('Terraform')
     print('+' * 10, '\n')
@@ -47,6 +47,8 @@ class EKSManagedNode:
                                                      f"{managed_node_parameters['random_string']}")
 
           print('Terraform execution to deploy eks managed node cluster completed successfully.\n')
+
+          return f"{managed_node_parameters['cluster_name']}{managed_node_parameters['random_string']}"
         else:
           print('Terraform execution to deploy eks managed node cluster failed. Exiting the program.\n')
           exit()
@@ -56,6 +58,8 @@ class EKSManagedNode:
         kube_config.update_kubeconfig(cloud='aws', region=managed_node_parameters['region'],
                                       cluster_name=f"{managed_node_parameters['cluster_name']}"
                                                    f"{managed_node_parameters['random_string']}")
+
+        return f"{managed_node_parameters['cluster_name']}{managed_node_parameters['random_string']}"
     else:
       print('Terraform execution to deploy eks managed node cluster failed. Exiting the program.\n')
       exit()

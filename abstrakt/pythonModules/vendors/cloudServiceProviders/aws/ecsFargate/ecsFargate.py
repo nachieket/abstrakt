@@ -1,6 +1,6 @@
 from abstrakt.pythonModules.parseConfigFile.parseConfigFile import ParseConfigFile
 from abstrakt.pythonModules.terraformOps.convertToTFVars import ToTFVars
-from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
+# from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 from abstrakt.pythonModules.terraformOps.executeTerraform import ExecuteTerraform
 
 
@@ -23,7 +23,7 @@ class ECSFargate:
 
     ecs_fargate_terraform_module = './abstrakt/terraformModules/aws/ecs/ecs_fargate/'
 
-    print()
+    print(self)
     print('+' * 10)
     print('Terraform')
     print('+' * 10, '\n')
@@ -42,6 +42,8 @@ class ECSFargate:
       elif plan_status == 1:
         if tf.execute_terraform_apply(path=ecs_fargate_terraform_module):
           print('Terraform execution to deploy ecs fargate cluster completed successfully.\n')
+
+          return f"{ecs_fargate_parameters['cluster_name']}{ecs_fargate_parameters['random_string']}"
         else:
           print('Terraform execution to deploy ecs fargate cluster failed. Exiting the program.\n')
           exit()

@@ -32,8 +32,8 @@ delete_aws_app = typer.Typer()
 
 @delete_aws_app.command(help='Delete EKS Managed Node Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_managed_node(
-  cluster_name: Annotated[str, typer.Option('--cluster-name', help='Cluster Name', rich_help_panel='AWS Options',
-                                            show_default=False)] = None,
+  cluster: Annotated[str, typer.Option('--cluster', help='Cluster Name', rich_help_panel='AWS Options',
+                                       show_default=False)] = None,
   region: Annotated[str, typer.Option('--region', help='Cluster Region or Zone', rich_help_panel='AWS Options',
                                       show_default=False)] = None,
 ):
@@ -51,7 +51,7 @@ def eks_managed_node(
 
   try:
     kube_config = UpdateKubeConfig(managed_node_logger)
-    if not kube_config.update_kubeconfig(cloud='aws', region=region, cluster_name=cluster_name):
+    if not kube_config.update_kubeconfig(cloud='aws', region=region, cluster_name=cluster):
       print('Error updating kubeconfig. Exiting the program.\n')
       exit()
   except Exception as e:
@@ -95,8 +95,8 @@ def eks_managed_node(
 
 @delete_aws_app.command(help='Delete EKS Fargate Cluster', rich_help_panel="AWS Kubernetes Clusters")
 def eks_fargate(
-  cluster_name: Annotated[str, typer.Option('--cluster-name', help='Cluster Name', rich_help_panel='AWS Options',
-                                            show_default=False)] = None,
+  cluster: Annotated[str, typer.Option('--cluster', help='Cluster Name', rich_help_panel='AWS Options',
+                                       show_default=False)] = None,
   region: Annotated[str, typer.Option('--region', help='Cluster Region or Zone', rich_help_panel='AWS Options',
                                       show_default=False)] = None,
 ):
@@ -113,7 +113,7 @@ def eks_fargate(
 
   try:
     kube_config = UpdateKubeConfig(eks_fargate_logger)
-    if not kube_config.update_kubeconfig(cloud='aws', region=region, cluster_name=cluster_name):
+    if not kube_config.update_kubeconfig(cloud='aws', region=region, cluster_name=cluster):
       print('Error updating kubeconfig. Exiting the program.\n')
       exit()
   except Exception as e:

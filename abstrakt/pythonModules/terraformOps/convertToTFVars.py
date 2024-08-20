@@ -20,7 +20,6 @@ class ToTFVars:
           tfvars_file.write(f'{key} = "{value}"\n')
 
       tfvars_file.write(f'common_tags = {json.dumps(tags)}\n')
-      # tfvars_file.write(f'eks_managed_node_groups = {json.dumps(managed_node_groups)}\n')
 
     self.logger.info('Finished converting EKS Managed Node configuration file to terraform tfvars file')
 
@@ -36,11 +35,14 @@ class ToTFVars:
             eks_fargate_cluster_name = value
           elif key == 'random_string':
             random_string = value
+
           tfvars_file.write(f'{key} = "{value}"\n')
 
       tfvars_file.write(f'common_tags = {json.dumps(common_tags)}\n')
 
-      os.environ['EKS_FARGATE_CLUSTER_NAME'] = f'{eks_fargate_cluster_name}{random_string}'
+      cluster_name_with_string: str = f'{eks_fargate_cluster_name}{random_string}'
+
+      os.environ['EKS_FARGATE_CLUSTER_NAME'] = cluster_name_with_string
 
     self.logger.info('Finished converting EKS Fargate configuration file to terraform tfvars file')
 
@@ -102,20 +104,3 @@ class ToTFVars:
           tfvars_file.write(f'{key} = "{value}"\n')
 
     self.logger.info('Finished converting ACI configuration file to terraform tfvars file')
-
-  # def convert_aks_to_tfvars(self, terraform_variables, common_tags, service_principal_specs: dict):
-  #   self.logger.info('Converting AKS configuration file to terraform tfvars file')
-  #
-  #   with open("./abstrakt/terraformModules/azure/aks/variables.tfvars", "w") as tfvars_file:
-  #     for key, value in service_principal_specs.items():
-  #       tfvars_file.write(f'{key} = "{value}"\n')
-  #
-  #     for key, value in terraform_variables.items():
-  #       if value.lower() in ["true", "false"]:
-  #         tfvars_file.write(f'{key} = {value.lower()}\n')
-  #       else:
-  #         tfvars_file.write(f'{key} = "{value}"\n')
-  #
-  #     tfvars_file.write(f'common_tags = {json.dumps(common_tags)}\n')
-  #
-  #   self.logger.info('Finished converting AKS configuration file to terraform tfvars file')

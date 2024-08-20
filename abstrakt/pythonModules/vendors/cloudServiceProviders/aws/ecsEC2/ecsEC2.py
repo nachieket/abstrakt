@@ -22,7 +22,7 @@ class ECSec2:
 
     ecs_ec2_terraform_module = './abstrakt/terraformModules/aws/ecs/ecs-ec2/'
 
-    print()
+    print(self)
     print('+' * 10)
     print('Terraform')
     print('+' * 10, '\n')
@@ -41,6 +41,8 @@ class ECSec2:
       elif plan_status == 1:
         if tf.execute_terraform_apply(path=ecs_ec2_terraform_module):
           print('Terraform execution to deploy ecs with ec2 cluster completed successfully.\n')
+
+          return f"{ecs_ec2_parameters['cluster_name']}{ecs_ec2_parameters['random_string']}"
         else:
           print('Terraform execution to deploy ecs with ec2 cluster failed. Exiting the program.\n')
           exit()

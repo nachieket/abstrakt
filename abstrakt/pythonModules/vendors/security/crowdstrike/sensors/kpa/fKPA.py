@@ -1,6 +1,5 @@
 import subprocess
 import json
-# import os
 import random
 import string
 
@@ -40,7 +39,9 @@ class FalconKPA(CrowdStrike):
       self.logger.error('Either of falcon_cid, falcon_cloud_api, or falcon_cloud_region not found.')
       return False
 
-    if access_token := self.get_api_access_token(falcon_cloud_api):
+    access_token = self.get_api_access_token(falcon_cloud_api)
+
+    if access_token:
       try:
         kpa_password_command = [
           "curl", "-sL", "-X", "GET",

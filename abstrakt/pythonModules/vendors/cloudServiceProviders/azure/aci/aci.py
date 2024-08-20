@@ -9,7 +9,7 @@ class ACI:
   def __init__(self, logger):
     self.logger = logger
 
-  def deploy_aci_cluster(self, config_file):
+  def deploy_aci_cluster(self, config_file) -> str:
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -42,11 +42,15 @@ class ACI:
         elif plan_status == 1:
           if tf.execute_terraform_apply(path=aci_terraform_code_path):
             print('Terraform execution to deploy azure aci cluster completed successfully.\n')
+
+            return f"{aci_parameters['cluster_name']}"
           else:
             print('Terraform execution to deploy azure aci cluster failed. Exiting the program.\n')
             exit()
         elif plan_status == 2:
           print('Terraform execution to create azure aci cluster did not need any changes.\n')
+
+          return f"{aci_parameters['cluster_name']}"
       else:
         printf('Failed to deploy Azure ACI cluster. Exiting the program.\n', logger=self.logger)
         exit()

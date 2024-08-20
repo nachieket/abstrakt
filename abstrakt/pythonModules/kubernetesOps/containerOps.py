@@ -1,7 +1,4 @@
 import subprocess
-# import json
-# import logging
-# from typing import Tuple
 
 from kubernetes import client, config
 from kubernetes.client import ApiException
@@ -62,7 +59,7 @@ class ContainerOps:
       printf(f"Error running kubectl: {e}", logger=self.logger)
       return 'None'
 
-  def check_namespace_exists(self, namespace, kubeconfig_path):
+  def check_namespace_exists(self, namespace, kubeconfig_path: str = '~/.kube/config'):
     """Checks if a namespace exists in the Kubernetes cluster.
 
     Args:
@@ -82,7 +79,7 @@ class ContainerOps:
       self.logger.error(e)
       return False
 
-  def are_pod_and_containers_running(self, pod_name: str, namespace: str, kubeconfig_path: str) -> tuple[dict, int]:
+  def are_pods_and_containers_running(self, pod_name: str, namespace: str, kubeconfig_path: str) -> tuple[dict, int]:
     """
       Check if pods with a given name substring are running in a Kubernetes namespace.
 
@@ -123,23 +120,86 @@ class ContainerOps:
                   pods[pod.metadata.name]['containerName'] = container_status.name
                   pods[pod.metadata.name]['containerStatus'] = container_status.state.running
                 break
-              elif pod_status.status.phase == ('Pending' or 'ContainerCreating'):
+              elif pod_status.status.phase == 'ContainerCreating':
                 continue
+              elif pod_status.status.phase == 'Pending':
+                if (pod_status.status and pod_status.status.init_container_statuses and len(
+                  pod_status.status.init_container_statuses) > 0 and
+                  pod_status.status.init_container_statuses[0].state and
+                  pod_status.status.init_container_statuses[0].state.waiting and
+                  pod_status.status.init_container_statuses[0].state.waiting.reason):
+
+                  if pod_status.status.init_container_statuses[0].state.waiting.reason == 'ErrImagePull':
+                    pods[pod.metadata.name] = {'podStatus': 'ErrImagePull'}
+                    down += 1
+                    break
+                  elif pod_status.status.init_container_statuses[0].state.waiting.reason == 'CrashLoopBackOff':
+                    pods[pod.metadata.name] = {'podStatus': 'CrashLoopBackOff'}
+                    down += 1
+                    break
+                  elif pod_status.status.init_container_statuses[0].state.waiting.reason == 'ImagePullBackOff':
+                    pods[pod.metadata.name] = {'podStatus': 'ImagePullBackOff'}
+                    down += 1
+                    break
+                  elif pod_status.status.init_container_statuses[0].state.waiting.reason == 'Failed':
+                    pods[pod.metadata.name] = {'podStatus': 'Failed'}
+                    down += 1
+                    break
+                  else:
+                    continue
+                elif (pod_status.status and pod_status.status.container_statuses and len(
+                      pod_status.status.container_statuses) > 0 and
+                      pod_status.status.container_statuses[0].state and
+                      pod_status.status.container_statuses[0].state.waiting and
+                      pod_status.status.container_statuses[0].state.waiting.reason):
+
+                  if pod_status.status.container_statuses[0].state.waiting.reason == 'ErrImagePull':
+                    pods[pod.metadata.name] = {'podStatus': 'ErrImagePull'}
+                    down += 1
+                    break
+                  elif pod_status.status.container_statuses[0].state.waiting.reason == 'CrashLoopBackOff':
+                    pods[pod.metadata.name] = {'podStatus': 'CrashLoopBackOff'}
+                    down += 1
+                    break
+                  elif pod_status.status.container_statuses[0].state.waiting.reason == 'ImagePullBackOff':
+                    pods[pod.metadata.name] = {'podStatus': 'ImagePullBackOff'}
+                    down += 1
+                    break
+                  elif pod_status.status.container_statuses[0].state.waiting.reason == 'Failed':
+                    pods[pod.metadata.name] = {'podStatus': 'Failed'}
+                    down += 1
+                    break
+                  else:
+                    continue
+                else:
+                  continue
               elif pod_status.status.phase == 'Failed':
-                pods[pod.metadata.name]['podStatus'] = 'Failed'
+                pods[pod.metadata.name] = {'podStatus': 'Failed'}
                 down += 1
                 break
               elif pod_status.status.phase == 'Unknown':
-                pods[pod.metadata.name]['podStatus'] = 'Unknown'
+                pods[pod.metadata.name] = {'podStatus': 'Unknown'}
+                down += 1
+                break
+              elif pod_status.status.phase == 'CrashLoopBackOff':
+                pods[pod.metadata.name] = {'podStatus': 'CrashLoopBackOff'}
+                down += 1
+                break
+              elif pod_status.status.phase == 'ImagePullBackOff':
+                pods[pod.metadata.name] = {'podStatus': 'ImagePullBackOff'}
+                down += 1
+                break
+              elif pod_status.status.phase == 'ErrImagePull':
+                pods[pod.metadata.name] = {'podStatus': 'ErrImagePull'}
                 down += 1
                 break
               else:
-                pods[pod.metadata.name]['podStatus'] = 'Undefined'
+                pods[pod.metadata.name] = {'podStatus': 'Undefined'}
                 down += 1
                 break
 
         return pods, down
-      except ApiException as e:
+      except Exception as e:
         self.logger.error(f"Exception when calling CoreV1Api: {e}")
         return {}, -1  # Return an error code
     else:
@@ -152,30 +212,30 @@ class ContainerOps:
       sleep(5)
       pod_names: list = []
 
+      pods: dict
+      down: int
+
       with MultiThreading() as mt:
-        pods: dict
-        down: int
-
         pods, down = mt.run_with_progress_indicator(
-          self.are_pod_and_containers_running, 1, pod_name, namespace, kubeconfig_path)
+          self.are_pods_and_containers_running, 1, pod_name, namespace, kubeconfig_path)
 
-        if down == -1:
-          print(f"Unable to check running status of {pod_name}\n")
-        elif pods and down == 0:
-          print(f'All {pod_name} pods found up and running:')
-          for sensor in pods:
-            print(sensor)
-            pod_names.append(sensor)
-          return pod_names
-        elif pods and 0 < down < len(pods):
-          print(f'Some {pod_name} pods were found not running. Running pods are:')
-          for sensor in pods:
-            print(sensor)
-            pod_names.append(sensor)
-          return pod_names
-        else:
-          print(f'No {pod_name} pods were found running.')
-          return pod_names
+      if down == -1:
+        print(f"Unable to check running status of {pod_name}\n")
+      elif pods and down == 0:
+        print(f'All {pod_name} pods found up and running:')
+        for sensor in pods:
+          print(sensor)
+          pod_names.append(sensor)
+        return pod_names
+      elif pods and 0 < down < len(pods):
+        print(f'Some {pod_name} pods were found not running. Running pods are:')
+        for sensor in pods:
+          print(sensor)
+          pod_names.append(sensor)
+        return pod_names
+      else:
+        print(f'No {pod_name} pods were found running.')
+        return pod_names
     except Exception as e:
       self.logger.error(f'Error: {e}')
       return []

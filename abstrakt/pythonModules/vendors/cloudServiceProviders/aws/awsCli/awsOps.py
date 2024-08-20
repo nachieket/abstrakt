@@ -46,7 +46,7 @@ class AWSOps:
   def configure_aws_profile(self, exists) -> bool:
     while True:
       method = input('Select the method to configure AWS credentials [static/saml2aws]: ')
-      print()
+      print(self)
 
       if method == 'static':
         if self.configure_static_credentials():
@@ -188,7 +188,7 @@ class AWSOps:
 
       print("No valid AWS profile found.\n")
       answer = input("Do you want to configure an AWS profile? (y/n): ")
-      print()
+      print(self)
 
       if answer.lower() == "y":
         if self.configure_aws_profile(exists='no'):
@@ -203,7 +203,7 @@ class AWSOps:
     else:
       print("No existing AWS profile found.\n")
       answer = input("Do you want to configure an AWS profile? (y/n): ")
-      print()
+      print(self)
 
       if answer.lower() == "y":
         if self.configure_aws_profile(exists='yes'):
@@ -215,144 +215,3 @@ class AWSOps:
       else:
         print("Exiting as no valid profile was found.\n")
         exit()
-
-  # @staticmethod
-  # def validate_profile_credentials(profile, config):
-  #   access_key_id = config.get(profile, "aws_access_key_id", fallback=None)
-  #   secret_access_key = config.get(profile, "aws_secret_access_key", fallback=None)
-  #
-  #   if not access_key_id or len(access_key_id) != 20:
-  #     print(f"{profile} profile has an invalid aws_access_key_id.\n")
-  #     return False
-  #
-  #   if not secret_access_key or len(secret_access_key) != 40:
-  #     print(f"{profile} profile has an invalid aws_secret_access_key.\n")
-  #     return False
-  #
-  #   return True
-
-  # def validate_saml_profile(self, config):
-  #   """
-  #   Validates the provided SAML profile configuration.
-  #
-  #   Args:
-  #     config (dict): The configuration dictionary containing SAML profile details.
-  #
-  #   Returns:
-  #     True if the SAML profile is valid, False otherwise.
-  #   """
-  #
-  #   # Check if base profile credentials are valid first.
-  #   if not self.validate_profile_credentials("saml", config):
-  #     return False
-  #
-  #   # Ensure required SAML-specific configuration values are present.
-  #   required_keys = ["aws_session_token", "aws_security_token", "x_principal_arn"]
-  #
-  #   missing_keys = [key for key in required_keys if config.get("saml", key, fallback=None) is None]
-  #
-  #   if missing_keys:
-  #     print(f"saml profile is missing required keys: {', '.join(missing_keys)}.\n")
-  #     return False
-  #
-  #   # Validate the expiry of the security token.
-  #   expiry_str = config.get("saml", "x_security_token_expires", fallback=None)
-  #
-  #   if not expiry_str:
-  #     print("saml profile is missing the 'x_security_token_expires' value.\n")
-  #     return False
-  #
-  #   try:
-  #     expiry = datetime.strptime(expiry_str, "%Y-%m-%dT%H:%M:%S%z")
-  #   except ValueError:
-  #     print(f"Invalid format for 'x_security_token_expires': {expiry_str}.\n")
-  #     return False
-  #
-  #   now = datetime.now(expiry.tzinfo)
-  #   if now >= expiry:
-  #     print(f"\nsaml profile's 'x_security_token_expires' value is expired.\n")
-  #     return False
-  #
-  #   # All checks passed, profile is valid.
-  #   return True
-
-  # @staticmethod
-  # def configure_saml2aws(idp_url, profile_name) -> bool:
-  #   try:
-  #     # Check if the saml2aws configuration file exists
-  #     config_file = os.path.expanduser("~/.saml2aws")
-  #
-  #     if not os.path.exists(config_file):
-  #       print("SAML2AWS configuration not found. Configuring...")
-  #
-  #       # Run the saml2aws configure command to set up configurations
-  #       configure_command = f"saml2aws configure --url={idp_url} --profile={profile_name}"
-  #       subprocess.run(configure_command, shell=True, check=True)
-  #
-  #       print("SAML2AWS configuration completed.")
-  #
-  #     # Run the saml2aws login command
-  #     login_command = f"saml2aws login --profile={profile_name}"
-  #     process = subprocess.Popen(login_command, shell=True)
-  #
-  #     process.communicate()
-  #
-  #     if process.returncode == 0:
-  #       print("SAML authentication successful")
-  #       return True
-  #     else:
-  #       print("SAML authentication failed")
-  #       return False
-  #   except Exception as e:
-  #     print(f"An error occurred: {str(e)}")
-  #     return False
-
-  # def ensure_valid_aws_profile(self) -> bool:
-  #   """
-  #   Checks for a valid AWS profile and configures one if necessary.
-  #
-  #   Returns True if a valid profile is found or created, False otherwise.
-  #   """
-  #   existing_profiles, config = self.get_existing_profiles()
-  #
-  #   if not existing_profiles:
-  #     print("No existing AWS profile found.\n")
-  #     answer = input("Do you want to configure an AWS profile? (y/n): ")
-  #     print()
-  #
-  #     if answer == "y":
-  #       if self.configure_aws_profile():
-  #         print('Successfully configured aws profile.\n')
-  #       else:
-  #         print("Failed to configure aws profile. Exiting.\n")
-  #         exit()
-  #     else:
-  #       print("Exiting as no valid profile was found.\n")
-  #       exit()
-  #
-  #   saml_valid = self.validate_saml_profile(config) if "saml" in existing_profiles else False
-  #   default_valid = self.validate_profile_credentials("default", config) if "default" in existing_profiles else False
-  #
-  #   if saml_valid and not default_valid:
-  #     print("Using valid SAML profile.")
-  #     return True
-  #   elif default_valid and not saml_valid:
-  #     print("Using valid default profile.\n")
-  #     return True
-  #   elif default_valid and saml_valid:
-  #     print("Both SAML and default profiles are valid. Choosing default profile.\n")
-  #     return True
-  #   else:
-  #     print("Neither SAML nor default profile is valid.\n")
-  #     answer = input("Do you want to configure an AWS profile? (y/n): ")
-  #     print()
-  #
-  #     if answer == "y":
-  #       if self.configure_aws_profile():
-  #         return True
-  #       else:
-  #         print("Failed to configure profile. Exiting.\n")
-  #         exit()
-  #     else:
-  #       print("Exiting as no valid profile was found.\n")
-  #       exit()

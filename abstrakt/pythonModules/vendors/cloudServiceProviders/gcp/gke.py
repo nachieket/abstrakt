@@ -9,7 +9,7 @@ class GKE:
   def __init__(self, logger):
     self.logger = logger
 
-  def deploy_gke_standard_cluster(self, config_file, gcp_project_id):
+  def deploy_gke_standard_cluster(self, config_file, gcp_project_id) -> str:
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -52,6 +52,8 @@ class GKE:
                                           region=gke_standard_parameters['region'], gcp_project_id=gcp_project_id)
 
             print('Terraform execution to deploy GKE COS cluster completed successfully.\n')
+
+            return f"{gke_standard_parameters['cluster_name']}"
           else:
             print('Terraform execution to deploy GKE COS cluster failed. Exiting the program.\n')
             exit()
@@ -60,6 +62,8 @@ class GKE:
           kube_config.update_kubeconfig(cloud='gcp', cluster_name=gke_standard_parameters['cluster_name'],
                                         region=gke_standard_parameters['region'], gcp_project_id=gcp_project_id)
           print('Terraform execution to create GKE COS cluster did not need any changes.\n')
+
+          return f"{gke_standard_parameters['cluster_name']}"
       else:
         self.logger.error('Failed to deploy GKE COS cluster. Exiting the program.\n')
         exit()
@@ -68,7 +72,7 @@ class GKE:
       self.logger.error('Exiting the program.\n')
       exit()
 
-  def deploy_gke_autopilot_cluster(self, config_file, gcp_project_id):
+  def deploy_gke_autopilot_cluster(self, config_file, gcp_project_id) -> str:
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -110,6 +114,8 @@ class GKE:
                                           region=gke_autopilot_parameters['region'], gcp_project_id=gcp_project_id)
 
             print('Terraform execution to deploy GKE Autopilot cluster completed successfully.\n')
+
+            return f"{gke_autopilot_parameters['cluster_name']}"
           else:
             print('Terraform execution to deploy GKE Autopilot cluster failed. Exiting the program.\n')
             exit()
@@ -118,6 +124,8 @@ class GKE:
           kube_config.update_kubeconfig(cloud='gcp', cluster_name=gke_autopilot_parameters['cluster_name'],
                                         region=gke_autopilot_parameters['region'], gcp_project_id=gcp_project_id)
           print('Terraform execution to create GKE Autopilot cluster did not need any changes.\n')
+
+          return f"{gke_autopilot_parameters['cluster_name']}"
       else:
         self.logger.error('Failed to deploy GKE Autopilot cluster. Exiting the program.\n')
         exit()

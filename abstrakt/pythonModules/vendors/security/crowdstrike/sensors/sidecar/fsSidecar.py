@@ -1,12 +1,13 @@
-import json
-import os
-import subprocess
-import boto3
+# import json
+# import os
+# import subprocess
+# import boto3
+#
+# from pathlib import Path
+# from botocore.exceptions import ClientError
+import inspect
 
-from pathlib import Path
-from botocore.exceptions import ClientError
-
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.crowdStrikeSensors import CrowdStrikeSensors
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.CrowdStrikeSensors import CrowdStrikeSensors
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
@@ -14,180 +15,26 @@ from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 
 
 class FalconSensorSidecar(CrowdStrikeSensors):
-  def __init__(self, falcon_client_id, falcon_client_secret, sensor_mode, logger, falcon_image_repo=None,
-               falcon_image_tag=None, proxy_server=None, proxy_port=None, tags=None, monitor_namespaces=None,
-               exclude_namespaces=None, ecr_iam_policy_name=None, ecr_iam_role_name=None):
-    super().__init__(falcon_client_id, falcon_client_secret, sensor_mode, logger, falcon_image_repo, falcon_image_tag,
-                     proxy_server, proxy_port, tags)
+  def __init__(self, falcon_client_id, falcon_client_secret, sensor_mode, logger, image_registry=None,
+               falcon_sensor_image_tag=None, proxy_server=None, proxy_port=None, sensor_tags=None, cluster_name=None,
+               monitor_namespaces=None, exclude_namespaces=None, iam_policy=None, sensor_iam_role=None,
+               kac_iam_role=None, iar_iam_role=None):
+    super().__init__(falcon_client_id, falcon_client_secret, logger, image_registry, proxy_server, proxy_port,
+                     sensor_tags, cluster_name, iam_policy, sensor_iam_role, kac_iam_role, iar_iam_role)
 
+    self.sensor_mode = sensor_mode
+    self.falcon_sensor_image_tag = falcon_sensor_image_tag
     self.monitor_namespaces = monitor_namespaces
     self.exclude_namespaces = exclude_namespaces
-    self.ecr_iam_policy_name = ecr_iam_policy_name
-    self.ecr_iam_role_name = ecr_iam_role_name
-
-  def get_aws_account_id(self):
-    output, error = self.run_command(command='aws sts get-caller-identity --query "Account" --output text', output=True)
-
-    if output is not None:
-      return output.strip()
-    else:
-      return None
-
-  def get_cluster_oidc_issuer(self, region):
-    cluster_name = os.getenv('EKS_FARGATE_CLUSTER_NAME')
-
-    command = (f'aws eks describe-cluster --name {cluster_name} --region {region} --query '
-               '"cluster.identity.oidc.issuer" --output text')
-
-    output, error = self.run_command(command=command, output=True)
-
-    if output is not None:
-      return output.split('/')[-1].rstrip()
-    else:
-      return None
-
-  def check_aws_iam_policy(self, policy_name):
-    iam = boto3.client('iam')
-
-    try:
-      # List policies with the given name
-      response = iam.list_policies(Scope='Local')
-
-      # Check if the policy exists in the list of policies
-      for policy in response['Policies']:
-        if policy['PolicyName'] == policy_name:
-          self.logger.info(f"IAM policy '{policy_name}' exists with ARN: {policy['Arn']}")
-          return policy['Arn']
-
-      self.logger.info(f"IAM policy '{policy_name}' does not exist.")
-      return None
-    except ClientError as e:
-      self.logger.error(f"An error occurred: {e}")
-      return None
-
-  def create_and_get_eks_fargate_permissions_policy(self, ecr_region, permission_policy_name):
-    if policy_arn := self.check_aws_iam_policy(policy_name=permission_policy_name):
-      return policy_arn
-    else:
-      permission_policy_file = Path('./abstrakt/conf/aws/eks/eks-fargate-permission-policy.json')
-
-      create_policy_command = (f'aws iam create-policy --region "{ecr_region}" --policy-name {permission_policy_name} '
-                               f'--policy-document file://{permission_policy_file} --description "Policy to enable '
-                               f'Falcon Container Injector to pull container image from ECR"')
-
-      output, error = self.run_command(command=create_policy_command, output=True)
-
-      if output is not None:
-        output = json.loads(output)
-
-        return output['Policy']['Arn']
-      else:
-        return None
-
-  def create_eks_fargate_trust_policy_json_file(self, account_id, region, oidc_issuer):
-    trust_policy = f"""{{
-  "Version": "2012-10-17",
-  "Statement": [
-    {{
-      "Effect": "Allow",
-      "Principal": {{
-        "Federated": "arn:aws:iam::{account_id}:oidc-provider/oidc.eks.{region}.amazonaws.com/id/{oidc_issuer}"
-      }},
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {{
-        "StringEquals": {{
-          "oidc.eks.{region}.amazonaws.com/id/{oidc_issuer}:aud": "sts.amazonaws.com",
-          "oidc.eks.{region}.amazonaws.com/id/{oidc_issuer}:sub": "system:serviceaccount:falcon-system:crowdstrike-falcon-sa"
-        }}
-      }}
-    }}
-  ]
-}}
-"""
-
-    try:
-      with open('./abstrakt/conf/aws/eks/eks-fargate-trust-policy.json', 'w') as file:
-        file.write(trust_policy)
-      return True
-    except Exception as e:
-      self.logger.error(f'Error: {e}')
-      return False
-
-  def check_aws_iam_role(self, role_name):
-    iam = boto3.client('iam')
-
-    try:
-      # Get the role
-      response = iam.get_role(RoleName=role_name)
-
-      # If the role exists, return the ARN
-      role_arn = response['Role']['Arn']
-      self.logger.info(f"IAM role '{role_name}' exists with ARN: {role_arn}")
-      return role_arn
-    except ClientError as e:
-      # Check if the error is because the role does not exist
-      if e.response['Error']['Code'] == 'NoSuchEntity':
-        self.logger.info(f"IAM role '{role_name}' does not exist.")
-        return None
-      else:
-        self.logger.error(f"An error occurred: {e}")
-        return None
-
-  def create_and_get_eks_fargate_role(self, account_id, region, oidc_issuer, role_name):
-    if self.create_eks_fargate_trust_policy_json_file(account_id=account_id, region=region, oidc_issuer=oidc_issuer):
-      if iam_role_arn := self.check_aws_iam_role(role_name):
-        return iam_role_arn
-      else:
-        command = (f'aws iam create-role --role-name {role_name} --assume-role-policy-document '
-                   f'file://./abstrakt/conf/aws/eks/eks-fargate-trust-policy.json')
-
-        output, error = self.run_command(command=command, output=True)
-
-        if output is not None:
-          output = json.loads(output)
-          return output['Role']['Arn']
-
-    return None
-
-  def attach_policy_to_iam_role(self, policy_arn, iam_role_arn):
-    role_name = iam_role_arn.split('role/')[-1]
-    command = f'aws iam attach-role-policy --role-name {role_name} --policy-arn {policy_arn} --output json'
-
-    try:
-      result = subprocess.run(command, shell=True, check=True, text=True, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
-
-      if result.returncode == 0:
-        return True
-    except Exception as e:
-      self.logger.error(f'Error: {e}')
-      return False
 
   def get_helm_chart(self, namespaces=None):
     self.get_falcon_art_password()
     self.get_falcon_art_username()
 
-    registry_type, falcon_image_repo, falcon_image_tag, falcon_image_pull_token = self.get_image_repo_tag_pull_token()
+    registry_type, falcon_image_repo, falcon_image_tag, falcon_image_pull_token = self.get_repo_tag_token(
+      sensor_type='sidecar', image_tag=self.falcon_sensor_image_tag)
 
-    iam_role_arn = None
-
-    if registry_type == 'ecr_registry':
-      ecr_region = falcon_image_repo.split('.')[3]
-
-      permission_policy_arn = self.create_and_get_eks_fargate_permissions_policy(
-        ecr_region=ecr_region, permission_policy_name=self.ecr_iam_policy_name)
-
-      account_id = self.get_aws_account_id()
-      oidc_issuer = self.get_cluster_oidc_issuer(region=ecr_region)
-
-      iam_role_arn = self.create_and_get_eks_fargate_role(account_id=account_id, region=ecr_region,
-                                                          oidc_issuer=oidc_issuer,
-                                                          role_name=self.ecr_iam_role_name)
-
-      if not self.attach_policy_to_iam_role(policy_arn=permission_policy_arn, iam_role_arn=iam_role_arn):
-        return False
-
-    if falcon_image_repo is not None and falcon_image_tag is not None and falcon_image_pull_token is not None:
+    if falcon_image_repo != 'None' and falcon_image_tag != 'None' and falcon_image_pull_token != 'None':
       helm_chart = [
         "helm", "upgrade", "--install", "sidecar-falcon-sensor", "crowdstrike/falcon-sensor",
         "-n", "falcon-system", "--create-namespace",
@@ -244,12 +91,20 @@ class FalconSensorSidecar(CrowdStrikeSensors):
         helm_chart.append("--set")
         helm_chart.append(f'falcon.app={self.proxy_port}')
 
-      if registry_type == 'ecr_registry' and iam_role_arn is not None:
-        helm_chart.append("--set")
-        helm_chart.append(f'serviceAccount.annotations."eks\\.amazonaws\\.com/role-arn"="{iam_role_arn}"')
+      if registry_type == 'ecr_registry':
+        ecr_region = falcon_image_repo.split('.')[3]
 
-      if self.tags:
-        tags = '\\,'.join(self.tags.split(','))
+        iam_role_arn = self.set_and_attach_policy_to_iam_role(ecr_region=ecr_region,
+                                                              namespace='falcon-system',
+                                                              service_account='crowdstrike-falcon-sa')
+        if iam_role_arn is not None:
+          helm_chart.append("--set")
+          helm_chart.append(f'serviceAccount.annotations."eks\\.amazonaws\\.com/role-arn"="{iam_role_arn}"')
+        else:
+          return False
+
+      if self.sensor_tags:
+        tags = '\\,'.join(self.sensor_tags.split(','))
         helm_chart.append("--set")
         helm_chart.append(f'falcon.tags="{tags}"')
 
@@ -297,6 +152,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
           else:
             self.logger.info(f'{namespace} already exists.')
       except Exception as e:
+        self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
         self.logger.error(f'{e}')
 
       generic_namespaces = ['crowdstrike-detections', 'ns1', 'ns2']
@@ -308,6 +164,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
           else:
             self.logger.info(f'{namespace} already exists.')
       except Exception as e:
+        self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
         self.logger.error(f'{e}')
 
       namespaces: list = kube.get_all_namespaces('~/.kube/config')
@@ -335,7 +192,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
           for pod in captured_pods['running']:
             print(pod)
 
-          print()
+          print(' ')
           return
 
     with MultiThreading() as mt:

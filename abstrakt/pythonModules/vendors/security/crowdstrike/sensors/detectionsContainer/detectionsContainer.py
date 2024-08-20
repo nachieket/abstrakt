@@ -105,6 +105,7 @@ class DetectionsContainer:
         else:
           print('Neither vulnerable container nor detections container found. Artificial detections will not appear '
                 'on the console.\n')
+
     except Exception as e:
       self.logger.error(f'Error: {e}')
 

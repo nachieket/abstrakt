@@ -102,7 +102,7 @@ class AKS:
         except Exception as e:
           self.logger.error(e)
 
-  def deploy_aks_cluster(self, config_file):
+  def deploy_aks_cluster(self, config_file) -> str:
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -143,11 +143,15 @@ class AKS:
                                           resource_group=aks_parameters['resource_group_name'])
 
             print('Terraform execution to deploy azure aks cluster completed successfully.\n')
+
+            return f"{aks_parameters['cluster_name']}"
           else:
             print('Terraform execution to deploy azure aks cluster failed. Exiting the program.\n')
             exit()
         elif plan_status == 2:
           print('Terraform execution to create azure aks cluster did not need any changes.\n')
+
+          return f"{aks_parameters['cluster_name']}"
       else:
         printf('Failed to deploy Azure AKS cluster. Exiting the program.\n', logger=self.logger)
         exit()

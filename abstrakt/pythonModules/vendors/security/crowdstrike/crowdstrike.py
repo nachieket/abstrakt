@@ -1,3 +1,6 @@
+import inspect
+import subprocess
+
 from falconpy import SensorDownload
 
 
@@ -27,3 +30,41 @@ class CrowdStrike:
     except Exception as e:
       self.logger.error(e)
       return None, None, None
+
+  def run_command(self, command, output=False):
+    try:
+      result = subprocess.run(command, shell=True, check=True, text=True, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+
+      if result.returncode == 0:
+        if output is True:
+          if result.stdout and result.stderr:
+            self.logger.info(result.stdout)
+            self.logger.error(result.stderr)
+            return result.stdout, result.stderr
+          elif result.stdout and not result.stderr:
+            self.logger.info(result.stdout)
+            return result.stdout, None
+          elif result.stderr and not result.stdout:
+            self.logger.info(result.stderr)
+            return None, result.stderr
+          else:
+            return None, None
+        else:
+          if result.stdout:
+            self.logger.info(result.stdout)
+          if result.stderr:
+            self.logger.error(result.stderr)
+          return True
+      else:
+        if output is True:
+          return None, None
+        else:
+          return False
+    except Exception as e:
+      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      self.logger.error(f'{e}')
+      if output is True:
+        return None, None
+      else:
+        return False

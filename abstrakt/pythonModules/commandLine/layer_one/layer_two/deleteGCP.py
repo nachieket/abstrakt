@@ -19,11 +19,11 @@ delete_gcp_app = typer.Typer()
 
 @delete_gcp_app.command(help='Delete GKE Standard Cluster', rich_help_panel="GCP Kubernetes Clusters")
 def gke_standard(
-  cluster_name: Annotated[str, typer.Option('--cluster-name', help='GCP Cluster Name', rich_help_panel='GCP Options',
-                                            show_default=False)] = None,
+  cluster: Annotated[str, typer.Option('--cluster', help='GCP Cluster Name', rich_help_panel='GCP Options',
+                                       show_default=False)] = None,
   region: Annotated[str, typer.Option('--region', help='Cluster Region or Zone', rich_help_panel='GCP Options',
                                       show_default=False)] = None,
-  project_id: Annotated[str, typer.Option('--project-name', help='GCP Project Name', rich_help_panel='GCP Options',
+  project_id: Annotated[str, typer.Option('--project-id', help='GCP Project Name', rich_help_panel='GCP Options',
                                           show_default=False)] = None,
 ):
   gke_standard_log_filename = f'/var/log/crowdstrike/gcp/gke-standard-{uk_time_str}.log'
@@ -38,7 +38,7 @@ def gke_standard(
 
   try:
     kube_config = UpdateKubeConfig(gke_standard_logger)
-    if not kube_config.update_kubeconfig(cloud='gcp', cluster_name=cluster_name, region=region,
+    if not kube_config.update_kubeconfig(cloud='gcp', cluster_name=cluster, region=region,
                                          gcp_project_id=project_id):
       print('Error updating kubeconfig. Exiting the program.\n')
       exit()
@@ -82,11 +82,11 @@ def gke_standard(
 
 @delete_gcp_app.command(help='Delete GKE Autopilot Cluster', rich_help_panel="GCP Kubernetes Clusters")
 def gke_autopilot(
-  cluster_name: Annotated[str, typer.Option('--cluster-name', help='GCP Cluster Name', rich_help_panel='GCP Options',
-                                            show_default=False)] = None,
+  cluster: Annotated[str, typer.Option('--cluster', help='GCP Cluster Name', rich_help_panel='GCP Options',
+                                       show_default=False)] = None,
   region: Annotated[str, typer.Option('--region', help='Cluster Region or Zone', rich_help_panel='GCP Options',
                                       show_default=False)] = None,
-  project_id: Annotated[str, typer.Option('--project-name', help='GCP Project Name', rich_help_panel='GCP Options',
+  project_id: Annotated[str, typer.Option('--project-id', help='GCP Project Name', rich_help_panel='GCP Options',
                                           show_default=False)] = None,
 ):
   gke_autopilot_log_filename = f'/var/log/crowdstrike/gcp/gke-autopilot-{uk_time_str}.log'
@@ -101,7 +101,7 @@ def gke_autopilot(
 
   try:
     kube_config = UpdateKubeConfig(gke_autopilot_logger)
-    if not kube_config.update_kubeconfig(cloud='gcp', cluster_name=cluster_name, region=region,
+    if not kube_config.update_kubeconfig(cloud='gcp', cluster_name=cluster, region=region,
                                          gcp_project_id=project_id):
       print('Error updating kubeconfig. Exiting the program.\n')
       exit()
