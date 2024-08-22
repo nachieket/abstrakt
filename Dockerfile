@@ -4,35 +4,6 @@ FROM ubuntu:24.04
 # Set environment variables to avoid prompts during installations
 ENV DEBIAN_FRONTEND=noninteractive
 
-## Update package lists and install base dependencies
-#RUN apt-get update \
-#    && apt-get install -y --no-install-recommends \
-#        apt-transport-https \
-#        software-properties-common \
-#        curl \
-#        wget \
-#        unzip \
-#        gnupg \
-#        lsb-release \
-#        sudo \
-#        ca-certificates \
-#        neovim \
-#        vim \
-#        python3-dev \
-#        libffi-dev \
-#        gcc \
-#    && apt-get clean \
-#    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
-#
-## Install dependencies for multi-architecture support
-
-#RUN apt-get update \
-#    && apt-get install -y --no-install-recommends \
-#        qemu-user-static \
-#        binfmt-support \
-#    && apt-get clean \
-#    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
-
 # Install essential packages and dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends
