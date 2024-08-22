@@ -6,7 +6,7 @@
 
 #### AWS EKS Managed Node Example
 
-##### Deploy Sensors via CrowdStrike Repo
+##### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --sensor-tags CRWD,ABSTRAKT,
@@ -14,7 +14,7 @@ EKS-MANAGED-NODE --install-kac --install-iar --install-kpa --install-detections-
 --generate-misconfigs --falcon-client-id 3af74117REDACTED --falcon-client-secret vlTpn372sREDACTED
 ```
 
-##### Deploy Sensors via AWS Repo
+##### Deploy Sensors via AWS Registry
 
 ```
 abstrakt create aws eks-managed-node --install-falcon-sensor --kernel-mode --image-registry 123456789012.dkr.ecr.
@@ -25,7 +25,7 @@ eu-west-2.amazonaws.com/ecr --sensor-tags CRWD,ABSTRAKT,EKS-MANAGED-NODE --insta
 
 #### AWS EKS Fargate Example
 
-##### Deploy Sensors via CrowdStrike Repo
+##### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt create aws eks-fargate --install-falcon-sensor --sensor-tags CRWD,ABSTRAKT,EKS-FARGATE --install-kac 
@@ -33,7 +33,7 @@ abstrakt create aws eks-fargate --install-falcon-sensor --sensor-tags CRWD,ABSTR
 --falcon-client-id 3af74117REDACTED --falcon-client-secret vlTpn372sREDACTED
 ```
 
-##### Deploy Sensors via AWS Repo
+##### Deploy Sensors via AWS Registry
 
 ```
 abstrakt create aws eks-fargate --install-falcon-sensor --image-registry 123456789012.dkr.ecr.eu-west-2.amazonaws.
@@ -46,7 +46,7 @@ com/ecr --sensor-tags CRWD,ABSTRAKT,EKS-FARGATE --install-kac --install-iar --in
 
 #### Azure AKS Example
 
-##### Deploy Sensors via CrowdStrike Repo
+##### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt create azure aks --install-falcon-sensor --ebpf-mode --sensor-tags CRWD,NJ,AKS --install-kpa --install-kac 
@@ -54,7 +54,7 @@ abstrakt create azure aks --install-falcon-sensor --ebpf-mode --sensor-tags CRWD
 3af74117REDACTED --falcon-client-secret vlTpn372sREDACTED
 ```
 
-##### Deploy Sensors via Azure Repo
+##### Deploy Sensors via Azure Registry
 
 ```
 abstrakt create azure aks --install-falcon-sensor --ebpf-mode --image-registry abstrakt.azurecr.io/crowdstrike 
@@ -68,7 +68,7 @@ abstrakt create azure aks --install-falcon-sensor --ebpf-mode --image-registry a
 
 #### GKE Standard Example
 
-##### Deploy Sensors via CrowdStrike Repo
+##### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt create gcp gke-standard --install-falcon-sensor --sensor-tags CRWD,NJ,GKE-STANDARD --install-kpa 
@@ -78,7 +78,7 @@ abstrakt create gcp gke-standard --install-falcon-sensor --sensor-tags CRWD,NJ,G
 
 #### GKE Autopilot Example
 
-##### Deploy Sensors via CrowdStrike Repo
+##### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt create gcp gke-autopilot --install-falcon-sensor --sensor-tags CRWD,NJ,GKE-AUTOPILOT --install-kpa 
@@ -92,7 +92,7 @@ abstrakt create gcp gke-autopilot --install-falcon-sensor --sensor-tags CRWD,NJ,
 
 #### AWS EKS Managed Node Example
 
-#### Deploy via CrowdStrike Registry
+#### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --kernel-mode --sensor-tags CRWD,ABSTRAKT,EKS-MANAGED-NODE 
@@ -100,7 +100,7 @@ abstrakt install crowdstrike --falcon-sensor --kernel-mode --sensor-tags CRWD,AB
 --generate-misconfigs --vulnerable-apps --falcon-client-id 3af74117REDACTED --falcon-client-secret vlTpn372sREDACTED
 ```
 
-#### Deploy via AWS Registry
+#### Deploy Sensors via AWS Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --kernel-mode --image-registry 123456789012.dkr.ecr.eu-west-2.
@@ -111,7 +111,7 @@ amazonaws.com/ecr --sensor-tags CRWD,ABSTRAKT,EKS-MANAGED-NODE --aws-cluster cro
 
 #### AWS EKS Fargate Example
 
-#### Deploy via CrowdStrike Registry
+#### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --sensor-tags CRWD,ABSTRAKT,EKS-FARGATE --kpa --kac --iar 
@@ -119,7 +119,7 @@ abstrakt install crowdstrike --falcon-sensor --sensor-tags CRWD,ABSTRAKT,EKS-FAR
 eu-west-2 --falcon-client-id  3af74117REDACTED --falcon-client-secret vlTpn372sREDACTED
 ```
 
-#### Deploy via AWS Registry
+#### Deploy Sensors via AWS Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --image-registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com/ecr 
@@ -132,7 +132,7 @@ abstrakt install crowdstrike --falcon-sensor --image-registry 123456789012.dkr.e
 
 #### Azure AKS Example
 
-#### Deploy via CrowdStrike Registry
+#### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --sensor-tags CRWD,NJ,AKS --kpa --kac --iar --detections-container 
@@ -141,7 +141,7 @@ abstrakt install crowdstrike --falcon-sensor --sensor-tags CRWD,NJ,AKS --kpa --k
 11111111-0000-0000-0000-111111111111 --falcon-client-id 3af74117REDACTED --falcon-client-secret vlTpn372sREDACTED
 ```
 
-#### Deploy via Azure Registry
+#### Deploy Sensors via Azure Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --image-registry abstrakt.azurecr.io/crowdstrike --sensor-tags CRWD,NJ,
@@ -154,7 +154,7 @@ AKS --kpa --kac --iar --detections-container --vulnerable-apps --generate-miscon
 
 #### GKE Standard Example
 
-#### Deploy via CrowdStrike Registry
+#### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --kpa --kac --iar --detections-container --vulnerable-apps 
@@ -164,7 +164,7 @@ abstrakt install crowdstrike --falcon-sensor --kpa --kac --iar --detections-cont
 
 #### GKE Autopilot Example
 
-#### Deploy via CrowdStrike Registry
+#### Deploy Sensors via CrowdStrike Registry
 
 ```
 abstrakt install crowdstrike --falcon-sensor --kpa --kac --iar --detections-container --vulnerable-apps 
