@@ -2,6 +2,7 @@ import string
 import random
 import inspect
 import subprocess
+from time import sleep
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
@@ -54,24 +55,58 @@ class GCPFalconSensorDaemonset(GCPFalconSensor):
     else:
       return False
 
+  def daemonset_thread(self):
+    helm_chart = self.get_helm_chart()
+
+    if helm_chart is not False:
+      command = ' '.join(helm_chart)
+
+      self.logger.info(f'Running command: {command}')
+      output, error = self.run_command(command=command, output=True)
+
+      if output:
+        self.logger.info(output)
+      if error:
+        self.logger.error(error)
+
+      command = 'kubectl delete -f abstrakt/conf/crowdstrike/detections-container/default-vulnerable-app.yaml'
+
+      self.logger.info(f'Running command: {command}')
+      output, error = self.run_command(command=command, output=True)
+
+      if output:
+        self.logger.info(output)
+      if error:
+        self.logger.error(error)
+    else:
+      return False
+
+  def default_app_thread(self):
+    command = 'kubectl apply -f abstrakt/conf/crowdstrike/detections-container/default-vulnerable-app.yaml'
+
+    self.logger.info(f'Running command: {command}')
+    output, error = self.run_command(command=command, output=True)
+
+    if output:
+      self.logger.info(output)
+    if error:
+      self.logger.error(error)
+
+  def execute_default_app(self):
+    try:
+      with MultiThreading() as mt:
+        mt.run_with_progress_indicator(self.default_app_thread, 1)
+    except Exception as e:
+      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      self.logger.error(f'Error: {e}')
+      return False
+    else:
+      return True
+
   def execute_helm_chart(self):
     try:
-      def thread():
-        helm_chart = self.get_helm_chart()
-
-        if helm_chart is not False:
-          command = ' '.join(helm_chart)
-
-          self.logger.info(f'Running command: {command}')
-          output, error = self.run_command(command=command, output=True)
-
-          self.logger.info(output)
-          self.logger.error(error)
-        else:
-          return False
-
       with MultiThreading() as mt:
-        mt.run_with_progress_indicator(thread, 1)
+        mt.run_with_progress_indicator(self.daemonset_thread, 1)
     except Exception as e:
       self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
       self.logger.error(f'Error: {e}')
@@ -81,6 +116,17 @@ class GCPFalconSensorDaemonset(GCPFalconSensor):
 
   def deploy_falcon_sensor_daemonset(self):
     """Deploys the CrowdStrike Falcon Sensor daemonset on a Kubernetes cluster."""
+
+    if self.cluster_type == 'gke-autopilot':
+      print(f"{'+' * 14}\nGKE Autopilot\n{'+' * 14}\n")
+
+      print("Spinning up GKE Autopilot Nodes...")
+
+      self.execute_default_app()
+
+      container = ContainerOps(logger=self.logger)
+      container.pod_checker(pod_name='vulnerable-example-com', namespace='default', kubeconfig_path='~/.kube/config')
+      print('\nAll these pods are temporary, were created to spin up nodes, and will be deleted in a few moments.\n')
 
     print(f"{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n")
 

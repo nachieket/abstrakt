@@ -23,7 +23,7 @@ variable "cidr_range" {
 }
 
 variable "machine_type" {
-  default = "n2-standard-8"
+  default = "n4-standard-16"
 }
 
 variable "gke_num_nodes" {

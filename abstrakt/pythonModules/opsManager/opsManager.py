@@ -16,11 +16,13 @@ from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 
 
 class ClusterOperationsManager:
-  def __init__(self, config_file: str, install_falcon_sensor: bool, image_registry: str,
-               sensor_image_tag: str, proxy_server: str, proxy_port: int, sensor_tags: str,
-               install_kac: bool, kac_image_tag: str, install_iar: bool, iar_image_tag: str, install_kpa: bool,
-               cloud_type: str, cluster_type: str, falcon_client_id: str, falcon_client_secret: str,
-               install_detections_container: bool, install_vulnerable_apps: bool, generate_misconfigs: bool, logger):
+  def __init__(self, config_file: str = None, install_falcon_sensor: bool = None, image_registry: str = None,
+               sensor_image_tag: str = 'latest', proxy_server: str = None, proxy_port: int = None,
+               sensor_tags: str = None, install_kac: bool = None, kac_image_tag: str = 'latest',
+               install_iar: bool = None, iar_image_tag: str = 'latest', install_kpa: bool = None,
+               cloud_type: str = None, cluster_type: str = None, falcon_client_id: str = None,
+               falcon_client_secret: str = None, install_detections_container: bool = None,
+               install_vulnerable_apps: bool = None, generate_misconfigs: bool = None, logger=None):
     self.config_file: str = config_file
     self.install_falcon_sensor: bool = install_falcon_sensor
     self.image_registry: str = image_registry

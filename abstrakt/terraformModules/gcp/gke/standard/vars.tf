@@ -7,7 +7,7 @@ variable "subnet_name" {}
 variable "container_node_pool_name" {}
 
 variable "machine_type" {
-  default = "n1-standard-4"
+  default = "n4-standard-16"
 }
 
 variable "project_id" {
