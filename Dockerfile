@@ -149,7 +149,8 @@ COPY abstrakt.sh /root/.bash_completions/abstrakt.sh
 RUN python3.10 -m pip install --upgrade pip \
     && python3.10 -m pip install pytz boto3 botocore pathlib requests pydantic azure-identity kubernetes boto3 \
     cryptography cffi oauthlib azure-mgmt-containerservice azure-mgmt-compute crowdstrike-falconpy pyyaml  \
-    azure-mgmt-containerregistry azure-identity azure-containerregistry /tmp/crowdstrike/abstrakt-0.1.0-py3-none-any.whl
+    azure-mgmt-containerregistry azure-identity azure-containerregistry pydantic \
+     /tmp/crowdstrike/abstrakt-0.1.0-py3-none-any.whl
 
 # Configure bash completion
 RUN echo 'source /root/.bash_completions/abstrakt.sh' >> /root/.bashrc
