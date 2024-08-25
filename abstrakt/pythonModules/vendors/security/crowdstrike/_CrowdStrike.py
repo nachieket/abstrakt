@@ -6,7 +6,6 @@ import requests
 import subprocess
 
 from requests import Response
-from pydantic import BaseModel
 from falconpy import SensorDownload
 from subprocess import CompletedProcess
 from requests.auth import HTTPBasicAuth
@@ -14,14 +13,24 @@ from requests.auth import HTTPBasicAuth
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 
 
-class CrowdStrike(BaseModel):
-  falcon_client_id: str
-  falcon_client_secret: str
-  logger: CustomLogger(logger_name='CrowdStrike', log_file='/var/log/crowdstrike/crowdstrike.log')
+class CrowdStrike:
+  def __init__(self, client_id: str,
+               client_secret: str,
+               logger: CustomLogger(logger_name='CrowdStrike', log_file='/var/log/crowdstrike/crowdstrike.log')):
+    self.client_id = client_id
+    self.client_secret = client_secret
+    self.logger = logger
+
+    self.falcon_cid = self.get_falcon_cid()
+    self.falcon_region = self.get_falcon_region()
+    self.falcon_api = self.get_falcon_api()
+
+    self.falcon_art_password = self.get_falcon_art_password()
+    self.falcon_art_username = self.get_falcon_art_username()
 
   def get_falcon_response(self) -> dict[str, int | dict] | None:
     try:
-      falcon: SensorDownload = SensorDownload(client_id=self.falcon_client_id, client_secret=self.falcon_client_secret)
+      falcon: SensorDownload = SensorDownload(client_id=self.client_id, client_secret=self.client_secret)
 
       return falcon.get_sensor_installer_ccid()
     except Exception as e:
@@ -66,10 +75,10 @@ class CrowdStrike(BaseModel):
 
   def get_falcon_api_bearer_token(self) -> str | None:
     try:
-      token_url = f"https://{self.falcon_cloud_api}/oauth2/token"
+      token_url = f"https://{self.falcon_api}/oauth2/token"
       token_data = {
-        "client_id": self.falcon_client_id,
-        "client_secret": self.falcon_client_secret,
+        "client_id": self.client_id,
+        "client_secret": self.client_secret,
       }
       response = requests.post(token_url, data=token_data,
                                headers={"Content-Type": "application/x-www-form-urlencoded"})
@@ -86,7 +95,7 @@ class CrowdStrike(BaseModel):
       falcon_api_bearer_token: str = self.get_falcon_api_bearer_token()
 
       if falcon_api_bearer_token:
-        url: str = f"https://{self.falcon_cloud_api}/container-security/entities/image-registry-credentials/v1"
+        url: str = f"https://{self.falcon_api}/container-security/entities/image-registry-credentials/v1"
         headers: dict[str, str] = {"authorization": f"Bearer {falcon_api_bearer_token}"}
         response: Response = requests.get(url, headers=headers)
         return response.json()['resources'][0]['token']
@@ -105,27 +114,25 @@ class CrowdStrike(BaseModel):
 
   def get_registry_bearer_token(self, sensor_type) -> str | None:
     try:
-      falcon_password = self.get_falcon_art_password()
-      falcon_username = self.get_falcon_art_username()
-
-      if falcon_username and falcon_password:
+      if self.falcon_art_username and self.falcon_art_password:
         if sensor_type == 'daemonset':
           registry_bearer_url = (
-            f"https://registry.crowdstrike.com/v2/token?={falcon_username}&scope=repository"
-            f":falcon-sensor/{self.falcon_cloud_region}/release/falcon-sensor:pull&service=registry."
+            f"https://registry.crowdstrike.com/v2/token?={self.falcon_art_username}&scope=repository"
+            f":falcon-sensor/{self.falcon_region}/release/falcon-sensor:pull&service=registry."
             f"crowdstrike.com")
         elif sensor_type == 'sidecar':
           registry_bearer_url = (
-            f"https://registry.crowdstrike.com/v2/token?={falcon_username}&scope=repository"
-            f":falcon-container/{self.falcon_cloud_region}/release/falcon-sensor:pull&service=registry."
+            f"https://registry.crowdstrike.com/v2/token?={self.falcon_art_username}&scope=repository"
+            f":falcon-container/{self.falcon_region}/release/falcon-sensor:pull&service=registry."
             f"crowdstrike.com")
         else:
           registry_bearer_url = (
-            f"https://registry.crowdstrike.com/v2/token?={falcon_username}&scope=repository"
-            f":{sensor_type}/{self.falcon_cloud_region}/release/{sensor_type}:pull&service=registry."
+            f"https://registry.crowdstrike.com/v2/token?={self.falcon_art_username}&scope=repository"
+            f":{sensor_type}/{self.falcon_region}/release/{sensor_type}:pull&service=registry."
             f"crowdstrike.com")
 
-        response = requests.get(registry_bearer_url, auth=HTTPBasicAuth(falcon_username, falcon_password))
+        response = requests.get(registry_bearer_url, auth=HTTPBasicAuth(self.falcon_art_username,
+                                                                        self.falcon_art_password))
         registry_bearer = response.json()['token']
 
         return registry_bearer
@@ -137,7 +144,8 @@ class CrowdStrike(BaseModel):
       return None
 
   def login_to_crowdstrike_repo(self):
-    command = (f'echo {self.falcon_art_password} | sudo skopeo login -u {self.falcon_art_username} --password-stdin '
+    command = (f'echo {self.falcon_art_password} | sudo skopeo login -u {self.falcon_art_username} '
+               f'--password-stdin '
                'registry.crowdstrike.com')
 
     return True if self.run_command(command=command) else False
@@ -163,8 +171,9 @@ class CrowdStrike(BaseModel):
     try:
       if self.add_crowdstrike_helm_repo() is True:
         # Generate partial pull token
-        partial_pull_token = (base64.b64encode(f"{self.falcon_art_username}:{self.falcon_art_password}".encode())
-                              .decode())
+        partial_pull_token = (base64.b64encode(
+          f"{self.falcon_art_password}:{self.get_falcon_art_password()}".encode()).decode()
+                              )
         return partial_pull_token
       else:
         return 'None'
@@ -197,14 +206,14 @@ class CrowdStrike(BaseModel):
       return 'None'
 
   def get_crowdstrike_registry(self, sensor_type) -> str:
-    if sensor_type == 'daemonset' or sensor_type == 'falcon-daemonset':
-      return f"registry.crowdstrike.com/falcon-sensor/{self.get_falcon_region()}/release/falcon-sensor"
-    elif sensor_type == 'sidecar' or sensor_type == 'falcon-sidecar':
-      return f"registry.crowdstrike.com/falcon-container/{self.get_falcon_region()}/release/falcon-sensor"
-    elif sensor_type == 'kac' or sensor_type == 'falcon-kac':
-      return f"registry.crowdstrike.com/falcon-kac/{self.get_falcon_region()}/release/falcon-kac"
-    elif sensor_type == 'iar' or sensor_type == 'falcon-imageanalyzer' or sensor_type == 'falcon-iar':
-      return f"registry.crowdstrike.com/falcon-imageanalyzer/{self.get_falcon_region()}/release/falcon-imageanalyzer"
+    if sensor_type == 'daemonset':
+      return f"registry.crowdstrike.com/falcon-sensor/{self.falcon_region}/release/falcon-sensor"
+    elif sensor_type == 'sidecar':
+      return f"registry.crowdstrike.com/falcon-container/{self.falcon_region}/release/falcon-sensor"
+    elif sensor_type == 'falcon-kac':
+      return f"registry.crowdstrike.com/falcon-kac/{self.falcon_region}/release/falcon-kac"
+    elif sensor_type == 'falcon-imageanalyzer':
+      return f"registry.crowdstrike.com/falcon-imageanalyzer/{self.falcon_region}/release/falcon-imageanalyzer"
 
   def verify_crowdstrike_sensor_image_tag(self, image_tag: str) -> bool:
     daemonset_pattern: str = r'^\d+\.\d+\.\d+-\d+-\d+\.falcon-linux\.Release\.(US|EU)-\d+$'
@@ -253,17 +262,23 @@ class CrowdStrike(BaseModel):
 
   def get_crowdstrike_sensor_tag_list_url(self, sensor_type: str) -> str:
     if sensor_type == 'daemonset':
-      return (f"https://registry.crowdstrike.com/v2/falcon-sensor/{self.get_falcon_region()} "
+      return (f"https://registry.crowdstrike.com/v2/falcon-sensor/{self.falcon_region} "
               f"/release/falcon-sensor/tags/list")
     elif sensor_type == 'sidecar':
-      return (f"https://registry.crowdstrike.com/v2/falcon-container/{self.get_falcon_region()} "
+      return (f"https://registry.crowdstrike.com/v2/falcon-container/{self.falcon_region} "
               f"/release/falcon-sensor/tags/list")
     else:
-      return (f"https://registry.crowdstrike.com/v2/{sensor_type}/{self.get_falcon_region()} /release"
+      return (f"https://registry.crowdstrike.com/v2/{sensor_type}/{self.falcon_region} /release"
               f"/{sensor_type}/tags/list")
 
   def get_crowdstrike_sensor_image_tag(self, sensor_type: str, image_tag: str) -> str | None:
     try:
+      if 'latest' not in image_tag:
+        if self.verify_crowdstrike_sensor_image_tag(image_tag=image_tag):
+          return image_tag
+        else:
+          return None
+
       registry_bearer: str = self.get_registry_bearer_token(sensor_type=sensor_type)
 
       if registry_bearer:

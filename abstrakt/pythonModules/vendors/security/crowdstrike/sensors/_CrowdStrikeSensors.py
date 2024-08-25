@@ -1,19 +1,25 @@
 import re
 import inspect
 
+from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 from abstrakt.pythonModules.vendors.security.crowdstrike._CrowdStrike import CrowdStrike
 
 
 class CrowdStrikeSensors(CrowdStrike):
-  image_registry: str
-  proxy_server: str
-  proxy_port: str
-
-  # def __init__(self, **data):
-  #   super().__init__(**data)
-  #   self.falcon_cid: str = self.get_falcon_cid()
-  #   self.falcon_cloud_api: str = self.get_falcon_api()
-  #   self.falcon_cloud_region: str = self.get_falcon_region()
+  def __init__(self, client_id: str,
+               client_secret: str,
+               logger: CustomLogger,
+               registry: str,
+               repository: str,
+               proxy_server: str,
+               proxy_port: str):
+    super().__init__(client_id,
+                     client_secret,
+                     logger)
+    self.registry = registry
+    self.repository = repository
+    self.proxy_server = proxy_server
+    self.proxy_port = proxy_port
 
   def check_registry_type(self, image_registry: str) -> str:
     try:
@@ -42,29 +48,29 @@ class CrowdStrikeSensors(CrowdStrike):
       return 'unsupported'
 
   def get_image_repo(self, sensor_type) -> tuple:
-    if self.image_registry is None:
+    if self.registry is None:
       return 'crwd_registry', self.get_crowdstrike_registry(sensor_type=sensor_type)
-    elif self.image_registry:
-      registry_type = self.check_registry_type(image_registry=self.image_registry)
+    elif self.registry:
+      registry_type = self.check_registry_type(image_registry=self.registry)
 
       if registry_type == 'crwd_registry':
-        return 'crwd_registry', self.image_registry
+        return 'crwd_registry', self.registry
       elif registry_type == 'ecr_registry':
-        return 'ecr_registry', self.image_registry
+        return 'ecr_registry', self.registry
       else:
-        return 'unsupported', self.image_registry
+        return 'unsupported', self.registry
     else:
       return 'None', 'None'
 
   def get_crwd_image_tag(self, sensor_type, image_tag) -> str:
     if sensor_type == 'daemonset':
-      return self.get_crwd_sensor_tag(sensor_type='daemonset', image_tag=image_tag)
+      return self.get_crowdstrike_sensor_image_tag(sensor_type='daemonset', image_tag=image_tag)
     elif sensor_type == 'sidecar':
-      return self.get_crwd_sensor_tag(sensor_type='sidecar', image_tag=image_tag)
+      return self.get_crowdstrike_sensor_image_tag(sensor_type='sidecar', image_tag=image_tag)
     elif sensor_type == 'falcon-kac':
-      return self.get_crwd_sensor_tag(sensor_type='falcon-kac', image_tag=image_tag)
-    elif sensor_type == 'falcon-iar':
-      return self.get_crwd_sensor_tag(sensor_type='falcon-imageanalyzer', image_tag=image_tag)
+      return self.get_crowdstrike_sensor_image_tag(sensor_type='falcon-kac', image_tag=image_tag)
+    elif sensor_type == 'falcon-imageanalyzer':
+      return self.get_crowdstrike_sensor_image_tag(sensor_type='falcon-imageanalyzer', image_tag=image_tag)
     else:
       return 'None'
 
