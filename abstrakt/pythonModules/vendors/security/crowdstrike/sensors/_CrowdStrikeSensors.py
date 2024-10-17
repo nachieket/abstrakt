@@ -2,46 +2,60 @@ import re
 import inspect
 
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
-from abstrakt.pythonModules.vendors.security.crowdstrike._CrowdStrike import CrowdStrike
+from abstrakt.pythonModules.vendors.security.crowdstrike._CrowdStrike import _CrowdStrike
 
 
-class CrowdStrikeSensors(CrowdStrike):
-  def __init__(self, client_id: str,
-               client_secret: str,
+class _CrowdStrikeSensors(_CrowdStrike):
+  def __init__(self, falcon_client_id: str,
+               falcon_client_secret: str,
                logger: CustomLogger,
                registry: str,
-               repository: str,
-               proxy_server: str,
-               proxy_port: str):
-    super().__init__(client_id,
-                     client_secret,
+               repository: str):
+    super().__init__(falcon_client_id,
+                     falcon_client_secret,
                      logger)
     self.registry = registry
     self.repository = repository
-    self.proxy_server = proxy_server
-    self.proxy_port = proxy_port
 
-  def check_registry_type(self, image_registry: str) -> str:
+  @staticmethod
+  def get_default_repository_name(sensor_type: str):
+    if sensor_type == 'daemonset':
+      return 'falcon-daemonset-sensor'
+    elif sensor_type == 'sidecar':
+      return 'falcon-sidecar-sensor'
+    elif sensor_type == 'falcon-kac':
+      return 'falcon-kac'
+    elif sensor_type == 'falcon-imageanalyzer':
+      return 'falcon-iar'
+
+  def check_registry_type(self, registry: str) -> str:
     try:
-      ecr_regex = re.compile(
-        r"^\d{12}\.dkr\.ecr\.[a-z]+-[a-z]+-[0-9]+\.amazonaws\.com"
-      )
+      if registry:
+        ecr_regex = re.compile(
+          r"^\d{12}\.dkr\.ecr\.[a-z]+-[a-z]+-[0-9]+\.amazonaws\.com"
+        )
 
-      crwd_regex = re.compile(
-        r"^registry\.crowdstrike\.com/(falcon-sensor|falcon-container|falcon-kac|falcon-imageanalyzer)/("
-        r"us-1|us-2|eu-1)/release/(falcon-sensor|falcon-container|falcon-kac|falcon-imageanalyzer)$"
-      )
+        crwd_regex = re.compile(
+          r"^registry\.crowdstrike\.com/(falcon-sensor|falcon-container|falcon-kac|falcon-imageanalyzer)/("
+          r"us-1|us-2|eu-1)/release/(falcon-sensor|falcon-container|falcon-kac|falcon-imageanalyzer)$"
+        )
 
-      acr_regex = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9-]{3,48}[a-zA-Z0-9])?\.azurecr\.io")
+        acr_regex = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9-]{3,48}[a-zA-Z0-9])?\.azurecr\.io")
 
-      if bool(ecr_regex.match(image_registry)):
-        return 'ecr'
-      elif bool(crwd_regex.match(image_registry)):
-        return 'crwd'
-      elif bool(acr_regex.match(image_registry)):
-        return 'acr'
+        artifact_regex = re.compile(r"^[a-z]+-[a-z0-9]+-docker\.pkg\.dev$")
+
+        if bool(ecr_regex.match(registry)):
+          return 'ecr'
+        elif bool(crwd_regex.match(registry)):
+          return 'crwd'
+        elif bool(acr_regex.match(registry)):
+          return 'acr'
+        elif bool(artifact_regex.match(registry)):
+          return 'artifact'
+        else:
+          return 'unsupported'
       else:
-        return 'unsupported'
+        return 'crwd'
     except Exception as e:
       self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
       self.logger.error(f'{e}')
@@ -51,7 +65,7 @@ class CrowdStrikeSensors(CrowdStrike):
     if self.registry is None:
       return 'crwd_registry', self.get_crowdstrike_registry(sensor_type=sensor_type)
     elif self.registry:
-      registry_type = self.check_registry_type(image_registry=self.registry)
+      registry_type = self.check_registry_type(registry=self.registry)
 
       if registry_type == 'crwd_registry':
         return 'crwd_registry', self.registry

@@ -154,7 +154,7 @@ class DetectionsContainer:
     for command in curl_commands:
       shell, script = command.split(' ')
 
-      if mode == 'sidecar':
+      if mode == '_sidecar':
         kubectl_command: list = ["kubectl", "exec", "-it", execution_container, "-c", "generic-tools", "-n",
                                  "crowdstrike-detections", "--", shell, script]
       else:

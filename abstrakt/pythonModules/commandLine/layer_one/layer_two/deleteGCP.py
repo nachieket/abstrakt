@@ -50,9 +50,9 @@ def gke_standard(
   # Delete Helm releases
   helm = HelmOps(logger=gke_standard_logger)
 
-  if helm.is_helm_chart_deployed(release_name='daemonset-falcon-sensor', namespace='falcon-system'):
+  if helm.is_helm_chart_deployed(release_name='_daemonset-falcon-sensor', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
-    helm.run_helm_delete("daemonset-falcon-sensor", "falcon-system")
+    helm.run_helm_delete("_daemonset-falcon-sensor", "falcon-system")
   elif helm.is_helm_chart_deployed(release_name='falcon-helm', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
     helm.run_helm_delete("falcon-helm", "falcon-system")
@@ -113,9 +113,9 @@ def gke_autopilot(
   # Delete Helm releases
   helm = HelmOps(logger=gke_autopilot_logger)
 
-  if helm.is_helm_chart_deployed(release_name='daemonset-falcon-sensor', namespace='falcon-system'):
+  if helm.is_helm_chart_deployed(release_name='_daemonset-falcon-sensor', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
-    helm.run_helm_delete("daemonset-falcon-sensor", "falcon-system")
+    helm.run_helm_delete("_daemonset-falcon-sensor", "falcon-system")
   elif helm.is_helm_chart_deployed(release_name='falcon-helm', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
     helm.run_helm_delete("falcon-helm", "falcon-system")

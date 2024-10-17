@@ -32,11 +32,11 @@ class FalconSensorSidecar(CrowdStrikeSensors):
     self.get_falcon_art_username()
 
     registry_type, falcon_image_repo, falcon_image_tag, falcon_image_pull_token = self.get_repo_tag_token(
-      sensor_type='sidecar', image_tag=self.falcon_sensor_image_tag)
+      sensor_type='_sidecar', image_tag=self.falcon_sensor_image_tag)
 
     if falcon_image_repo != 'None' and falcon_image_tag != 'None' and falcon_image_pull_token != 'None':
       helm_chart = [
-        "helm", "upgrade", "--install", "sidecar-falcon-sensor", "crowdstrike/falcon-sensor",
+        "helm", "upgrade", "--install", "_sidecar-falcon-sensor", "crowdstrike/falcon-sensor",
         "-n", "falcon-system", "--create-namespace",
         "--set", "node.enabled=false",
         "--set", "container.enabled=true",
@@ -133,7 +133,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
       return True
 
   def deploy_falcon_sensor_sidecar(self):
-    """Deploys the CrowdStrike Falcon Sensor sidecar on a Kubernetes cluster."""
+    """Deploys the CrowdStrike Falcon Sensor _sidecar on a Kubernetes cluster."""
 
     k8s = KubectlOps(logger=self.logger)
 
@@ -180,7 +180,7 @@ class FalconSensorSidecar(CrowdStrikeSensors):
 
     print("Installing Falcon Sensor...")
 
-    falcon_sensor_names = ['sidecar-falcon-sensor', 'falcon-sensor-injector']
+    falcon_sensor_names = ['_sidecar-falcon-sensor', 'falcon-sensor-injector']
 
     for falcon_sensor in falcon_sensor_names:
       if k8s.namespace_exists(namespace_name='falcon-system'):

@@ -28,7 +28,7 @@ class AzureFalconSensorDaemonset(AzureFalconSensor):
                                                             service_principal_password=self.service_principal_password,
                                                             image_registry=self.image_registry)
 
-    registry_type, registry = self.get_registry_type_and_url(sensor_type='daemonset',
+    registry_type, registry = self.get_registry_type_and_url(sensor_type='_daemonset',
                                                              image_registry=self.image_registry,
                                                              acr_resource_group=self.acr_resource_group,
                                                              acr_subscription_id=self.acr_subscription_id)
@@ -46,7 +46,7 @@ class AzureFalconSensorDaemonset(AzureFalconSensor):
 
     if registry and image_tag and image_pull_token:
       helm_chart = [
-        "helm", "upgrade", "--install", "daemonset-falcon-sensor", "crowdstrike/falcon-sensor",
+        "helm", "upgrade", "--install", "_daemonset-falcon-sensor", "crowdstrike/falcon-sensor",
         "-n", "falcon-system", "--create-namespace",
         "--set", f"falcon.cid={self.falcon_cid}",
         "--set", f"node.image.repository={registry}",
@@ -98,7 +98,7 @@ class AzureFalconSensorDaemonset(AzureFalconSensor):
       return True
 
   def deploy_azure_daemonset_falcon_sensor(self):
-    """Deploys the CrowdStrike Falcon Sensor daemonset on a Kubernetes cluster."""
+    """Deploys the CrowdStrike Falcon Sensor _daemonset on a Kubernetes cluster."""
 
     print(f"{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n")
 
@@ -106,7 +106,7 @@ class AzureFalconSensorDaemonset(AzureFalconSensor):
 
     k8s = KubectlOps(logger=self.logger)
 
-    falcon_sensor_names = ['daemonset-falcon-sensor', 'falcon-helm-falcon-sensor']
+    falcon_sensor_names = ['_daemonset-falcon-sensor', 'falcon-helm-falcon-sensor']
 
     for falcon_sensor in falcon_sensor_names:
       if k8s.namespace_exists(namespace_name='falcon-system'):

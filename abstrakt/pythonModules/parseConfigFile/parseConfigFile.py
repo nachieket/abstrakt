@@ -1,4 +1,7 @@
 import configparser
+from distutils.command.config import config
+
+
 # import pytz
 # from datetime import datetime
 #
@@ -19,12 +22,16 @@ class ParseConfigFile:
     parameters = {key: config.get("terraform_variables", key).strip('"')
                   for key in config.options("terraform_variables")}
 
-    tags = {key: config.get("terraform_variables:common_tags", key).strip('"')
-            for key in config.options("terraform_variables:common_tags")}
+    if 'terraform_variables:common_tags' in config.sections():
+      common_tags = {key: config.get("terraform_variables:common_tags", key).strip('"')
+                     for key in config.options("terraform_variables:common_tags")}
+    else:
+      common_tags = {}
 
     node_groups = {
       key.split(":")[-1]: {
-        subkey: [config.get(key, subkey).strip('"')] if subkey == "instance_types" else config.get(key, subkey).strip('"')
+        subkey: [config.get(key, subkey).strip('"')] if subkey == "instance_types" else config.get(key, subkey).strip(
+          '"')
         for subkey in config.options(key)
       }
       for key in config.sections()
@@ -33,9 +40,11 @@ class ParseConfigFile:
 
     self.logger.info('Finished reading EKS Managed Node Configuration file. Returning captured values.')
 
-    return parameters, node_groups, tags
+    return parameters, node_groups, common_tags
 
-  def read_aws_k8s_cluster_config_file(self, cluster_type, config_file):
+  def read_aws_k8s_cluster_config_file(self,
+                                       cluster_type: str,
+                                       config_file: str) -> tuple[dict[str, str], dict[str, str]]:
     self.logger.info(f'Reading {cluster_type} Configuration File')
 
     config = configparser.ConfigParser()
@@ -44,8 +53,11 @@ class ParseConfigFile:
     terraform_variables = {key: config.get("terraform_variables", key).strip('"')
                            for key in config.options("terraform_variables")}
 
-    tags = {key: config.get("terraform_variables:common_tags", key).strip('"')
-            for key in config.options("terraform_variables:common_tags")}
+    if 'terraform_variables:common_tags' in config.sections():
+      tags = {key: config.get("terraform_variables:common_tags", key).strip('"')
+              for key in config.options("terraform_variables:common_tags")}
+    else:
+      tags = {}
 
     self.logger.info(f'Finished reading {cluster_type} Configuration file. Returning captured values.')
 

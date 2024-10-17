@@ -5,7 +5,7 @@ from datetime import datetime
 from typing_extensions import Annotated
 
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
-from abstrakt.pythonModules.opsManager.CrowdStrikeSensorOperationsManager import CrowdStrikeSensorOperationsManager
+from abstrakt.pythonModules.opsManager.CrowdStrikeSensorInstallOperationsManager import CrowdStrikeSensorInstallOperationsManager
 
 
 uk_timezone = pytz.timezone('Europe/London')
@@ -66,18 +66,18 @@ def crowdstrike(
   crwd_sensor_log_filename = f'/var/log/crowdstrike/sensors/sensor-{uk_time_str}.log'
   crwd_sensor_logger = CustomLogger(__name__, crwd_sensor_log_filename).logger
 
-  manager = CrowdStrikeSensorOperationsManager(falcon_sensor=falcon_sensor,
-                                               aws_region=aws_region,
-                                               aws_cluster=aws_cluster,
-                                               az_resource_group=az_resource_group,
-                                               az_cluster=az_cluster,
-                                               gcp_region=gcp_region,
-                                               gcp_cluster=gcp_cluster,
-                                               gcp_project_id=gcp_project_id,
-                                               kpa=kpa,
-                                               kac=kac,
-                                               iar=iar,
-                                               detections=detections_containers,
-                                               logger=crwd_sensor_logger)
+  manager = CrowdStrikeSensorInstallOperationsManager(falcon_sensor=falcon_sensor,
+                                                      aws_region=aws_region,
+                                                      aws_cluster=aws_cluster,
+                                                      az_resource_group=az_resource_group,
+                                                      az_cluster=az_cluster,
+                                                      gcp_location=gcp_region,
+                                                      gcp_cluster=gcp_cluster,
+                                                      gcp_project_id=gcp_project_id,
+                                                      kpa=kpa,
+                                                      kac=kac,
+                                                      iar=iar,
+                                                      detections=detections_containers,
+                                                      logger=crwd_sensor_logger)
 
   manager.delete_crowdstrike_sensors()

@@ -2,7 +2,6 @@ import string
 import random
 import inspect
 import subprocess
-from time import sleep
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
@@ -20,11 +19,11 @@ class GCPFalconSensorDaemonset(GCPFalconSensor):
 
   def get_helm_chart(self):
     registry_type, falcon_image_repo, falcon_image_tag, falcon_image_pull_token = self.get_repo_tag_token(
-      sensor_type='daemonset', image_tag=self.sensor_image_tag)
+      sensor_type='_daemonset', image_tag=self.sensor_image_tag)
 
     if falcon_image_repo != 'None' and falcon_image_tag != 'None' and falcon_image_pull_token != 'None':
       helm_chart = [
-        "helm", "upgrade", "--install", "daemonset-falcon-sensor", "crowdstrike/falcon-sensor",
+        "helm", "upgrade", "--install", "_daemonset-falcon-sensor", "crowdstrike/falcon-sensor",
         "-n", "falcon-system", "--create-namespace",
         "--set", f"falcon.cid={self.falcon_cid}",
         "--set", f"node.image.repository={falcon_image_repo}",
@@ -115,7 +114,7 @@ class GCPFalconSensorDaemonset(GCPFalconSensor):
       return True
 
   def deploy_falcon_sensor_daemonset(self):
-    """Deploys the CrowdStrike Falcon Sensor daemonset on a Kubernetes cluster."""
+    """Deploys the CrowdStrike Falcon Sensor _daemonset on a Kubernetes cluster."""
 
     if self.cluster_type == 'gke-autopilot':
       print(f"{'+' * 14}\nGKE Autopilot\n{'+' * 14}\n")
@@ -134,7 +133,7 @@ class GCPFalconSensorDaemonset(GCPFalconSensor):
 
     k8s = KubectlOps(logger=self.logger)
 
-    falcon_sensor_names = ['daemonset-falcon-sensor', 'falcon-helm-falcon-sensor']
+    falcon_sensor_names = ['_daemonset-falcon-sensor', 'falcon-helm-falcon-sensor']
 
     for falcon_sensor in falcon_sensor_names:
       if k8s.namespace_exists(namespace_name='falcon-system'):

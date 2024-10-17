@@ -178,7 +178,7 @@ class ClusterOperationsManager:
       return gke_autopilot_cluster_name
 
   def start_falcon_sensor_deployment(self, cluster_name):
-    # install falcon sensor in daemonset mode
+    # install falcon sensor in _daemonset mode
     if self.cluster_type == 'eks-managed-node' or self.cluster_type == 'aks':
       if self.kernel_mode:
         sensor_mode = 'kernel'
@@ -243,7 +243,7 @@ class ClusterOperationsManager:
                                     proxy_server=self.proxy_server,
                                     proxy_port=self.proxy_port,
                                     sensor_tags=self.falcon_sensor_tags,
-                                    sensor_mode='sidecar',
+                                    sensor_mode='_sidecar',
                                     cluster_name=cluster_name,
                                     logger=self.logger,
                                     iam_policy=self.ecr_iam_policy_name,
@@ -294,9 +294,9 @@ class ClusterOperationsManager:
     # install detections container and generate artificial detections + misconfigurations
     detection_container = DetectionsContainer(logger=self.logger)
     if self.cluster_type == 'eks-fargate':
-      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='sidecar')
+      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='_sidecar')
     else:
-      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='daemonset')
+      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='_daemonset')
 
     print('Generating kubernetes misconfigurations...')
 
@@ -360,7 +360,7 @@ class ClusterOperationsManager:
     # Deploy the cluster using Terraform
     cluster_name = self.deploy_cluster()
 
-    # install falcon sensor in daemonset mode
+    # install falcon sensor in _daemonset mode
     if self.install_falcon_sensor:
       self.start_falcon_sensor_deployment(cluster_name=cluster_name)
 

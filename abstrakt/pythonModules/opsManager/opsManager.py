@@ -3,6 +3,7 @@ import random
 import string
 
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kpa.fKPA import FalconKPA
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._kpa._KPA import _FalconKPA
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kac.fsKAC import FalconKAC
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.iar.fIAR import IAR
 from abstrakt.pythonModules.vendors.generic.VulnerableApps.vulnerableApps import VulnerableApps
@@ -13,6 +14,103 @@ from abstrakt.pythonModules.vendors.cloudServiceProviders.azure.azOps.azOps impo
 from abstrakt.pythonModules.vendors.cloudServiceProviders.gcp.gcpOps import GCPOps
 from abstrakt.pythonModules.kubernetesOps.kubectlApplyYAMLs import KubectlApplyYAMLs
 from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+
+
+class _ClusterOperationsManager:
+  @staticmethod
+  def check_csp_login(csp, logger):
+    cli = AWSOps()
+
+    if csp == 'aws':
+      if cli.check_aws_login():
+        return True
+      else:
+        print('AWS credentials profile validation failed. No valid default or saml profile found. '
+              'Existing the Program.\n')
+        exit()
+    elif csp == 'azure':
+      az = AZOps(logger=logger)
+
+      if az.check_azure_login():
+        return True
+    elif csp == 'gcp':
+      gcp = GCPOps(logger=logger)
+
+      if not gcp.check_gcloud_login():
+        print('You are not logged in to gcloud. Exiting program.')
+        print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
+        exit()
+      else:
+        return True
+    else:
+      return False
+
+  @staticmethod
+  def get_random_string(logger, length=5):
+    string_file = './abstrakt/conf/aws/eks/string.txt'
+
+    try:
+      if os.path.exists(string_file):
+        with open(string_file, 'r') as file:
+          append_string = file.readline()
+          return append_string
+      else:
+        # Use ascii letters and digits for the string pool
+        characters = string.ascii_letters + string.digits
+        # Generate a random string
+        random_string = ''.join(random.choices(characters, k=length))
+
+        with open(string_file, 'w') as file:
+          file.write(f'-{random_string}')
+
+        return f'-{random_string}'
+    except Exception as e:
+      logger.error(e)
+      return '-qwert'
+
+  @staticmethod
+  def start_kpa_deployment(falcon_client_id: str, falcon_client_secret: str, logger):
+    # install kubernetes protection agent
+    kpa = _FalconKPA(falcon_client_id=falcon_client_id,
+                     falcon_client_secret=falcon_client_secret,
+                     logger=logger)
+    kpa.deploy_falcon_kpa()
+
+  @staticmethod
+  def start_vulnerable_app_deployment(logger):
+    # install vulnerable apps
+    apps = VulnerableApps(logger=logger)
+    apps.deploy_vulnerable_apps()
+
+  @staticmethod
+  def start_detections_container_deployment(cluster_type, logger):
+    # install detections container and generate artificial detections + misconfigurations
+    detection_container = DetectionsContainer(logger=logger)
+    if cluster_type == 'eks-fargate':
+      detection_container.deploy_detections_containers(cluster_type=cluster_type, mode='_sidecar')
+    else:
+      detection_container.deploy_detections_containers(cluster_type=cluster_type, mode='_daemonset')
+
+  @staticmethod
+  def generate_misconfigurations(cluster_type, logger):
+    print(f"{'+' * 18}\nMisconfigurations\n{'+' * 18}\n")
+
+    print('Generating kubernetes misconfigurations...')
+
+    try:
+      if cluster_type == 'eks-fargate':
+        yaml_applier = KubectlApplyYAMLs("./abstrakt/conf/crowdstrike/kubernetes/fargate-misconfigs/",
+                                         logger=logger)
+      else:
+        yaml_applier = KubectlApplyYAMLs("./abstrakt/conf/crowdstrike/kubernetes/misconfigurations/",
+                                         logger=logger)
+
+      with MultiThreading() as mt:
+        mt.run_with_progress_indicator(yaml_applier.apply_yaml_files, 1)
+
+      print('Kubernetes misconfigurations generated successfully. They should appear in console in a few minutes.\n')
+    except Exception as e:
+      print(f'Error: {e}', 'Not all misconfigurations may have been generated. Check log file for details.')
 
 
 class ClusterOperationsManager:
@@ -131,9 +229,9 @@ class ClusterOperationsManager:
     # install detections container and generate artificial detections + misconfigurations
     detection_container = DetectionsContainer(logger=self.logger)
     if self.cluster_type == 'eks-fargate':
-      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='sidecar')
+      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='_sidecar')
     else:
-      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='daemonset')
+      detection_container.deploy_detections_containers(cluster_type=self.cluster_type, mode='_daemonset')
 
   def generate_misconfigurations(self):
     print(f"{'+' * 18}\nMisconfigurations\n{'+' * 18}\n")

@@ -73,12 +73,12 @@ class CrowdStrikeSensors(CrowdStrike):
       self.get_falcon_art_username()
 
       if self.falcon_art_username and self.falcon_art_password:
-        if sensor_type == 'sidecar':
+        if sensor_type == '_sidecar':
           registry_bearer_url = (
             f"https://registry.crowdstrike.com/v2/token?={self.falcon_art_username}&scope=repository"
             f":falcon-container/{self.falcon_cloud_region}/release/falcon-sensor:pull&service=registry."
             f"crowdstrike.com")
-        elif sensor_type == 'daemonset':
+        elif sensor_type == '_daemonset':
           registry_bearer_url = (
             f"https://registry.crowdstrike.com/v2/token?={self.falcon_art_username}&scope=repository"
             f":falcon-sensor/{self.falcon_cloud_region}/release/falcon-sensor:pull&service=registry."
@@ -128,9 +128,9 @@ class CrowdStrikeSensors(CrowdStrike):
       return 'unsupported_registry'
 
   def get_crwd_repo_url(self, sensor_type) -> str:
-    if sensor_type == 'daemonset':
+    if sensor_type == '_daemonset':
       return f"registry.crowdstrike.com/falcon-sensor/{self.falcon_cloud_region}/release/falcon-sensor"
-    elif sensor_type == 'sidecar':
+    elif sensor_type == '_sidecar':
       return f"registry.crowdstrike.com/falcon-container/{self.falcon_cloud_region}/release/falcon-sensor"
     elif sensor_type == 'falcon-kac':
       return f"registry.crowdstrike.com/falcon-kac/{self.falcon_cloud_region}/release/falcon-kac"
@@ -142,7 +142,7 @@ class CrowdStrikeSensors(CrowdStrike):
 
     try:
       if re.match(daemonset_pattern, image_tag):
-        registry_bearer: str = self.get_registry_bearer_token(sensor_type='daemonset')
+        registry_bearer: str = self.get_registry_bearer_token(sensor_type='_daemonset')
 
         if registry_bearer:
           daemonset_sensor_url = f"https://registry.crowdstrike.com/v2/falcon-sensor/{self.falcon_cloud_region}" \
@@ -161,7 +161,7 @@ class CrowdStrikeSensors(CrowdStrike):
           if image_tag in sensor_tags:
             return True
       else:
-        self.logger.error(f'{image_tag} does not match CrowdStrike daemonset image tag pattern.')
+        self.logger.error(f'{image_tag} does not match CrowdStrike _daemonset image tag pattern.')
         return False
     except Exception as e:
       self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
@@ -170,7 +170,7 @@ class CrowdStrikeSensors(CrowdStrike):
 
   def get_crwd_daemonset_image_tag(self, image_tag: str = 'latest') -> str | None:
     try:
-      registry_bearer: str = self.get_registry_bearer_token(sensor_type='daemonset')
+      registry_bearer: str = self.get_registry_bearer_token(sensor_type='_daemonset')
 
       if registry_bearer:
         daemonset_sensor_url = f"https://registry.crowdstrike.com/v2/falcon-sensor/{self.falcon_cloud_region}" \
@@ -201,7 +201,7 @@ class CrowdStrikeSensors(CrowdStrike):
 
     try:
       if re.match(sidecar_pattern, image_tag):
-        registry_bearer: str = self.get_registry_bearer_token(sensor_type='sidecar')
+        registry_bearer: str = self.get_registry_bearer_token(sensor_type='_sidecar')
 
         if registry_bearer:
           sidecar_sensor_url = f"https://registry.crowdstrike.com/v2/falcon-container/{self.falcon_cloud_region}" \
@@ -220,7 +220,7 @@ class CrowdStrikeSensors(CrowdStrike):
           if image_tag in sensor_tags:
             return True
       else:
-        self.logger.error(f'{image_tag} does not match CrowdStrike sidecar image tag pattern.')
+        self.logger.error(f'{image_tag} does not match CrowdStrike _sidecar image tag pattern.')
         return False
     except Exception as e:
       self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
@@ -229,7 +229,7 @@ class CrowdStrikeSensors(CrowdStrike):
 
   def get_crwd_sidecar_image_tag(self, image_tag: str = 'latest') -> str | None:
     try:
-      registry_bearer: str = self.get_registry_bearer_token(sensor_type='sidecar')
+      registry_bearer: str = self.get_registry_bearer_token(sensor_type='_sidecar')
 
       if registry_bearer:
         sidecar_sensor_url = f"https://registry.crowdstrike.com/v2/falcon-container/{self.falcon_cloud_region}" \
@@ -389,10 +389,10 @@ class CrowdStrikeSensors(CrowdStrike):
       registry_bearer: str = self.get_registry_bearer_token(sensor_type=sensor_type)
 
       if registry_bearer:
-        if sensor_type == 'sidecar':
+        if sensor_type == '_sidecar':
           sensor_url = f"https://registry.crowdstrike.com/v2/falcon-container/{self.falcon_cloud_region}" \
                        f"/release/falcon-sensor/tags/list"
-        elif sensor_type == 'daemonset':
+        elif sensor_type == '_daemonset':
           sensor_url = f"https://registry.crowdstrike.com/v2/falcon-sensor/{self.falcon_cloud_region}" \
                        f"/release/falcon-sensor/tags/list"
         else:
@@ -506,10 +506,10 @@ class CrowdStrikeSensors(CrowdStrike):
       return 'None', 'None'
 
   def get_crwd_image_tag(self, sensor_type, image_tag) -> str:
-    if sensor_type == 'daemonset':
-      return self.get_crwd_sensor_tag(sensor_type='daemonset', image_tag=image_tag)
-    elif sensor_type == 'sidecar':
-      return self.get_crwd_sensor_tag(sensor_type='sidecar', image_tag=image_tag)
+    if sensor_type == '_daemonset':
+      return self.get_crwd_sensor_tag(sensor_type='_daemonset', image_tag=image_tag)
+    elif sensor_type == '_sidecar':
+      return self.get_crwd_sensor_tag(sensor_type='_sidecar', image_tag=image_tag)
     elif sensor_type == 'falcon-kac':
       return self.get_crwd_sensor_tag(sensor_type='falcon-kac', image_tag=image_tag)
     elif sensor_type == 'falcon-iar':

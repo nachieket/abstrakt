@@ -5,7 +5,7 @@ provider "google" {
 
 # VPC (optional, but recommended for isolation and security)
 resource "google_compute_network" "vpc" {
-  name                    = var.vpc_name
+  name                    = var.vpc_network
   auto_create_subnetworks = "false"
 }
 

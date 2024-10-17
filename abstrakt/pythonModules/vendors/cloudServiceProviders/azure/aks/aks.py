@@ -102,7 +102,7 @@ class AKS:
         except Exception as e:
           self.logger.error(e)
 
-  def deploy_aks_cluster(self, config_file) -> str:
+  def deploy_aks_cluster(self, cluster_name: str, rg_name: str, rg_location: str, asset_tags: str, config_file) -> str:
     # Initialize necessary modules
     conf = ParseConfigFile(self.logger)
     convert = ToTFVars(self.logger)
@@ -122,11 +122,15 @@ class AKS:
 
       # Convert AKS config file parameters to Terraform tfvars format
       # convert.convert_aks_to_tfvars(aks_parameters, tags, service_principal_specs)
-      convert.convert_aks_to_tfvars(aks_parameters, tags)
+      convert.convert_aks_to_tfvars(cluster_name=cluster_name,
+                                    rg_name=rg_name,
+                                    rg_location=rg_location,
+                                    asset_tags=asset_tags,
+                                    terraform_variables=aks_parameters,
+                                    common_tags=tags)
 
       aks_terraform_code_path = './abstrakt/terraformModules/azure/aks/'
 
-      # Execute Terraform commands to deploy AKS cluster
       if (
         tf.execute_terraform_get(path=aks_terraform_code_path) and
         tf.execute_terraform_init(path=aks_terraform_code_path)
@@ -139,8 +143,13 @@ class AKS:
         elif plan_status == 1:
           if tf.execute_terraform_apply(path=aks_terraform_code_path):
             kube_config = UpdateKubeConfig(self.logger)
-            kube_config.update_kubeconfig(cloud='azure', cluster_name=aks_parameters['cluster_name'],
-                                          resource_group=aks_parameters['resource_group_name'])
+
+            if cluster_name and rg_name:
+              kube_config.update_kubeconfig(cloud='azure', cluster_name=cluster_name,
+                                            resource_group=rg_name)
+            else:
+              kube_config.update_kubeconfig(cloud='azure', cluster_name=aks_parameters['cluster_name'],
+                                            resource_group=aks_parameters['resource_group_name'])
 
             print('Terraform execution to deploy azure aks cluster completed successfully.\n')
 
@@ -150,6 +159,15 @@ class AKS:
             exit()
         elif plan_status == 2:
           print('Terraform execution to create azure aks cluster did not need any changes.\n')
+
+          kube_config = UpdateKubeConfig(self.logger)
+
+          if cluster_name and rg_name:
+            kube_config.update_kubeconfig(cloud='azure', cluster_name=cluster_name,
+                                          resource_group=rg_name)
+          else:
+            kube_config.update_kubeconfig(cloud='azure', cluster_name=aks_parameters['cluster_name'],
+                                          resource_group=aks_parameters['resource_group_name'])
 
           return f"{aks_parameters['cluster_name']}"
       else:

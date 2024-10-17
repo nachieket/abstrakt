@@ -62,9 +62,9 @@ def eks_managed_node(
   # Delete Helm releases
   helm = HelmOps(logger=managed_node_logger)
 
-  if helm.is_helm_chart_deployed(release_name='daemonset-falcon-sensor', namespace='falcon-system'):
+  if helm.is_helm_chart_deployed(release_name='_daemonset-falcon-sensor', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
-    helm.run_helm_delete("daemonset-falcon-sensor", "falcon-system")
+    helm.run_helm_delete("_daemonset-falcon-sensor", "falcon-system")
   elif helm.is_helm_chart_deployed(release_name='falcon-helm', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
     helm.run_helm_delete("falcon-helm", "falcon-system")
@@ -124,9 +124,9 @@ def eks_fargate(
   # Delete Helm releases
   helm = HelmOps(logger=eks_fargate_logger)
 
-  if helm.is_helm_chart_deployed(release_name='sidecar-falcon-sensor', namespace='falcon-system'):
+  if helm.is_helm_chart_deployed(release_name='_sidecar-falcon-sensor', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
-    helm.run_helm_delete("sidecar-falcon-sensor", "falcon-system")
+    helm.run_helm_delete("_sidecar-falcon-sensor", "falcon-system")
   elif helm.is_helm_chart_deployed(release_name='falcon-container', namespace='falcon-system'):
     print('Deleting Falcon Sensor...')
     helm.run_helm_delete("falcon-container", "falcon-system")

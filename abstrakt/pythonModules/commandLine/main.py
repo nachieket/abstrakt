@@ -3,6 +3,7 @@ from abstrakt.pythonModules.commandLine.layer_one.create import app as create_ap
 from abstrakt.pythonModules.commandLine.layer_one.delete import app as delete_app
 from abstrakt.pythonModules.commandLine.layer_one.install import install_sensor_app
 from abstrakt.pythonModules.commandLine.layer_one.uninstall import uninstall_sensor_app
+from abstrakt.pythonModules.commandLine.layer_one.upgrade import upgrade_sensor_app
 
 
 class InfrastructureManager:
@@ -15,6 +16,8 @@ class InfrastructureManager:
         self.app.add_typer(install_sensor_app, name="install", help='Install Runtime Agents and Sensors',
                            rich_help_panel='Operations')
         self.app.add_typer(uninstall_sensor_app, name="uninstall", help='Uninstall Runtime Agents and Sensors',
+                           rich_help_panel='Operations')
+        self.app.add_typer(upgrade_sensor_app, name="upgrade", help='Upgrade Runtime Agents and Sensors',
                            rich_help_panel='Operations')
 
     def run(self):

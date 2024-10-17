@@ -132,7 +132,7 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
     # Deploy the cluster using Terraform
     cluster_name = self.deploy_azure_cluster()
 
-    # install falcon sensor in daemonset mode
+    # install falcon sensor in _daemonset mode
     if self.install_falcon_sensor:
       self.start_falcon_sensor_deployment(cluster_name=cluster_name)
 

@@ -278,7 +278,7 @@ class AzureFalconSensor(CrowdStrikeSensors):
                                             image_tag=image_tag):
             return image_tag
           else:
-            source_image_repo = self.get_crwd_repo_url(sensor_type='daemonset')
+            source_image_repo = self.get_crwd_repo_url(sensor_type='_daemonset')
             source_image_tag = self.get_crwd_daemonset_image_tag(image_tag=image_tag)
 
             self.login_to_acr(acr=registry_name)
@@ -293,7 +293,7 @@ class AzureFalconSensor(CrowdStrikeSensors):
         else:
           return None
       elif 'latest' in image_tag:
-        source_image_repo = self.get_crwd_repo_url(sensor_type='daemonset')
+        source_image_repo = self.get_crwd_repo_url(sensor_type='_daemonset')
         source_image_tag = self.get_crwd_daemonset_image_tag(image_tag=image_tag)
 
         if self.check_if_acr_image_exists(registry=registry_name,

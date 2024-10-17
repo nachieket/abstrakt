@@ -2,7 +2,7 @@ variable "cluster_name" {
   default = "random-autopilot-cluster"
 }
 
-variable "vpc_name" {
+variable "vpc_network" {
   default = "random-autopilot"
 }
 

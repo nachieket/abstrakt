@@ -284,3 +284,22 @@ class ContainerOps:
     except client.ApiException as e:
       print(f"Error retrieving service information: {e}")
       return False
+
+  def list_pods_in_namespace(self, namespace) -> list | None:
+    # Load Kubernetes configuration from the default location (~/.kube/config)
+    config.load_kube_config()
+
+    # Create a client for the CoreV1 API
+    v1 = client.CoreV1Api()
+
+    try:
+      # List all the pods in the specified namespace
+      pod_list = v1.list_namespaced_pod(namespace)
+
+      # Extract the names of the pods and return them as a list
+      pod_names = [pod.metadata.name for pod in pod_list.items]
+      return pod_names
+
+    except Exception as e:
+      self.logger.error(f"An error occurred: {e}")
+      return None
