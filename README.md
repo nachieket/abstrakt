@@ -91,7 +91,7 @@ abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt
 ##### Create Azure AKS Cluster and Deploy Sensors via Azure ACR Registry
 
 ```
-abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --registry abstrakt.azurecr.io --sp-name abstrakt --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --acr-resource-group NJ --acr-sub-id 5a84cb53-b383-44db-bd58-c65ca3dfcb8c --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --registry abstrakt.azurecr.io --sp-name abstrakt --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --acr-resource-group NJ --acr-sub-id 12345678-1234-1234-1234-123456789012 --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
@@ -103,7 +103,7 @@ abstrakt install crowdstrike --az-cluster abstrakt-aks1 --az-resource-group abst
 ##### Install CrowdStrike Sensors via Åzure ACR Registry
 
 ```
-abstrakt install crowdstrike --az-cluster abstrakt-aks1 --az-resource-group abstrakt-group1 --az-location uksouth --az-acr-resource-group NJ --az-acr-sub-id 5a84cb53-b383-44db-bd58-c65ca3dfcb8c --registry abstrakt.azurecr.io --az-sp-name abstrakt --falcon-sensor --kac --iar --detections-container --vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt install crowdstrike --az-cluster abstrakt-aks1 --az-resource-group abstrakt-group1 --az-location uksouth --az-acr-resource-group NJ --az-acr-sub-id 12345678-1234-1234-1234-123456789012 --registry abstrakt.azurecr.io --az-sp-name abstrakt --falcon-sensor --kac --iar --detections-container --vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Uninstall Sensors
