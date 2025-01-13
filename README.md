@@ -7,13 +7,13 @@
 ##### Create EKS Managed Node Cluster and Deploy Sensors via CrowdStrike Registry
 
 ```
-abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-kpa --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Create EKS Managed Node Cluster and Deploy Sensors via AWS ECR Registry
 
 ```
-abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-kpa --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
