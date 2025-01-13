@@ -1,5 +1,4 @@
 import configparser
-from distutils.command.config import config
 
 
 # import pytz
@@ -80,7 +79,7 @@ class ParseConfigFile:
     return terraform_variables, tags
 
   def read_gke_standard_config_file(self, file_path):
-    self.logger.info('Reading GKE COS Configuration File')
+    self.logger.info('Reading GKE Standard Configuration File')
 
     config = configparser.ConfigParser()
     config.read(file_path)
@@ -88,12 +87,13 @@ class ParseConfigFile:
     terraform_variables = {key: config.get("terraform_variables", key).strip('"')
                            for key in config.options("terraform_variables")}
 
-    tags = {key: config.get("terraform_variables:common_tags", key).strip('"') for key in
-            config.options("terraform_variables:common_tags")}
+    # tags = {key: config.get("terraform_variables:common_tags", key).strip('"') for key in
+    #         config.options("terraform_variables:common_tags")}
 
-    self.logger.info('Finished reading GKE COS Configuration file. Returning captured values.')
+    self.logger.info('Finished reading GKE Standard Configuration file. Returning captured values.')
 
-    return terraform_variables, tags
+    # return terraform_variables, tags
+    return terraform_variables
 
   def read_gke_autopilot_config_file(self, file_path):
     self.logger.info('Reading GKE Autopilot Configuration File')

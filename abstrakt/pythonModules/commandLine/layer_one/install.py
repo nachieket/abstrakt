@@ -4,7 +4,8 @@ import pytz
 from datetime import datetime
 from typing_extensions import Annotated
 
-from abstrakt.pythonModules.opsManager.CrowdStrikeSensorInstallOperationsManager import CrowdStrikeSensorInstallOperationsManager
+from abstrakt.pythonModules.opsManager.CrowdStrikeSensorInstallOperationsManager import (
+  CrowdStrikeSensorInstallOperationsManager)
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 
 uk_timezone = pytz.timezone('Europe/London')
@@ -27,10 +28,12 @@ def crowdstrike(
                                           rich_help_panel='CrowdStrike EDR Sensor Options',
                                           show_default=False)] = False,
   registry: Annotated[str, typer.Option('--registry', help='Image Registry for all Falcon Images | '
-                                        'Example: 123456789012.dkr.ecr.eu-west-2.amazonaws.com/ecr',
-                                        rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
+                                        'Example: AWS - 123456789012.dkr.ecr.eu-west-2.amazonaws.com | '
+                                                           ' Azure - abstrakt.azurecr.io '
+                                                           '| GCP - europe-west2-docker.pkg.dev',
+                                        rich_help_panel="CrowdStrike EDR Sensor Options", show_default=False)] = None,
   repository: Annotated[str, typer.Option('--repository', help='Image Repository for all Images | '
-                                          'Example: abstrakt', show_default=False,
+                                          'Example: falcon-sensor', show_default=False,
                                           rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   sensor_image_tag: Annotated[str, typer.Option('--sensor-image-tag', help='Falcon Sensor Image Tag | '
                                                 'Example: 7.10.0-16303-1.falcon-linux.x86_64.Release.US-1',
@@ -55,15 +58,6 @@ def crowdstrike(
                                                        '| Example: ns1,ns2,ns3',
                                                   rich_help_panel='CrowdStrike EDR Sensor Options',
                                                   show_default=False)] = None,
-  # cloud_provider: Annotated[str, typer.Option('--cloud-provider',
-  #                                             help='Cloud Service Provider [aws | azure | gcp]',
-  #                                             rich_help_panel='Cloud Service Provider Options',
-  #                                             show_default=False)] = None,
-  # cluster_type: Annotated[str, typer.Option('--cluster-type',
-  #                                           help='Cluster Type [eks-managed-node | eks-self-managed-node | '
-  #                                                'eks-fargate | aks | gke-standard | gke-autopilot]',
-  #                                           rich_help_panel='Cloud Service Provider Options',
-  #                                           show_default=False)] = None,
   aws_cluster: Annotated[str, typer.Option('--aws-cluster',
                                            help='AWS Cluster Name',
                                            rich_help_panel='AWS Options',
@@ -101,15 +95,11 @@ def crowdstrike(
   az_sp_name: Annotated[str, typer.Option('--az-sp-name',
                                           help='Azure Service Principal Name',
                                           rich_help_panel='Azure Options',
-                                          show_default=False)] = 'abstrakt',
+                                          show_default=False)] = None,
   az_sp_pass: Annotated[str, typer.Option('--az-sp-pass',
                                           help='Azure Service Principal Password',
                                           rich_help_panel='Azure Options',
                                           show_default=False)] = None,
-  # aks_sub_id: Annotated[str, typer.Option('--aks-sub-id',
-  #                                         help='Azure AKS Subscription ID',
-  #                                         rich_help_panel='Azure Options',
-  #                                         show_default=False)] = None,
   gcp_cluster: Annotated[str, typer.Option('--gcp-cluster',
                                            help='GCP Cluster Name',
                                            rich_help_panel='GCP Options',
@@ -117,8 +107,6 @@ def crowdstrike(
   gcp_location: Annotated[str, typer.Option('--gcp-location', help='Cluster Region or Zone',
                                             rich_help_panel='GCP Options',
                                             show_default=False)] = None,
-  gcp_network: Annotated[str, typer.Option('--gcp-network', help='VPC Network Name', show_default=False,
-                                           rich_help_panel="GCP Options")] = None,
   gcp_project_id: Annotated[str, typer.Option('--gcp-project-id', help='GCP Project Name',
                                               rich_help_panel='GCP Options',
                                               show_default=False)] = None,
@@ -190,10 +178,8 @@ def crowdstrike(
                                                       az_sp_name=az_sp_name,
                                                       az_sp_pass=az_sp_pass,
                                                       az_acr_sub_id=az_acr_sub_id,
-                                                      # aks_sub_id=aks_sub_id,
                                                       gcp_cluster=gcp_cluster,
                                                       gcp_location=gcp_location,
-                                                      gcp_network=gcp_network,
                                                       gcp_project_id=gcp_project_id,
                                                       gcp_service_account=gcp_service_account,
                                                       kac=kac,

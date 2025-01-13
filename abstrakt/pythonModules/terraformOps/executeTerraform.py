@@ -105,7 +105,7 @@ class ExecuteTerraform:
       printf(f'Executing {terraform_command}', logger=self.logger)
 
       if command[1] == 'plan':
-        status = mt.run_with_progress_indicator(self.check_for_changes, 1, command, path)
+        status = mt.run_with_progress_indicator(self.check_for_changes, 1, 1800, command, path)
 
         if status == 0:
           printf(f'{terraform_command} execution failed\n', logger=self.logger)
@@ -114,7 +114,7 @@ class ExecuteTerraform:
 
         return status
       else:
-        if mt.run_with_progress_indicator(self.terraform_process_execution, 1, command, path):
+        if mt.run_with_progress_indicator(self.terraform_process_execution, 1, 1800, command, path):
           printf(f'{terraform_command} successfully executed\n', logger=self.logger)
           return True
         else:

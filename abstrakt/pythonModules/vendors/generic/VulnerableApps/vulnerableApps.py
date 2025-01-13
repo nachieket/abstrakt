@@ -49,7 +49,7 @@ class VulnerableApps:
           return False
 
       with MultiThreading() as mt:
-        if mt.run_with_progress_indicator(thread, 1):
+        if mt.run_with_progress_indicator(thread, 1, 300):
           print("Vulnerable apps deployed successfully.\n")
         else:
           print('Vulnerable apps did not deploy successfully. Check log files under /var/logs/crowdstrike for more '

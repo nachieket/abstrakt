@@ -17,15 +17,15 @@ class GKE:
     print('Deploying GKE Standard Cluster...\n')
 
     try:
-      gke_standard_parameters, tags = conf.read_gke_standard_config_file(config_file)
+      # gke_standard_parameters, tags = conf.read_gke_standard_config_file(config_file)
+      gke_standard_parameters = conf.read_gke_standard_config_file(config_file)
 
       convert.convert_gke_standard_to_tfvars(cluster_name=cluster_name,
                                              vpc_network=vpc_network,
                                              region=region,
                                              asset_tags=asset_tags,
                                              terraform_variables=gke_standard_parameters,
-                                             project_id=project_id,
-                                             common_tags=tags)
+                                             project_id=project_id)
 
       gke_standard_terraform_code_path = './abstrakt/terraformModules/gcp/gke/standard/'
 

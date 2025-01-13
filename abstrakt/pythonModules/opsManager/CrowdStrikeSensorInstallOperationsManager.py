@@ -6,37 +6,30 @@ from kubernetes import client, config
 
 from abstrakt.pythonModules.kubernetesOps.helmOps import HelmOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
-from abstrakt.pythonModules.vendors.cloudServiceProviders.gcp.gcpOps import GCPOps
-from abstrakt.pythonModules.kubernetesOps.kubectlApplyYAMLs import KubectlApplyYAMLs
-from abstrakt.pythonModules.vendors.cloudServiceProviders.azure.azOps.azOps import AZOps
-from abstrakt.pythonModules.vendors.cloudServiceProviders.aws.awsCli.awsOps import AWSOps
 
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._kac._AWSKAC import _AWSDaemonsetKAC, _AWSSidecarKAC
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._iar._AWSIAR import _AWSDaemonsetIAR, _AWSSidecarIAR
+from abstrakt.pythonModules.opsManager.generalOpsManager import ClusterOperationsManager
 
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kpa.fKPA import FalconKPA
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._iar._GCPIAR import _GCPIAR
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._kac._GCPKAC import _GCPKAC
-from abstrakt.pythonModules.vendors.generic.VulnerableApps.vulnerableApps import VulnerableApps
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._iar._AzureIAR import _AzureIAR
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._kac._AzureKAC import _AzureKAC
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kac.AWSKAC import AWSDaemonsetKAC, AWSSidecarKAC
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.iar.AWSIAR import AWSDaemonsetIAR, AWSSidecarIAR
 
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._falconsensor._daemonset._AWSDaemonset \
-  import _AWSDaemonsetInstall
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._falconsensor._daemonset._AzureDaemonset \
-  import _AzureDaemonset
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._falconsensor._daemonset._GCPDaemonset \
-  import _GCPDaemonset
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors._falconsensor._sidecar._AWSSidecar \
-  import _AWSSidecar
-from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.detectionsContainer.detectionsContainer \
-  import DetectionsContainer
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.iar.GCPIAR import GCPIAR
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kac.GCPKAC import GCPKAC
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.iar.AzureIAR import AzureIAR
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.kac.AzureKAC import AzureKAC
+
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.daemonset.AWSDaemonset \
+  import AWSDaemonsetInstall
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.daemonset.AzureDaemonset \
+  import AzureDaemonset
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.daemonset.GCPDaemonset \
+  import GCPDaemonset
+from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.sidecar.AWSSidecar \
+  import AWSSidecar
 from abstrakt.pythonModules.commandLine.layer_one.layer_two.runtimeParameterVerification \
-  import RuntimeParameterVerification
+  import SensorInstallRuntimeParameterVerification, SensorUninstallRuntimeParameterVerification
 
 
-class CrowdStrikeSensorInstallOperationsManager:
+class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
   def __init__(self, falcon_sensor=None,
                kernel_mode=None,
                ebpf_mode=None,
@@ -156,40 +149,60 @@ class CrowdStrikeSensorInstallOperationsManager:
       else:
         return False
 
-  def verify_parameters(self, cluster_type=None):
+  def verify_install_parameters(self):
     pass
     # ensure required parameters are passed with falcon sensor
-    runtime = RuntimeParameterVerification(logger=self.logger)
+    runtime = SensorInstallRuntimeParameterVerification(falcon_sensor=self.falcon_sensor,
+                                                        kernel_mode=self.kernel_mode,
+                                                        ebpf_mode=self.ebpf_mode,
+                                                        registry=self.registry,
+                                                        repository=self.repository,
+                                                        proxy_server=self.proxy_server,
+                                                        proxy_port=self.proxy_port,
+                                                        aws_cluster=self.aws_cluster,
+                                                        aws_region=self.aws_region,
+                                                        az_cluster=self.az_cluster,
+                                                        az_resource_group=self.az_resource_group,
+                                                        az_location=self.az_location,
+                                                        az_acr_resource_group=self.az_acr_resource_group,
+                                                        az_acr_sub_id=self.az_acr_sub_id,
+                                                        az_sp_name=self.az_sp_name,
+                                                        az_sp_pass=self.az_sp_pass,
+                                                        gcp_cluster=self.gcp_cluster,
+                                                        gcp_location=self.gcp_location,
+                                                        gcp_project_id=self.gcp_project_id,
+                                                        gcp_service_account=self.gcp_service_account,
+                                                        kpa=self.kpa,
+                                                        kac=self.kac,
+                                                        iar=self.iar,
+                                                        falcon_client_id=self.falcon_client_id,
+                                                        falcon_client_secret=self.falcon_client_secret,
+                                                        detections_container=self.detections_container,
+                                                        vulnerable_apps=self.vulnerable_apps,
+                                                        generate_misconfigs=self.generate_misconfigs
+                                                        )
 
-    runtime.verify_crowdstrike_sensor_parameters(falcon_sensor=self.falcon_sensor,
-                                                 kernel_mode=self.kernel_mode,
-                                                 ebpf_mode=self.ebpf_mode,
-                                                 monitor_namespaces=self.monitor_namespaces,
-                                                 exclude_namespaces=self.exclude_namespaces,
-                                                 falcon_image_repo=self.registry,
-                                                 falcon_image_tag=self.sensor_image_tag,
-                                                 proxy_server=self.proxy_server,
-                                                 proxy_port=self.proxy_port,
-                                                 falcon_sensor_tags=self.sensor_tags,
-                                                 aws_region=self.aws_region,
-                                                 aws_cluster_name=self.aws_cluster,
-                                                 azure_resource_group_name=self.az_resource_group,
-                                                 azure_cluster_name=self.az_cluster,
-                                                 gcp_region=self.gcp_location,
-                                                 gcp_cluster_name=self.gcp_cluster,
-                                                 gcp_project_id=self.gcp_project_id,
-                                                 kpa=self.kpa,
-                                                 kac=self.kac,
-                                                 iar=self.iar,
-                                                 detections_container=self.detections_container,
-                                                 vulnerable_apps=self.vulnerable_apps,
-                                                 falcon_client_id=self.falcon_client_id,
-                                                 falcon_client_secret=self.falcon_client_secret,
-                                                 ecr_iam_policy_name=self.aws_ecr_iam_policy,
-                                                 ecr_iam_role_name=self.aws_sensor_iam_role,
-                                                 logger=self.logger,
-                                                 cluster_type=cluster_type
-                                                 )
+    runtime.verify_sensor_install_parameters()
+
+  def verify_uninstall_parameters(self):
+    pass
+    # ensure required parameters are passed with falcon sensor
+    runtime = SensorUninstallRuntimeParameterVerification(falcon_sensor=self.falcon_sensor,
+                                                          aws_cluster=self.aws_cluster,
+                                                          aws_region=self.aws_region,
+                                                          az_cluster=self.az_cluster,
+                                                          az_resource_group=self.az_resource_group,
+                                                          az_location=self.az_location,
+                                                          az_acr_resource_group=self.az_acr_resource_group,
+                                                          gcp_cluster=self.gcp_cluster,
+                                                          gcp_location=self.gcp_location,
+                                                          gcp_project_id=self.gcp_project_id,
+                                                          kpa=self.kpa,
+                                                          kac=self.kac,
+                                                          iar=self.iar
+                                                          )
+
+    runtime.verify_sensor_uninstall_parameters()
 
   def get_cluster_credentials(self):
     if self.aws_cluster and self.aws_region:
@@ -355,8 +368,7 @@ class CrowdStrikeSensorInstallOperationsManager:
     elif self.az_cluster and self.az_resource_group:
       return 'azure-aks'
     elif self.gcp_cluster and self.gcp_location and self.gcp_project_id:
-      gke_cluster_type = self.get_gke_cluster_type(cluster_name=self.gcp_cluster,
-                                                   gcp_project_id=self.gcp_project_id)
+      gke_cluster_type = self.get_gke_cluster_type(cluster_name=self.gcp_cluster, gcp_project_id=self.gcp_project_id)
       if gke_cluster_type == 'gke-standard':
         return 'gke-standard'
       elif gke_cluster_type == 'gke-autopilot':
@@ -371,71 +383,71 @@ class CrowdStrikeSensorInstallOperationsManager:
       sensor_mode = 'bpf'
 
     if cluster_type == 'eks-managed-node':
-      daemonset = _AWSDaemonsetInstall(falcon_client_id=self.falcon_client_id,
-                                       falcon_client_secret=self.falcon_client_secret,
-                                       logger=self.logger,
-                                       registry=self.registry,
-                                       repository=self.repository,
-                                       proxy_server=self.proxy_server,
-                                       proxy_port=self.proxy_port,
-                                       sensor_image_tag=self.sensor_image_tag,
-                                       sensor_tags=self.sensor_tags,
-                                       sensor_mode=sensor_mode)
+      daemonset = AWSDaemonsetInstall(falcon_client_id=self.falcon_client_id,
+                                      falcon_client_secret=self.falcon_client_secret,
+                                      logger=self.logger,
+                                      registry=self.registry,
+                                      repository=self.repository,
+                                      proxy_server=self.proxy_server,
+                                      proxy_port=self.proxy_port,
+                                      sensor_image_tag=self.sensor_image_tag,
+                                      sensor_tags=self.sensor_tags,
+                                      sensor_mode=sensor_mode)
 
       daemonset.deploy_falcon_sensor_daemonset()
     elif cluster_type == 'eks-fargate':
-      sidecar = _AWSSidecar(falcon_client_id=self.falcon_client_id,
-                            falcon_client_secret=self.falcon_client_secret,
-                            logger=self.logger,
-                            registry=self.registry,
-                            repository=self.repository,
-                            iam_policy=self.aws_ecr_iam_policy,
-                            proxy_server=self.proxy_server,
-                            proxy_port=self.proxy_port,
-                            sensor_image_tag=self.sensor_image_tag,
-                            sensor_tags=self.sensor_tags,
-                            sensor_mode=sensor_mode,
-                            monitor_namespaces=self.monitor_namespaces,
-                            exclude_namespaces=self.exclude_namespaces,
-                            sensor_iam_role=self.aws_sensor_iam_role,
-                            kac_iam_role=self.aws_kac_iam_role,
-                            iar_iam_role=self.aws_iar_iam_role,
-                            cluster_name=self.aws_cluster)
+      sidecar = AWSSidecar(falcon_client_id=self.falcon_client_id,
+                           falcon_client_secret=self.falcon_client_secret,
+                           logger=self.logger,
+                           registry=self.registry,
+                           repository=self.repository,
+                           ecr_iam_policy=self.aws_ecr_iam_policy,
+                           proxy_server=self.proxy_server,
+                           proxy_port=self.proxy_port,
+                           sensor_image_tag=self.sensor_image_tag,
+                           sensor_tags=self.sensor_tags,
+                           sensor_mode=sensor_mode,
+                           monitor_namespaces=self.monitor_namespaces,
+                           exclude_namespaces=self.exclude_namespaces,
+                           ecr_sensor_iam_role=self.aws_sensor_iam_role,
+                           ecr_kac_iam_role=self.aws_kac_iam_role,
+                           ecr_iar_iam_role=self.aws_iar_iam_role,
+                           cluster_name=self.aws_cluster)
 
       sidecar.deploy_sidecar_falcon_sensor()
     elif cluster_type == 'aks' or cluster_type == 'azure-aks':
-      daemonset = _AzureDaemonset(falcon_client_id=self.falcon_client_id,
-                                  falcon_client_secret=self.falcon_client_secret,
-                                  logger=self.logger,
-                                  registry=self.registry,
-                                  repository=self.repository,
-                                  rg_name=self.az_resource_group,
-                                  rg_location=self.az_location,
-                                  acr_rg=self.az_acr_resource_group,
-                                  acr_sub_id=self.az_acr_sub_id,
-                                  sensor_image_tag=self.sensor_image_tag,
-                                  proxy_server=self.proxy_server,
-                                  proxy_port=self.proxy_port,
-                                  sensor_tags=self.sensor_tags,
-                                  sensor_mode=sensor_mode,
-                                  sp_name=self.az_sp_name,
-                                  sp_pass=self.az_sp_pass)
+      daemonset = AzureDaemonset(falcon_client_id=self.falcon_client_id,
+                                 falcon_client_secret=self.falcon_client_secret,
+                                 logger=self.logger,
+                                 registry=self.registry,
+                                 repository=self.repository,
+                                 rg_name=self.az_resource_group,
+                                 rg_location=self.az_location,
+                                 acr_rg=self.az_acr_resource_group,
+                                 acr_sub_id=self.az_acr_sub_id,
+                                 sensor_image_tag=self.sensor_image_tag,
+                                 proxy_server=self.proxy_server,
+                                 proxy_port=self.proxy_port,
+                                 sensor_tags=self.sensor_tags,
+                                 sensor_mode=sensor_mode,
+                                 sp_name=self.az_sp_name,
+                                 sp_pass=self.az_sp_pass)
 
       daemonset.deploy_azure_daemonset_falcon_sensor()
     elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-      daemonset = _GCPDaemonset(falcon_client_id=self.falcon_client_id,
-                                falcon_client_secret=self.falcon_client_secret,
-                                logger=self.logger,
-                                registry=self.registry,
-                                repository=self.repository,
-                                project_id=self.gcp_project_id,
-                                service_account=self.gcp_service_account,
-                                location=self.gcp_location,
-                                sensor_image_tag=self.sensor_image_tag,
-                                sensor_tags=self.sensor_tags,
-                                proxy_server=self.proxy_server,
-                                proxy_port=self.proxy_port,
-                                cluster_type=cluster_type)
+      daemonset = GCPDaemonset(falcon_client_id=self.falcon_client_id,
+                               falcon_client_secret=self.falcon_client_secret,
+                               logger=self.logger,
+                               registry=self.registry,
+                               repository=self.repository,
+                               project_id=self.gcp_project_id,
+                               service_account=self.gcp_service_account,
+                               location=self.gcp_location,
+                               sensor_image_tag=self.sensor_image_tag,
+                               sensor_tags=self.sensor_tags,
+                               proxy_server=self.proxy_server,
+                               proxy_port=self.proxy_port,
+                               cluster_type=cluster_type)
 
       daemonset.deploy_falcon_sensor_daemonset()
     elif cluster_type == 'eks-managed-node-with-eks-fargate':
@@ -445,60 +457,56 @@ class CrowdStrikeSensorInstallOperationsManager:
       # TODO: Implement the method
       pass
 
-  def start_kpa_deployment(self):
-    # install kubernetes protection agent
-    kpa = FalconKPA(falcon_client_id=self.falcon_client_id,
-                    falcon_client_secret=self.falcon_client_secret,
-                    logger=self.logger)
-    kpa.deploy_falcon_kpa()
-
   def start_kac_deployment(self, cluster_type):
     if cluster_type == 'eks-managed-node':
-      aws_daemonset_kac = _AWSDaemonsetKAC(falcon_client_id=self.falcon_client_id,
-                                           falcon_client_secret=self.falcon_client_secret,
-                                           logger=self.logger,
-                                           registry=self.registry,
-                                           repository=self.repository,
-                                           cluster_name=self.aws_cluster,
-                                           cluster_type=cluster_type,
-                                           kac_image_tag=self.kac_image_tag)
+      aws_daemonset_kac = AWSDaemonsetKAC(falcon_client_id=self.falcon_client_id,
+                                          falcon_client_secret=self.falcon_client_secret,
+                                          logger=self.logger,
+                                          registry=self.registry,
+                                          repository=self.repository,
+                                          cluster_name=self.aws_cluster,
+                                          cluster_type=cluster_type,
+                                          kac_image_tag=self.kac_image_tag,
+                                          sensor_tags=self.sensor_tags)
       aws_daemonset_kac.deploy_falcon_kac()
     elif cluster_type == 'eks-fargate':
-      aws_sidecar_kac = _AWSSidecarKAC(falcon_client_id=self.falcon_client_id,
-                                       falcon_client_secret=self.falcon_client_secret,
-                                       logger=self.logger,
-                                       registry=self.registry,
-                                       repository=self.repository,
-                                       iam_policy=self.aws_ecr_iam_policy,
-                                       cluster_name=self.aws_cluster,
-                                       cluster_type=cluster_type,
-                                       kac_image_tag=self.kac_image_tag,
-                                       kac_iam_role=self.aws_kac_iam_role)
+      aws_sidecar_kac = AWSSidecarKAC(falcon_client_id=self.falcon_client_id,
+                                      falcon_client_secret=self.falcon_client_secret,
+                                      logger=self.logger,
+                                      registry=self.registry,
+                                      repository=self.repository,
+                                      ecr_iam_policy=self.aws_ecr_iam_policy,
+                                      cluster_name=self.aws_cluster,
+                                      cluster_type=cluster_type,
+                                      kac_image_tag=self.kac_image_tag,
+                                      kac_iam_role=self.aws_kac_iam_role)
       aws_sidecar_kac.deploy_falcon_kac()
     elif cluster_type == 'aks' or cluster_type == 'azure-aks':
-      aks_daemonset_kac = _AzureKAC(falcon_client_id=self.falcon_client_id,
-                                    falcon_client_secret=self.falcon_client_secret,
-                                    logger=self.logger,
-                                    registry=self.registry,
-                                    repository=self.repository,
-                                    rg_name=self.az_resource_group,
-                                    rg_location=self.az_location,
-                                    acr_rg=self.az_acr_resource_group,
-                                    acr_sub_id=self.az_acr_sub_id,
-                                    kac_image_tag=self.kac_image_tag,
-                                    sp_name=self.az_sp_name,
-                                    sp_pass=self.az_sp_pass)
+      aks_daemonset_kac = AzureKAC(falcon_client_id=self.falcon_client_id,
+                                   falcon_client_secret=self.falcon_client_secret,
+                                   logger=self.logger,
+                                   registry=self.registry,
+                                   repository=self.repository,
+                                   rg_name=self.az_resource_group,
+                                   rg_location=self.az_location,
+                                   acr_rg=self.az_acr_resource_group,
+                                   acr_sub_id=self.az_acr_sub_id,
+                                   kac_image_tag=self.kac_image_tag,
+                                   sensor_tags=self.sensor_tags,
+                                   sp_name=self.az_sp_name,
+                                   sp_pass=self.az_sp_pass)
       aks_daemonset_kac.deploy_falcon_kac()
     elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-      gke_standard_kac = _GCPKAC(falcon_client_id=self.falcon_client_id,
-                                 falcon_client_secret=self.falcon_client_secret,
-                                 logger=self.logger,
-                                 registry=self.registry,
-                                 repository=self.repository,
-                                 project_id=self.gcp_project_id,
-                                 service_account=self.gcp_service_account,
-                                 location=self.gcp_location,
-                                 kac_image_tag=self.kac_image_tag)
+      gke_standard_kac = GCPKAC(falcon_client_id=self.falcon_client_id,
+                                falcon_client_secret=self.falcon_client_secret,
+                                logger=self.logger,
+                                registry=self.registry,
+                                repository=self.repository,
+                                project_id=self.gcp_project_id,
+                                service_account=self.gcp_service_account,
+                                location=self.gcp_location,
+                                kac_image_tag=self.kac_image_tag,
+                                sensor_tags=self.sensor_tags)
 
       gke_standard_kac.deploy_falcon_kac()
     elif cluster_type == 'eks-managed-node-with-eks-fargate':
@@ -511,54 +519,54 @@ class CrowdStrikeSensorInstallOperationsManager:
   def start_iar_deployment(self, cluster_type):
     # install image assessment at runtime
     if cluster_type == 'eks-managed-node':
-      aws_daemonset_iar = _AWSDaemonsetIAR(falcon_client_id=self.falcon_client_id,
-                                           falcon_client_secret=self.falcon_client_secret,
-                                           logger=self.logger,
-                                           registry=self.registry,
-                                           repository=self.repository,
-                                           iar_image_tag=self.iar_image_tag,
-                                           cluster_name=self.aws_cluster,
-                                           cluster_type=cluster_type)
+      aws_daemonset_iar = AWSDaemonsetIAR(falcon_client_id=self.falcon_client_id,
+                                          falcon_client_secret=self.falcon_client_secret,
+                                          logger=self.logger,
+                                          registry=self.registry,
+                                          repository=self.repository,
+                                          iar_image_tag=self.iar_image_tag,
+                                          cluster_name=self.aws_cluster,
+                                          cluster_type=cluster_type)
 
       aws_daemonset_iar.deploy_falcon_iar()
     elif cluster_type == 'eks-fargate':
-      aws_sidecar_iar = _AWSSidecarIAR(falcon_client_id=self.falcon_client_id,
-                                       falcon_client_secret=self.falcon_client_secret,
-                                       logger=self.logger,
-                                       registry=self.registry,
-                                       repository=self.repository,
-                                       iar_image_tag=self.iar_image_tag,
-                                       cluster_name=self.aws_cluster,
-                                       cluster_type=cluster_type,
-                                       iam_policy=self.aws_ecr_iam_policy,
-                                       iar_iam_role=self.aws_iar_iam_role)
+      aws_sidecar_iar = AWSSidecarIAR(falcon_client_id=self.falcon_client_id,
+                                      falcon_client_secret=self.falcon_client_secret,
+                                      logger=self.logger,
+                                      registry=self.registry,
+                                      repository=self.repository,
+                                      iar_image_tag=self.iar_image_tag,
+                                      cluster_name=self.aws_cluster,
+                                      cluster_type=cluster_type,
+                                      ecr_iam_policy=self.aws_ecr_iam_policy,
+                                      iar_iam_role=self.aws_iar_iam_role)
 
       aws_sidecar_iar.deploy_falcon_iar()
     elif cluster_type == 'aks' or cluster_type == 'azure-aks':
-      az_aks_iar = _AzureIAR(falcon_client_id=self.falcon_client_id,
-                             falcon_client_secret=self.falcon_client_secret,
-                             logger=self.logger,
-                             registry=self.registry,
-                             repository=self.repository,
-                             rg_name=self.az_resource_group,
-                             rg_location=self.az_location,
-                             acr_rg=self.az_acr_resource_group,
-                             acr_sub_id=self.az_acr_sub_id,
-                             iar_image_tag=self.iar_image_tag,
-                             sp_name=self.az_sp_name,
-                             sp_pass=self.az_sp_pass)
+      az_aks_iar = AzureIAR(falcon_client_id=self.falcon_client_id,
+                            falcon_client_secret=self.falcon_client_secret,
+                            logger=self.logger,
+                            registry=self.registry,
+                            repository=self.repository,
+                            rg_name=self.az_resource_group,
+                            rg_location=self.az_location,
+                            acr_rg=self.az_acr_resource_group,
+                            acr_sub_id=self.az_acr_sub_id,
+                            iar_image_tag=self.iar_image_tag,
+                            sp_name=self.az_sp_name,
+                            sp_pass=self.az_sp_pass)
 
       az_aks_iar.deploy_falcon_iar()
     elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
-      iar = _GCPIAR(falcon_client_id=self.falcon_client_id,
-                    falcon_client_secret=self.falcon_client_secret,
-                    logger=self.logger,
-                    registry=self.registry,
-                    repository=self.repository,
-                    project_id=self.gcp_project_id,
-                    service_account=self.gcp_service_account,
-                    location=self.gcp_location,
-                    iar_image_tag=self.iar_image_tag)
+      iar = GCPIAR(falcon_client_id=self.falcon_client_id,
+                   falcon_client_secret=self.falcon_client_secret,
+                   logger=self.logger,
+                   registry=self.registry,
+                   repository=self.repository,
+                   project_id=self.gcp_project_id,
+                   service_account=self.gcp_service_account,
+                   location=self.gcp_location,
+                   iar_image_tag=self.iar_image_tag)
 
       iar.deploy_falcon_iar()
     elif cluster_type == 'eks-managed-node-with-eks-fargate':
@@ -568,75 +576,24 @@ class CrowdStrikeSensorInstallOperationsManager:
       # TODO: Implement the method
       pass
 
-  def start_vulnerable_app_deployment(self):
-    # install vulnerable apps
-    apps = VulnerableApps(logger=self.logger)
-    apps.deploy_vulnerable_apps()
-
-  def start_detections_container_deployment(self, cluster_type):
-    # install detections container and generate artificial detections + misconfigurations
-    detection_container = DetectionsContainer(logger=self.logger)
-    if cluster_type == 'eks-fargate':
-      detection_container.deploy_detections_containers(cluster_type=cluster_type, mode='_sidecar')
-    else:
-      detection_container.deploy_detections_containers(cluster_type=cluster_type, mode='_daemonset')
-
-  def generate_misconfigurations(self, cluster_type):
-    print(f"{'+' * 18}\nMisconfigurations\n{'+' * 18}\n")
-
-    print('Generating kubernetes misconfigurations...')
-
-    try:
-      if cluster_type == 'eks-fargate':
-        yaml_applier = KubectlApplyYAMLs("./abstrakt/conf/crowdstrike/kubernetes/fargate-misconfigs/",
-                                         logger=self.logger)
-      else:
-        yaml_applier = KubectlApplyYAMLs("./abstrakt/conf/crowdstrike/kubernetes/misconfigurations/",
-                                         logger=self.logger)
-
-      with MultiThreading() as mt:
-        mt.run_with_progress_indicator(yaml_applier.apply_yaml_files, 1)
-
-      print('Kubernetes misconfigurations generated successfully. They should appear in console in a few minutes.\n')
-    except Exception as e:
-      print(f'Error: {e}', 'Not all misconfigurations may have been generated. Check log file for details.')
-
-  def check_csp_login(self):
-    cli = AWSOps()
-
-    if self.aws_region and self.aws_cluster:
-      if cli.check_aws_login():
-        return True
-      else:
-        print('AWS credentials profile validation failed. No valid default or saml profile found. '
-              'Existing the Program.\n')
-        exit()
-    elif self.az_cluster and self.az_resource_group:
-      az = AZOps(logger=self.logger)
-
-      if az.check_azure_login():
-        return True
-    elif self.gcp_location and self.gcp_cluster and self.gcp_project_id:
-      gcp = GCPOps(logger=self.logger)
-
-      if not gcp.check_gcloud_login():
-        print('You are not logged in to gcloud. Exiting program.')
-        print("Try logging in to GCP using 'gcloud auth login' and try to run the program again\n")
-        exit()
-      else:
-        return True
-    else:
-      return False
-
   def start_crowdstrike_sensor_operations(self):
     # ensure required parameters are passed with falcon sensor
-    # self.verify_parameters()
+    self.verify_install_parameters()
 
     start_time = time.time()
     print("\nStart Time:", time.strftime("%Y-%m-%d %H:%M:%S\n", time.localtime(start_time)))
 
+    if self.aws_cluster and self.aws_region:
+      csp = 'aws'
+    elif self.az_cluster and self.az_resource_group and self.az_location:
+      csp = 'azure'
+    elif self.gcp_cluster and self.gcp_location:
+      csp = 'gcp'
+    else:
+      csp = 'unknown'
+
     # Check Cloud Service Provider Login
-    if not self.check_csp_login():
+    if not self.check_csp_login(csp=csp, logger=self.logger):
       print(f'Cloud provider session is not logged in. Attempt manual login to cloud provider before running '
             f'Abstrakt. \n')
       exit()
@@ -651,15 +608,13 @@ class CrowdStrikeSensorInstallOperationsManager:
       print('Error: Cluster type could not be determined. Exiting the program.')
       exit()
 
-    # ensure required parameters are passed with falcon sensor
-    # self.verify_parameters(cluster_type=cluster_type)
-
     if self.falcon_sensor:
       self.start_falcon_sensor_deployment(cluster_type=cluster_type)
 
     # install kubernetes protection agent
     if self.kpa:
-      self.start_kpa_deployment()
+      self.start_kpa_deployment(falcon_client_id=self.falcon_client_id,
+                                falcon_client_secret=self.falcon_client_secret, logger=self.logger)
 
     # install kubernetes admission controller
     if self.kac:
@@ -671,14 +626,14 @@ class CrowdStrikeSensorInstallOperationsManager:
 
     # install detections container and generate artificial detections + misconfigurations
     if self.detections_container:
-      self.start_detections_container_deployment(cluster_type=cluster_type)
+      self.start_detections_container_deployment(cluster_type=cluster_type, logger=self.logger)
 
     # install vulnerable apps
     if self.vulnerable_apps:
-      self.start_vulnerable_app_deployment()
+      self.start_vulnerable_app_deployment(logger=self.logger)
 
     if self.generate_misconfigs:
-      self.generate_misconfigurations(cluster_type=cluster_type)
+      self.generate_misconfigurations(cluster_type=cluster_type, logger=self.logger)
 
     end_time = time.time()
     time_difference = end_time - start_time
@@ -692,8 +647,19 @@ class CrowdStrikeSensorInstallOperationsManager:
     start_time = time.time()
     print("\nStart Time:", time.strftime("%Y-%m-%d %H:%M:%S\n", time.localtime(start_time)))
 
+    self.verify_uninstall_parameters()
+
+    if self.aws_cluster and self.aws_region:
+      csp = 'aws'
+    elif self.az_cluster and self.az_resource_group:
+      csp = 'azure'
+    elif self.gcp_cluster and self.gcp_location:
+      csp = 'gcp'
+    else:
+      csp = 'unknown'
+
     # Check Cloud Service Provider Login
-    if not self.check_csp_login():
+    if not self.check_csp_login(csp=csp, logger=self.logger):
       print(f'Cloud provider session is not logged in. Attempt manual login to cloud provider before running '
             f'Abstrakt. \n')
       exit()
@@ -711,18 +677,18 @@ class CrowdStrikeSensorInstallOperationsManager:
     helm = HelmOps(logger=self.logger)
 
     if self.falcon_sensor:
-      if helm.is_helm_chart_deployed(release_name='_daemonset-falcon-sensor', namespace='falcon-system'):
+      if helm.is_helm_chart_deployed(release_name='daemonset-falcon-sensor', namespace='falcon-system'):
         print('Deleting Falcon Sensor...')
-        helm.run_helm_delete("_daemonset-falcon-sensor", "falcon-system")
+        helm.run_helm_delete("daemonset-falcon-sensor", "falcon-system")
       elif helm.is_helm_chart_deployed(release_name='falcon-helm', namespace='falcon-system'):
         print('Deleting Falcon Sensor...')
         helm.run_helm_delete("falcon-helm", "falcon-system")
       elif helm.is_helm_chart_deployed(release_name='falcon-sensor-injector', namespace='falcon-system'):
         print('Deleting Falcon Sensor...')
         helm.run_helm_delete("falcon-sensor-injector", "falcon-system")
-      elif helm.is_helm_chart_deployed(release_name='_sidecar-falcon-sensor', namespace='falcon-system'):
+      elif helm.is_helm_chart_deployed(release_name='sidecar-falcon-sensor', namespace='falcon-system'):
         print('Deleting Falcon Sensor...')
-        helm.run_helm_delete("_sidecar-falcon-sensor", "falcon-system")
+        helm.run_helm_delete("sidecar-falcon-sensor", "falcon-system")
       else:
         print('Falcon sensor helm chart not found. Skipping uninstallation...')
 

@@ -4,8 +4,7 @@ import pytz
 from datetime import datetime
 from typing_extensions import Annotated
 
-from abstrakt.pythonModules.opsManager._AzureClusterOperationsManager import _AzureClusterOperationsManager
-from abstrakt.pythonModules.opsManager.AzureCluserOperationsManager import AzureClusterOperationsManager
+from abstrakt.pythonModules.opsManager.AzureClusterOperationsManager import AzureClusterOperationsManager
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 
 uk_timezone = pytz.timezone('Europe/London')
@@ -46,7 +45,7 @@ def aks(
                                         show_default=False,
                                         rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   repository: Annotated[str, typer.Option('--repository', help='Registry for all Falcon Images | '
-                                          'Example: abstrakt.azurecr.io',
+                                          'Example: falcon-sensor',
                                           show_default=False,
                                           rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   sensor_image_tag: Annotated[str, typer.Option('--sensor-image-tag', help='Falcon Sensor Image Tag | '
@@ -57,27 +56,24 @@ def aks(
                                             show_default=False,
                                             rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   proxy_port: Annotated[int, typer.Option('--proxy-port', help='Proxy Server Port | Example: 8080',
-                                          rich_help_panel="CrowdStrike EDR Sensor Options")] = 3128,
+                                          show_default=False, rich_help_panel="CrowdStrike EDR Sensor Options")] = None,
   sensor_tags: Annotated[str, typer.Option('--sensor-tags', help='Falcon Sensor Tags | '
                                            'Example: Tag1,Tag2',
                                            show_default=True,
                                            rich_help_panel="CrowdStrike EDR Sensor Options")] = 'CRWD,POV,AKS,ABSTRAKT',
-  acr_rg: Annotated[str, typer.Option('--acr-rg', help='ACR Resource Group Name | '
+  acr_rg: Annotated[str, typer.Option('--acr-resource-group', help='ACR Resource Group Name | '
                                       'Example: resource_group1',
                                       show_default=False,
                                       rich_help_panel="Azure Options")] = None,
   sp_name: Annotated[str, typer.Option('--sp-name',
                                        help='Azure Service Principal Name | Example: administrator',
-                                       rich_help_panel="Azure Options")] = 'abstrakt',
+                                       show_default=False,
+                                       rich_help_panel="Azure Options")] = None,
   sp_pass: Annotated[str, typer.Option('--sp-pass',
                                        help='Azure Service Principal Password | Example: password',
                                        show_default=False,
                                        rich_help_panel="Azure Options")] = None,
   acr_sub_id: Annotated[str, typer.Option('--acr-sub-id', help='ACR Subscription ID | '
-                                          'Example: 11111111-0000-0000-0000-111111111111',
-                                          show_default=False,
-                                          rich_help_panel="Azure Options")] = None,
-  aks_sub_id: Annotated[str, typer.Option('--aks-sub-id', help='AKS Subscription ID | '
                                           'Example: 11111111-0000-0000-0000-111111111111',
                                           show_default=False,
                                           rich_help_panel="Azure Options")] = None,
@@ -126,38 +122,37 @@ def aks(
   azure_log_filename = f'/var/log/crowdstrike/azure/aks-{uk_time_str}.log'
   aks_logger = CustomLogger(__name__, azure_log_filename).logger
 
-  manager = _AzureClusterOperationsManager(config_file=config_file,
-                                           cluster_name=cluster_name,
-                                           rg_name=resource_group,
-                                           rg_location=location,
-                                           asset_tags=asset_tags,
-                                           install_falcon_sensor=install_falcon_sensor,
-                                           registry=registry,
-                                           repository=repository,
-                                           sensor_image_tag=sensor_image_tag,
-                                           proxy_server=proxy_server,
-                                           proxy_port=proxy_port,
-                                           sensor_tags=sensor_tags,
-                                           acr_rg=acr_rg,
-                                           sp_name=sp_name,
-                                           sp_pass=sp_pass,
-                                           install_kac=install_kac,
-                                           kac_image_tag=kac_image_tag,
-                                           install_iar=install_iar,
-                                           iar_image_tag=iar_image_tag,
-                                           install_kpa=install_kpa,
-                                           cloud_type='azure',
-                                           cluster_type='aks',
-                                           falcon_client_id=falcon_client_id,
-                                           falcon_client_secret=falcon_client_secret,
-                                           install_detections_container=install_detections_container,
-                                           install_vulnerable_apps=install_vulnerable_apps,
-                                           generate_misconfigs=generate_misconfigs,
-                                           logger=aks_logger,
-                                           kernel_mode=kernel_mode,
-                                           ebpf_mode=ebpf_mode,
-                                           acr_sub_id=acr_sub_id,
-                                           aks_sub_id=aks_sub_id)
+  manager = AzureClusterOperationsManager(config_file=config_file,
+                                          cluster_name=cluster_name,
+                                          resource_group=resource_group,
+                                          location=location,
+                                          asset_tags=asset_tags,
+                                          install_falcon_sensor=install_falcon_sensor,
+                                          registry=registry,
+                                          repository=repository,
+                                          sensor_image_tag=sensor_image_tag,
+                                          proxy_server=proxy_server,
+                                          proxy_port=proxy_port,
+                                          sensor_tags=sensor_tags,
+                                          acr_resource_group=acr_rg,
+                                          sp_name=sp_name,
+                                          sp_pass=sp_pass,
+                                          install_kac=install_kac,
+                                          kac_image_tag=kac_image_tag,
+                                          install_iar=install_iar,
+                                          iar_image_tag=iar_image_tag,
+                                          install_kpa=install_kpa,
+                                          cloud_type='azure',
+                                          cluster_type='aks',
+                                          falcon_client_id=falcon_client_id,
+                                          falcon_client_secret=falcon_client_secret,
+                                          install_detections_container=install_detections_container,
+                                          install_vulnerable_apps=install_vulnerable_apps,
+                                          generate_misconfigs=generate_misconfigs,
+                                          logger=aks_logger,
+                                          kernel_mode=kernel_mode,
+                                          ebpf_mode=ebpf_mode,
+                                          acr_sub_id=acr_sub_id)
 
   manager.start_azure_cluster_operations()
 

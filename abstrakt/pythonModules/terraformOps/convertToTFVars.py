@@ -6,7 +6,7 @@ class ToTFVars:
     self.logger = logger
 
   def convert_eks_managed_node_to_tfvars(self, cluster_name: str, vpc_name: str, region: str,
-                                         asset_tags: str, parameters, managed_node_groups, common_tags: dict):
+                                         asset_tags: str, parameters, common_tags: dict):
     self.logger.info('Converting EKS Managed Node configuration file to terraform tfvars file')
 
     with open("./abstrakt/terraformModules/aws/eks/eks-managed-node/variables.tfvars", "w") as tfvars_file:
@@ -85,8 +85,8 @@ class ToTFVars:
     self.logger.info('Finished converting EKS Fargate configuration file to terraform tfvars file')
 
   def convert_gke_standard_to_tfvars(self, cluster_name: str, vpc_network: str, region: str,
-                                     asset_tags: str, terraform_variables, project_id, common_tags):
-    self.logger.info('Converting GKE COS configuration file to terraform tfvars file')
+                                     asset_tags: str, terraform_variables, project_id):
+    self.logger.info('Converting GKE Standard configuration file to terraform tfvars file')
 
     with open("./abstrakt/terraformModules/gcp/gke/standard/variables.tfvars", "w") as tfvars_file:
       for key, value in terraform_variables.items():
@@ -121,13 +121,13 @@ class ToTFVars:
         tag_pairs = str(tag_pairs).replace("'", '"')
         tag_pairs = str(tag_pairs).replace(" ", '')
         tfvars_file.write(f'common_tags = {tag_pairs}')
-      elif common_tags:
-        common_tags = [f"{x.lower()}-{y.lower()}" for x, y in common_tags.items()]
-        common_tags = str(common_tags).replace("'", '"')
-        common_tags = str(common_tags).replace(" ", '')
-        tfvars_file.write(f'common_tags = {common_tags}')
+      # elif common_tags:
+      #   common_tags = [f"{x.lower()}-{y.lower()}" for x, y in common_tags.items()]
+      #   common_tags = str(common_tags).replace("'", '"')
+      #   common_tags = str(common_tags).replace(" ", '')
+      #   tfvars_file.write(f'common_tags = {common_tags}')
 
-    self.logger.info('Finished converting GKE COS configuration file to terraform tfvars file')
+    self.logger.info('Finished converting GKE Standard configuration file to terraform tfvars file')
 
   def convert_gke_autopilot_to_tfvars(self, cluster_name: str, vpc_network: str, region: str,
                                       terraform_variables, project_id):

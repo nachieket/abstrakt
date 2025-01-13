@@ -79,7 +79,8 @@ class ContainerOps:
       self.logger.error(e)
       return False
 
-  def are_pods_and_containers_running(self, pod_name: str, namespace: str, kubeconfig_path: str) -> tuple[dict, int]:
+  def are_pods_and_containers_running(self, pod_name: str, namespace: str,
+                                      kubeconfig_path: str = '~/.kube/config') -> tuple[dict, int]:
     """
       Check if pods with a given name substring are running in a Kubernetes namespace.
 
@@ -206,7 +207,8 @@ class ContainerOps:
       self.logger.error(f'Namespace {namespace} does not exist\n')
       return {}, -1  # Return an error code
 
-  def pod_checker(self, pod_name: str, namespace: str, kubeconfig_path: str = '~/.kube/config') -> list:
+  def pod_checker(self, pod_name: str, namespace: str, kubeconfig_path: str = '~/.kube/config',
+                  timeout: int = 300) -> list:
     try:
       print(f"Checking {pod_name} status...")
       sleep(5)
@@ -217,7 +219,7 @@ class ContainerOps:
 
       with MultiThreading() as mt:
         pods, down = mt.run_with_progress_indicator(
-          self.are_pods_and_containers_running, 1, pod_name, namespace, kubeconfig_path)
+          self.are_pods_and_containers_running, 1, timeout, pod_name, namespace, kubeconfig_path)
 
       if down == -1:
         print(f"Unable to check running status of {pod_name}\n")

@@ -23,6 +23,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  skip_provider_registration = true
 
 #  subscription_id   = var.arm_subscription_id
 #  tenant_id         = var.arm_tenant_id

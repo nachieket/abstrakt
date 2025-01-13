@@ -66,7 +66,7 @@ class DetectionsContainer:
             self.logger.info(process.stderr)
 
       with MultiThreading() as mt:
-        mt.run_with_progress_indicator(thread, 1)
+        mt.run_with_progress_indicator(thread, 1, 300)
 
       printf('All Detections containers installation successful\n', logger=self.logger)
 
@@ -91,7 +91,7 @@ class DetectionsContainer:
 
       if pods['detections-container'][0] and pods['vulnerable.example.com'][0] and pods['generic-tools'][0]:
         with MultiThreading() as mt:
-          mt.run_with_progress_indicator(self.generate_artificial_detections, 1, cluster_type, service_ip_address,
+          mt.run_with_progress_indicator(self.generate_artificial_detections, 1, 600, cluster_type, service_ip_address,
                                          service_port, pods['generic-tools'][0], pods['detections-container'][0], mode)
 
           print('Artificial detections generated successfully. Check them on your console in a few minutes.')

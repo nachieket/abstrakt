@@ -27,7 +27,6 @@ class EKSManagedNode:
                                                region=region,
                                                asset_tags=asset_tags,
                                                parameters=managed_node_parameters,
-                                               managed_node_groups=node_groups,
                                                common_tags=common_tags)
 
     print(' ')

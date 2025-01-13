@@ -17,8 +17,8 @@ class InfrastructureManager:
                            rich_help_panel='Operations')
         self.app.add_typer(uninstall_sensor_app, name="uninstall", help='Uninstall Runtime Agents and Sensors',
                            rich_help_panel='Operations')
-        self.app.add_typer(upgrade_sensor_app, name="upgrade", help='Upgrade Runtime Agents and Sensors',
-                           rich_help_panel='Operations')
+        # self.app.add_typer(upgrade_sensor_app, name="upgrade", help='Upgrade Runtime Agents and Sensors',
+        #                    rich_help_panel='Operations')
 
     def run(self):
         self.app()
