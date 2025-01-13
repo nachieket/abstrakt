@@ -7,13 +7,13 @@
 ##### Create EKS Managed Node Cluster and Deploy Sensors via CrowdStrike Registry
 
 ```
-abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "cstag-owner=njoshi02,cstag-product=Falcon,cstag-accounting=dev,cstag-department=Sales - 310000,cstag-business=Sales" --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-kpa --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-kpa --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Create EKS Managed Node Cluster and Deploy Sensors via AWS ECR Registry
 
 ```
-abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "cstag-owner=njoshi02,cstag-product=Falcon,cstag-accounting=dev,cstag-department=Sales - 310000,cstag-business=Sales" --install-falcon-sensor --registry 517716713836.dkr.ecr.eu-west-2.amazonaws.com --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-kpa --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create aws eks-managed-node --cluster-name abstrakt-eks-managed-node --vpc-name abstrakt-eks-managed-node-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com --install-falcon-sensor --sensor-tags EKS-MANAGED-NODE,ABSTRAKT,CRWD --install-kac --install-iar --install-kpa --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
@@ -25,7 +25,7 @@ abstrakt install crowdstrike --falcon-sensor --kac --iar --detections-container 
 ##### Install CrowdStrike Sensors via AWS ECR Registry
 
 ```
-abstrakt install crowdstrike --falcon-sensor --kac --iar --registry 517716713836.dkr.ecr.eu-west-2.amazonaws.com --detections-container --vulnerable-apps --generate-misconfigs --aws-cluster abstrakt-eks-managed-node --aws-region eu-west-2 --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt install crowdstrike --falcon-sensor --kac --iar --registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com --detections-container --vulnerable-apps --generate-misconfigs --aws-cluster abstrakt-eks-managed-node --aws-region eu-west-2 --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Uninstall Sensors
@@ -45,13 +45,13 @@ abstrakt delete aws eks-fargate --cluster abstrakt-eks-managed-node --region eu-
 ##### Create EKS Managed Node Cluster and Deploy Sensors via CrowdStrike Registry
 
 ```
-abstrakt create aws eks-fargate --cluster-name abstrakt-eks-fargate --vpc-name abstrakt-fargate-vpc --region eu-west-2 --asset-tags "cstag-owner=njoshi02,cstag-product=Falcon,cstag-accounting=dev,cstag-department=Sales - 310000,cstag-business=Sales" --install-falcon-sensor --sensor-tags EKS-FARGATE,ABSTRAKT,CRWD --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create aws eks-fargate --cluster-name abstrakt-eks-fargate --vpc-name abstrakt-fargate-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --sensor-tags EKS-FARGATE,ABSTRAKT,CRWD --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Create EKS Managed Node Cluster and Deploy Sensors via AWS ECR Registry
 
 ```
-abstrakt create aws eks-fargate --cluster-name abstrakt-eks-fargate --vpc-name abstrakt-fargate-vpc --region eu-west-2 --asset-tags "cstag-owner=njoshi02,cstag-product=Falcon,cstag-accounting=dev,cstag-department=Sales - 310000,cstag-business=Sales" --registry 517716713836.dkr.ecr.eu-west-2.amazonaws.com --install-falcon-sensor --sensor-tags EKS-FARGATE,ABSTRAKT,CRWD --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create aws eks-fargate --cluster-name abstrakt-eks-fargate --vpc-name abstrakt-fargate-vpc --region eu-west-2 --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com --install-falcon-sensor --sensor-tags EKS-FARGATE,ABSTRAKT,CRWD --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
@@ -63,7 +63,7 @@ abstrakt install crowdstrike --falcon-sensor --kac --iar --detections-container 
 ##### Install CrowdStrike Sensors via AWS ECR Registry
 
 ```
-abstrakt install crowdstrike --falcon-sensor --kac --iar --registry 517716713836.dkr.ecr.eu-west-2.amazonaws.com --detections-container --vulnerable-apps --generate-misconfigs --aws-cluster abstrakt-eks-fargate --aws-region eu-west-2 --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt install crowdstrike --falcon-sensor --kac --iar --registry 123456789012.dkr.ecr.eu-west-2.amazonaws.com --detections-container --vulnerable-apps --generate-misconfigs --aws-cluster abstrakt-eks-fargate --aws-region eu-west-2 --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Uninstall Sensors
@@ -85,13 +85,13 @@ abstrakt delete aws eks-fargate --cluster abstrakt-eks-fargate --region eu-west-
 ##### Create Azure AKS Cluster and Deploy Sensors via CrowdStrike Registry
 
 ```
-abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "cstag-owner=njoshi02,cstag-product=Falcon,cstag-accounting=dev,cstag-department=Sales - 310000,cstag-business=Sales" --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Create Azure AKS Cluster and Deploy Sensors via Azure ACR Registry
 
 ```
-abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "cstag-owner=njoshi02,cstag-product=Falcon,cstag-accounting=dev,cstag-department=Sales - 310000,cstag-business=Sales" --registry abstrakt.azurecr.io --sp-name abstrakt --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --acr-resource-group NJ --acr-sub-id 5a84cb53-b383-44db-bd58-c65ca3dfcb8c --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --registry abstrakt.azurecr.io --sp-name abstrakt --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --acr-resource-group NJ --acr-sub-id 5a84cb53-b383-44db-bd58-c65ca3dfcb8c --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
