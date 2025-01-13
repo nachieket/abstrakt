@@ -1,7 +1,5 @@
 # ABSTRAKT
 
-## Create Public Cloud Clusters with CrowdStrike Sensors
-
 ### AWS
 
 #### AWS EKS Managed Node Example
