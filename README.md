@@ -125,13 +125,13 @@ abstrakt delete azure aks --cluster abstrakt-aks1 --resource-group abstrakt-grou
 ##### Create GKE Standard Cluster and Deploy Sensors via CrowdStrike Registry
 
 ```
-abstrakt create gcp gke-standard --cluster-name abstrakt-gke-standard --vpc-network abstrakt-network --location europe-west2 --project-id project-xyz --asset-tags "cstag-owner-njoshi02,cstag-product-falcon,cstag-accounting-dev,cstag-department-sales-310000,cstag-business-sales" --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create gcp gke-standard --cluster-name abstrakt-gke-standard --vpc-network abstrakt-network --location europe-west2 --project-id project-xyz --asset-tags "owner-Asbtrakt,product-falcon,accounting-dev,department-Security,business-IT" --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Create GKE Standard Cluster and Deploy Sensors via GCP Artifact Registry
 
 ```
-abstrakt create gcp gke-standard --cluster-name abstrakt-gke-standard --vpc-network abstrakt-network --location europe-west2 --project-id project-xyz --asset-tags "cstag-owner-njoshi02,cstag-product-falcon,cstag-accounting-dev,cstag-department-sales-310000,cstag-business-sales" --registry europe-west2-docker.pkg.dev --service-account abstrakt-svc --install-falcon-sensor --sensor-tags GKE-STANDARD,CRWD,ABSTRAKT --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create gcp gke-standard --cluster-name abstrakt-gke-standard --vpc-network abstrakt-network --location europe-west2 --project-id project-xyz --asset-tags "owner-Asbtrakt,product-falcon,accounting-dev,department-Security,business-IT" --registry europe-west2-docker.pkg.dev --service-account abstrakt-svc --install-falcon-sensor --sensor-tags GKE-STANDARD,CRWD,ABSTRAKT --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
