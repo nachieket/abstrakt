@@ -4,7 +4,8 @@ import inspect
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+# from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.GCP import GCP
 
 
@@ -29,21 +30,23 @@ class GCPIAR(GCP):
 
     self.iar_image_tag: str = iar_image_tag
 
-  def execute_iar_installation_process(self) -> bool:
+  def execute_iar_installation_process(self, logger) -> bool:
+    logger = logger or self.logger
+
     try:
       if self.repository:
         repository: str = self.repository
       else:
         repository: str = self.get_default_repository_name(sensor_type='falcon-imageanalyzer')
 
-      registry_type: str = self.check_registry_type(registry=self.registry)
+      registry_type: str = self.check_registry_type(registry=self.registry, logger=logger)
 
       if registry_type == 'artifact':
         # Get the access token for the target Google Artifact Registry
         access_token = self.get_access_token(repository=repository, location=self.location,
-                                             service_account=self.service_account)
+                                             service_account=self.service_account, logger=logger)
         if not access_token:
-          self.logger.error("Failed to retrieve access token for the Google Artifact Registry.")
+          logger.error("Failed to retrieve access token for the Google Artifact Registry.")
           return False
       else:
         access_token = None
@@ -59,24 +62,26 @@ class GCPIAR(GCP):
                                      location=self.location,
                                      project=self.project_id,
                                      access_token=access_token,
-                                     sensor_type='falcon-imageanalyzer')
+                                     sensor_type='falcon-imageanalyzer',
+                                     logger=logger)
       if image_tag is None:
-        self.logger.error('No image tag found.')
+        logger.error('No image tag found.')
         return False
 
-      pull_token = self.get_image_pull_token(registry=registry, access_token=access_token)
+      pull_token = self.get_image_pull_token(registry=registry, access_token=access_token, logger=logger)
 
       if pull_token is None:
-        self.logger.error('No image pull token found.')
+        logger.error('No image pull token found.')
         return False
 
-      self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm")
-      self.run_command("helm repo update")
-      self.run_command("kubectl create namespace falcon-image-analyzer")
+      self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm", logger=logger)
+      self.run_command("helm repo update", logger=logger)
+      self.run_command("kubectl create namespace falcon-image-analyzer", logger=logger)
       self.run_command("kubectl label --overwrite ns falcon-image-analyzer "
-                       "pod-security.kubernetes.io/enforce=privileged")
+                       "pod-security.kubernetes.io/enforce=privileged", logger=logger)
 
-      output = self.run_command("kubectl config view --minify --output jsonpath={..cluster}")
+      output, error = self.run_command("kubectl config view --minify --output jsonpath={..cluster}",
+                                       logger=logger)
 
       random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
       cluster_name = f"random_{random_string}_cluster"
@@ -102,20 +107,22 @@ class GCPIAR(GCP):
       elif registry_type == 'artifact':
         iar_helm_chart += f' --set image.repository={registry}/{self.project_id}/{repository}/{image_tag.lower()}'
 
-      self.run_command(iar_helm_chart)
+      self.run_command(iar_helm_chart, logger=logger)
 
       return True
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def deploy_falcon_iar(self):
+  def deploy_falcon_iar(self, logger=None):
+    logger = logger or self.logger
+
     print(f"\n{'+' * 40}\nCrowdStrike Image Assessment at Runtime\n{'+' * 40}\n")
 
     print('Installing IAR...')
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     if k8s.namespace_exists(namespace_name='falcon-image-analyzer'):
       captured_pods, status = k8s.find_pods_with_status(pod_string='image-analyzer', namespace='falcon-image-analyzer')
@@ -129,14 +136,16 @@ class GCPIAR(GCP):
         print(' ')
         return
 
-    with MultiThreading() as mt:
-      status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1, 300)
+    with MultiProcessing() as mp:
+      status = mp.execute_with_progress_indicator(self.execute_iar_installation_process, logger, 0.5, 900)
+    # with MultiThreading() as mt:
+    #   status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1, 300)
 
     if status:
       print('IAR installation successful\n')
 
-      container = ContainerOps(logger=self.logger)
+      container = ContainerOps(logger=logger)
       container.pod_checker(pod_name='image-analyzer', namespace='falcon-image-analyzer',
-                            kubeconfig_path='~/.kube/config')
+                            kubeconfig_path='~/.kube/config', logger=logger)
     else:
       print('IAR installation failed\n')

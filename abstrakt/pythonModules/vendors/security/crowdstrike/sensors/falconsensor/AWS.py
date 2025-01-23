@@ -23,54 +23,50 @@ class AWS(CrowdStrikeSensors):
                      registry,
                      repository)
 
-  def login_to_ecr_registry(self, region: str, registry: str) -> bool:
+  def login_to_ecr_registry(self, region: str, registry: str, logger=None) -> bool:
     command: str = (f'aws ecr get-login-password --region {region} | sudo skopeo login --username AWS '
                     f'--password-stdin {registry}')
 
-    return True if self.run_command(command=command) else False
+    output, error = self.run_command(command=command, logger=logger)
 
-  def check_ecr_registry_exists(self, registry: str) -> bool:
+    return True if output else False
+
+  def check_ecr_registry_exists(self, registry: str, logger=None) -> bool:
+    logger = logger or self.logger
+
     try:
       # Create an ECR client
       client: boto3 = boto3.client('ecr', region_name=registry.split('.')[3])
 
       # Check if the repository exists
       client.describe_repositories(registryId=registry.split('.')[0])
-      self.logger.info(f'Registry {registry} does exist.')
+      logger.info(f'Registry {registry} does exist.')
 
       return True
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def check_ecr_repository_exists(self, registry: str, repository: str) -> bool:
+  @staticmethod
+  def check_ecr_repository_exists(registry: str, repository: str, logger=None) -> bool:
     try:
       # Create an ECR client
       client: boto3 = boto3.client('ecr', region_name=registry.split('.')[3])
 
       # Check if the repository exists
       client.describe_repositories(registryId=registry.split('.')[0], repositoryNames=[repository])
-      self.logger.info(f'Repository {repository} does exist.')
+      logger.info(f'Repository {repository} does exist.')
 
       return True
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  # @staticmethod
-  # def get_default_repository_name(sensor_type: str):
-  #   if sensor_type == 'daemonset':
-  #     return 'falcon-daemonset-sensor'
-  #   elif sensor_type == 'sidecar':
-  #     return 'falcon-sidecar-sensor'
-  #   elif sensor_type == 'falcon-kac':
-  #     return 'falcon-kac'
-  #   elif sensor_type == 'falcon-imageanalyzer':
-  #     return 'falcon-iar'
+  def create_ecr_repository(self, registry: str, repository: str, sensor_type: str, logger=None) -> bool:
+    logger = logger or self.logger
 
-  def create_ecr_repository(self, registry: str, repository: str, sensor_type: str) -> bool:
     if repository is None:
       repository = self.get_default_repository_name(sensor_type=sensor_type)
 
@@ -89,16 +85,18 @@ class AWS(CrowdStrikeSensors):
           'encryptionType': 'AES256'
         }
       )
-      self.logger.info(f"Repository '{repository}' created successfully in registry '{registry}'!")
+      logger.info(f"Repository '{repository}' created successfully in registry '{registry}'!")
       return True
     except ecr_client.exceptions.RepositoryAlreadyExistsException:
-      self.logger.error(f"Repository '{repository}' already exists in registry '{registry}'.")
+      logger.error(f"Repository '{repository}' already exists in registry '{registry}'.")
       return False
     except Exception as e:
-      self.logger.error(f"An error occurred: {e}")
+      logger.error(f"An error occurred: {e}")
       return False
 
-  def check_image_exists_on_ecr(self, registry: str, repository: str, image_tag: str) -> bool:
+  def check_image_exists_on_ecr(self, registry: str, repository: str, image_tag: str, logger=None) -> bool:
+    logger = logger or self.logger
+
     # Create an ECR client
     client: boto3 = boto3.client('ecr', region_name=registry.split('.')[3])
 
@@ -113,31 +111,37 @@ class AWS(CrowdStrikeSensors):
       )
 
       if response['imageDetails']:
-        self.logger.info(f"Image with tag '{image_tag}' exists in repository '{repository}'.")
+        logger.info(f"Image with tag '{image_tag}' exists in repository '{repository}'.")
         return True
       else:
-        self.logger.error(f"Image with tag '{image_tag}' does not exist in repository '{repository}'.")
+        logger.error(f"Image with tag '{image_tag}' does not exist in repository '{repository}'.")
         return False
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
   def copy_image_to_ecr(self, source_image_registry: str, source_image_tag: str,
-                        target_image_registry: str, target_image_tag: str) -> bool:
+                        target_image_registry: str, target_image_tag: str, logger=None) -> bool:
+    logger = logger or self.logger
+
     command = (f'skopeo copy --multi-arch all docker://{source_image_registry}:{source_image_tag} '
                f'docker://{target_image_registry}:{target_image_tag}')
 
-    if self.run_command(command=command):
+    output, error = self.run_command(command=command, logger=logger)
+
+    if output is not None:
       return True
     else:
       return False
 
-  def get_ecr_partial_pull_token(self, region: str) -> str | None:
+  def get_ecr_partial_pull_token(self, region: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       partial_pull_token_command: str = f"aws ecr get-login-password --region {region}"
 
-      stdout = self.run_command(command=partial_pull_token_command)
+      stdout, error = self.run_command(command=partial_pull_token_command, logger=logger)
 
       if stdout:
         output = f'AWS:{stdout}'
@@ -146,11 +150,12 @@ class AWS(CrowdStrikeSensors):
       else:
         return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_ecr_image_pull_token(self, registry: str) -> str | None:
+  def get_ecr_image_pull_token(self, registry: str, logger=None) -> str | None:
+    logger = logger or self.logger
     partial_pull_token: str = self.get_ecr_partial_pull_token(region=registry.split('.')[3])
 
     if self.add_crowdstrike_helm_repo() is True:
@@ -170,38 +175,41 @@ class AWS(CrowdStrikeSensors):
         else:
           return None
       except Exception as e:
-        self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-        self.logger.error(f'{e}')
+        logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+        logger.error(f'{e}')
         return None
     else:
       return None
 
   def copy_crowdstrike_image_to_ecr(self, source_registry: str, target_registry: str,
-                                    repository: str, image_tag: str = 'latest') -> bool:
+                                    repository: str, image_tag: str = 'latest', logger=None) -> bool:
+    logger = logger or self.logger
+
     try:
       if image_tag == 'None':
         return False
 
-      if not self.login_to_crowdstrike_repo():
+      if not self.login_to_crowdstrike_repo(logger=logger):
         return False
 
-      if not self.login_to_ecr_registry(region=target_registry.split('.')[3], registry=target_registry):
+      if not self.login_to_ecr_registry(region=target_registry.split('.')[3], registry=target_registry, logger=logger):
         return False
 
       if not self.copy_image_to_ecr(source_image_registry=source_registry,
                                     source_image_tag=image_tag,
                                     target_image_registry=f'{target_registry}/{repository}',
-                                    target_image_tag=image_tag):
+                                    target_image_tag=image_tag,
+                                    logger=logger):
         return False
 
-      self.logger.info(f"{image_tag} copied to {target_registry} successfully.")
+      logger.info(f"{image_tag} copied to {target_registry} successfully.")
       return True
     except subprocess.CalledProcessError as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f"An error occurred while running: {e.cmd}")
-      self.logger.error(f"Exit code: {e.returncode}")
-      self.logger.error(f"Output: {e.output}")
-      self.logger.error(f"{e.stderr}")
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f"An error occurred while running: {e.cmd}")
+      logger.error(f"Exit code: {e.returncode}")
+      logger.error(f"Output: {e.output}")
+      logger.error(f"{e.stderr}")
       return False
 
   def get_image_registry(self, registry: str, registry_type: str, sensor_type: str) -> str | None:
@@ -215,32 +223,36 @@ class AWS(CrowdStrikeSensors):
     else:
       return self.get_crowdstrike_registry(sensor_type=sensor_type)
 
-  def get_image_tag(self, registry: str, repository: str, image_tag: str, sensor_type: str) -> str | None:
-    registry_type: str = self.check_registry_type(registry=registry)
+  def get_image_tag(self, registry: str, repository: str, image_tag: str,
+                    sensor_type: str, logger=None) -> str | None:
+    logger = logger or self.logger
+    registry_type: str = self.check_registry_type(registry=registry, logger=logger)
 
     if registry_type == 'crwd':
       if 'latest' in image_tag:
-        return self.get_crowdstrike_sensor_image_tag(sensor_type=sensor_type, image_tag=image_tag)
-      elif self.verify_crowdstrike_sensor_image_tag(image_tag=image_tag, sensor_type=sensor_type):
+        return self.get_crowdstrike_sensor_image_tag(sensor_type=sensor_type, image_tag=image_tag, logger=logger)
+      elif self.verify_crowdstrike_sensor_image_tag(image_tag=image_tag, sensor_type=sensor_type, logger=logger):
         return image_tag
       return None
 
-    if registry_type == 'ecr' and self.check_ecr_registry_exists(registry=registry):
-      if not self.check_ecr_repository_exists(registry=registry, repository=repository):
-        self.create_ecr_repository(registry=registry, repository=repository, sensor_type=sensor_type)
+    if registry_type == 'ecr' and self.check_ecr_registry_exists(registry=registry, logger=logger):
+      if not self.check_ecr_repository_exists(registry=registry, repository=repository, logger=logger):
+        self.create_ecr_repository(registry=registry, repository=repository, sensor_type=sensor_type, logger=logger)
 
       if 'latest' in image_tag:
-        image_tag: str = self.get_crowdstrike_sensor_image_tag(sensor_type=sensor_type, image_tag=image_tag)
-      elif not self.verify_crowdstrike_sensor_image_tag(image_tag=image_tag, sensor_type=sensor_type):
+        image_tag: str = self.get_crowdstrike_sensor_image_tag(sensor_type=sensor_type,
+                                                               image_tag=image_tag,
+                                                               logger=logger)
+      elif not self.verify_crowdstrike_sensor_image_tag(image_tag=image_tag, sensor_type=sensor_type, logger=logger):
         return None
 
-      if self.check_image_exists_on_ecr(registry=registry, repository=repository, image_tag=image_tag):
+      if self.check_image_exists_on_ecr(registry=registry, repository=repository, image_tag=image_tag, logger=logger):
         return image_tag
 
       source_registry = self.get_crowdstrike_registry(sensor_type=sensor_type)
       if self.copy_crowdstrike_image_to_ecr(source_registry=source_registry, repository=repository,
-                                            target_registry=registry, image_tag=image_tag):
-        if self.check_image_exists_on_ecr(registry=registry, repository=repository, image_tag=image_tag):
+                                            target_registry=registry, image_tag=image_tag, logger=logger):
+        if self.check_image_exists_on_ecr(registry=registry, repository=repository, image_tag=image_tag, logger=logger):
           return image_tag
 
     return None
@@ -271,27 +283,33 @@ class AWSSpecs(AWS):
                      repository)
     self.ecr_iam_policy: str = ecr_iam_policy
 
-  def get_aws_account_id(self) -> str | None:
+  def get_aws_account_id(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     command: str = 'aws sts get-caller-identity --query "Account" --output text'
-    output = self.run_command(command=command)
+    output, error = self.run_command(command=command, logger=logger)
 
     if output is not None:
       return output.strip()
     else:
       return None
 
-  def get_cluster_oidc_issuer(self, cluster_name: str, region: str) -> str | None:
+  def get_cluster_oidc_issuer(self, cluster_name: str, region: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     command: str = (f'aws eks describe-cluster --name {cluster_name} --region {region} --query '
                     '"cluster.identity.oidc.issuer" --output text')
 
-    output = self.run_command(command=command)
+    output, error = self.run_command(command=command, logger=logger)
 
     if output is not None:
       return output.split('/')[-1].rstrip()
     else:
       return None
 
-  def check_aws_iam_policy(self, policy_name: str) -> str | None:
+  def check_aws_iam_policy(self, policy_name: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     iam = boto3.client('iam')
 
     try:
@@ -301,17 +319,19 @@ class AWSSpecs(AWS):
       # Check if the policy exists in the list of policies
       for policy in response['Policies']:
         if policy['PolicyName'] == policy_name:
-          self.logger.info(f"IAM policy '{policy_name}' exists with ARN: {policy['Arn']}")
+          logger.info(f"IAM policy '{policy_name}' exists with ARN: {policy['Arn']}")
           return policy['Arn']
 
-      self.logger.info(f"IAM policy '{policy_name}' does not exist.")
+      logger.info(f"IAM policy '{policy_name}' does not exist.")
       return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def check_aws_iam_role(self, role_name: str) -> str | None:
+  def check_aws_iam_role(self, role_name: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     iam = boto3.client('iam')
 
     try:
@@ -320,39 +340,55 @@ class AWSSpecs(AWS):
 
       # If the role exists, return the ARN
       role_arn: str = response['Role']['Arn']
-      self.logger.info(f"IAM role '{role_name}' exists with ARN: {role_arn}")
+      logger.info(f"IAM role '{role_name}' exists with ARN: {role_arn}")
       return role_arn
     except ClientError as e:
       # Check if the error is because the role does not exist
       if e.response['Error']['Code'] == 'NoSuchEntity':
-        self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-        self.logger.info(f"IAM role '{role_name}' does not exist.")
-        self.logger.error(f'{e}')
+        logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+        logger.info(f"IAM role '{role_name}' does not exist.")
+        logger.error(f'{e}')
         return None
       else:
-        self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-        self.logger.error(f'{e}')
+        logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+        logger.error(f'{e}')
         return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def attach_policy_to_iam_role(self, policy_arn: str, iam_role_arn: str):
+  def attach_policy_to_iam_role(self, policy_arn: str, iam_role_arn: str, logger=None):
+    logger = logger or self.logger
+
     role_name: str = iam_role_arn.split('role/')[-1]
     command: str = f'aws iam attach-role-policy --role-name {role_name} --policy-arn {policy_arn} --output json'
 
     try:
-      output = self.run_command(command=command)
+      result = subprocess.run(
+        command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True  # Don't raise an exception for non-zero return codes
+      )
 
-      if output:
+      if result.returncode == 0:
         return True
+
+      if result.returncode != 0:
+        logger.error(f"Command failed with return code: {result.returncode}")
+        return False
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def create_and_get_eks_fargate_permissions_policy(self, permission_policy: str, region: str) -> str | None:
+  def create_and_get_eks_fargate_permissions_policy(self, permission_policy: str,
+                                                    region: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     policy_arn: str = self.check_aws_iam_policy(policy_name=permission_policy)
 
     if policy_arn:
@@ -366,9 +402,9 @@ class AWSSpecs(AWS):
         f'--policy-document file://{permission_policy_file} --description "Policy to enable '
         f'Falcon Sensors to pull container image from ECR"')
 
-      output = self.run_command(command=create_policy_command)
+      output, error = self.run_command(command=create_policy_command, logger=logger)
 
-      if output:
+      if output is not None:
         output = json.loads(output)
 
         return output['Policy']['Arn']
@@ -376,7 +412,9 @@ class AWSSpecs(AWS):
         return None
 
   def create_eks_fargate_trust_policy_json_file(self, account_id: str, region: str, oidc_issuer: str,
-                                                namespace: str, service_account: str) -> str | None:
+                                                namespace: str, service_account: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     trust_policy = f"""{{
   "Version": "2012-10-17",
   "Statement": [
@@ -411,12 +449,15 @@ class AWSSpecs(AWS):
         file.write(trust_policy)
       return file_name
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
   def create_and_get_eks_fargate_role(self, account_id: str, region: str, oidc_issuer: str,
-                                      iam_role: str, namespace: str, service_account: str) -> str | None:
+                                      iam_role: str, namespace: str, service_account: str,
+                                      logger=None) -> str | None:
+    logger = logger or self.logger
+
     file_name: str = self.create_eks_fargate_trust_policy_json_file(account_id=account_id,
                                                                     region=region,
                                                                     oidc_issuer=oidc_issuer,
@@ -431,7 +472,7 @@ class AWSSpecs(AWS):
     if iam_role_arn is None:
       command = f'aws iam create-role --role-name {iam_role} --assume-role-policy-document file://{file_name}'
 
-      output = self.run_command(command=command)
+      output, error = self.run_command(command=command, logger=logger)
 
       if output is not None:
         output = json.loads(output)
@@ -442,13 +483,16 @@ class AWSSpecs(AWS):
       return iam_role_arn
 
   def set_and_attach_policy_to_iam_role(self, region: str, namespace: str,
-                                        service_account: str, iam_role: str, cluster_name: str) -> str | None:
+                                        service_account: str, iam_role: str,
+                                        cluster_name: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     permission_policy_arn = self.create_and_get_eks_fargate_permissions_policy(permission_policy=self.ecr_iam_policy,
                                                                                region=region)
     if not permission_policy_arn:
       return None
 
-    account_id = self.get_aws_account_id()
+    account_id = self.get_aws_account_id(logger=logger)
     if not account_id:
       return None
 

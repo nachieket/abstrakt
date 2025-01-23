@@ -2,7 +2,8 @@ import inspect
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
+# from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.GCP import GCP
 
 
@@ -35,18 +36,20 @@ class GCPDaemonset(GCP):
     self.proxy_port: int = proxy_port
     self.cluster_type: str = cluster_type
 
-  def get_helm_chart(self):
+  def get_helm_chart(self, logger=None):
+    logger = logger or self.logger
+
     if self.repository:
       repository: str = self.repository
     else:
       repository: str = self.get_default_repository_name(sensor_type='daemonset')
 
-    registry_type: str = self.check_registry_type(registry=self.registry)
+    registry_type: str = self.check_registry_type(registry=self.registry, logger=logger)
 
     if registry_type == 'artifact':
       # Get the access token for the target Google Artifact Registry
       access_token = self.get_access_token(repository=repository, location=self.location,
-                                           service_account=self.service_account)
+                                           service_account=self.service_account, logger=logger)
       if not access_token:
         self.logger.error("Failed to retrieve access token for the Google Artifact Registry.")
         return None
@@ -64,9 +67,10 @@ class GCPDaemonset(GCP):
                                         location=self.location,
                                         project=self.project_id,
                                         access_token=access_token,
-                                        sensor_type='daemonset')
+                                        sensor_type='daemonset',
+                                        logger=logger)
 
-    pull_token: str = self.get_image_pull_token(registry=registry, access_token=access_token)
+    pull_token: str = self.get_image_pull_token(registry=registry, access_token=access_token, logger=logger)
 
     if registry and image_tag and pull_token:
       helm_chart = [
@@ -107,51 +111,67 @@ class GCPDaemonset(GCP):
     else:
       return None
 
-  def default_app_thread(self):
+  def default_app_thread(self, logger=None):
+    logger = logger or self.logger
+
     command = 'kubectl apply -f abstrakt/conf/crowdstrike/detections-container/default-vulnerable-app.yaml'
 
-    self.logger.info(f'Running command: {command}')
-    self.run_command(command=command)
+    logger.info(f'Running command: {command}')
+    self.run_command(command=command, logger=logger)
 
-  def execute_default_app(self):
+  def execute_default_app(self, logger=None):
+    logger = logger or self.logger
+
     try:
-      self.default_app_thread()
+      self.default_app_thread(logger=logger)
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'Error: {e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'Error: {e}')
       return False
     else:
       return True
 
-  def daemonset_thread(self, cluster_type):
-    helm_chart = self.get_helm_chart()
+  def daemonset_thread(self, cluster_type, logger=None):
+    logger = logger or self.logger
+
+    helm_chart = self.get_helm_chart(logger=logger)
 
     if helm_chart:
       command = ' '.join(helm_chart)
 
-      self.logger.info(f'Running command: {command}')
-      self.run_command(command=command)
+      logger.info(f'Running command: {command}')
+      self.run_command(command=command, logger=logger)
 
       if cluster_type == 'gke-autopilot':
         command = 'kubectl delete -f abstrakt/conf/crowdstrike/detections-container/default-vulnerable-app.yaml'
 
-        self.logger.info(f'Running command: {command}')
-        self.run_command(command=command)
+        logger.info(f'Running command: {command}')
+        self.run_command(command=command, logger=logger)
 
       return True
     else:
       return False
 
-  def execute_helm_chart(self, cluster_type):
+  def execute_helm_chart(self, cluster_type, logger=None):
+    logger = logger or self.logger
+
     try:
-      with MultiThreading() as mt:
-        return True if mt.run_with_progress_indicator(self.daemonset_thread, 1, 300, cluster_type) else False
+      # with MultiThreading() as mt:
+      #   return True if mt.run_with_progress_indicator(self.daemonset_thread, 1, 300, cluster_type) else False
+      with MultiProcessing() as mp:
+        return True if mp.execute_with_progress_indicator(self.daemonset_thread,
+                                                          logger,
+                                                          0.5,
+                                                          900,
+                                                          cluster_type) else False
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'Error: {e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'Error: {e}')
       return False
 
-  def deploy_falcon_sensor_daemonset(self):
+  def deploy_falcon_sensor_daemonset(self, logger=None):
+    logger = logger or self.logger
+
     if self.cluster_type == 'gke-autopilot':
       print(f"{'+' * 14}\nGKE Autopilot\n{'+' * 14}\n")
 
@@ -159,9 +179,8 @@ class GCPDaemonset(GCP):
 
       self.execute_default_app()
 
-      container = ContainerOps(logger=self.logger)
-      container.pod_checker(pod_name='vulnerable-example-com', namespace='default',
-                            kubeconfig_path='~/.kube/config', timeout=600)
+      container = ContainerOps(logger=logger)
+      container.pod_checker(pod_name='vulnerable-example-com', namespace='default', kubeconfig_path='~/.kube/config')
 
       print('\nAll these pods are temporary, were created to spin up nodes, and will be deleted in a few moments.\n')
 
@@ -169,7 +188,7 @@ class GCPDaemonset(GCP):
 
     print("Installing Falcon Sensor...")
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     falcon_sensor_names = ['daemonset-falcon-sensor', 'falcon-helm-falcon-sensor']
 
@@ -189,7 +208,7 @@ class GCPDaemonset(GCP):
     if self.execute_helm_chart(cluster_type=self.cluster_type):
       print("Falcon sensor installation successful\n")
 
-      container = ContainerOps(logger=self.logger)
+      container = ContainerOps(logger=logger)
       container.pod_checker(pod_name='falcon-sensor', namespace='falcon-system', kubeconfig_path='~/.kube/config')
     else:
       print("Falcon sensor installation failed\n")

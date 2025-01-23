@@ -4,9 +4,11 @@ import pytz
 from datetime import datetime
 from typing_extensions import Annotated
 
+# from abstrakt.pythonModules.customLogging.customLogging import CustomLogger, get_logger
 from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 from abstrakt.pythonModules.opsManager.AWSClusterOperationsManager import (AWSDaemonsetOperationsManager,
                                                                            AWSSidecarOperationsManager)
+
 
 uk_timezone = pytz.timezone('Europe/London')
 uk_time = datetime.now(uk_timezone)
@@ -130,7 +132,6 @@ def eks_managed_node(
                                           cluster_type='eks-managed-node',
                                           logger=eks_managed_node_logger
                                           )
-
   manager.start_cluster_operations()
 
 

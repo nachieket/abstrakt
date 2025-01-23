@@ -1,8 +1,6 @@
 import os
 import subprocess
 
-# from modules.pythonOps.customPrint.customPrint import printf
-
 
 class KubectlApplyYAMLs:
   def __init__(self, directory, logger):
@@ -17,7 +15,9 @@ class KubectlApplyYAMLs:
           yaml_files.append(os.path.join(root, file))
     return yaml_files
 
-  def apply_yaml_files(self):
+  def apply_yaml_files(self, logger=None):
+    logger = logger or self.logger
+
     yaml_files = self.find_yaml_files()
 
     for yaml_file in yaml_files:
@@ -26,9 +26,9 @@ class KubectlApplyYAMLs:
                                  stderr=subprocess.PIPE,check=True, text=True)
 
         if process.stdout:
-          self.logger.info(process.stdout)
+          logger.info(process.stdout)
 
         if process.stderr:
-          self.logger.info(process.stderr)
+          logger.info(process.stderr)
       except Exception as e:
-        self.logger.info(f"Error applying {yaml_file}: {e}")
+        logger.info(f"Error applying {yaml_file}: {e}")

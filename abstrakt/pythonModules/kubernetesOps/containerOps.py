@@ -1,19 +1,19 @@
 import subprocess
 
+from time import sleep
 from kubernetes import client, config
 from kubernetes.client import ApiException
 
-from time import sleep
-
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
-from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 
 
 class ContainerOps:
   def __init__(self, logger):
     self.logger = logger
 
-  def get_running_container_name(self, container_name, container_namespace='default'):
+  def get_running_container_name(self, container_name, container_namespace='default', logger=None):
+    logger = logger or self.logger
+
     try:
       sensors = []
 
@@ -56,19 +56,22 @@ class ContainerOps:
         return sensors if sensors else 'None'
     except subprocess.CalledProcessError as e:
       # Handle any errors that occur when running the kubectl command
-      printf(f"Error running kubectl: {e}", logger=self.logger)
+      logger.error(f"Error running kubectl: {e}")
       return 'None'
 
-  def check_namespace_exists(self, namespace, kubeconfig_path: str = '~/.kube/config'):
+  def check_namespace_exists(self, namespace, kubeconfig_path: str = '~/.kube/config', logger=None):
     """Checks if a namespace exists in the Kubernetes cluster.
 
     Args:
         namespace (str): The name of the namespace to check.
         kubeconfig_path (str, optional): Path to the kubeconfig file. Defaults to None.
+        logger: Logger object
 
     Returns:
         bool: True if the namespace exists, False otherwise.
     """
+    logger = logger or self.logger
+
     try:
       config.load_kube_config(config_file=kubeconfig_path)
       v1 = client.CoreV1Api()
@@ -76,11 +79,12 @@ class ContainerOps:
 
       return True
     except ApiException as e:
-      self.logger.error(e)
+      logger.error(e)
       return False
 
   def are_pods_and_containers_running(self, pod_name: str, namespace: str,
-                                      kubeconfig_path: str = '~/.kube/config') -> tuple[dict, int]:
+                                      kubeconfig_path: str = '~/.kube/config',
+                                      logger=None) -> tuple[dict, int]:
     """
       Check if pods with a given name substring are running in a Kubernetes namespace.
 
@@ -88,13 +92,16 @@ class ContainerOps:
           pod_name (str): Substring to match in pod names.
           namespace (str): The Kubernetes namespace to search for pods.
           kubeconfig_path (str): Path to the Kubernetes configuration file.
+          logger: Logger object
 
       Returns:
           tuple[dict, int]: A tuple containing a dictionary of pod statuses and a counter of stopped pods.
               - The dictionary (pods) has pod names as keys and their status as values.
               - The counter (counter) represents the number of stopped pods.
     """
-    if self.check_namespace_exists(namespace=namespace, kubeconfig_path=kubeconfig_path):
+    logger = logger or self.logger
+
+    if self.check_namespace_exists(namespace=namespace, kubeconfig_path=kubeconfig_path, logger=logger):
       try:
         # Load Kubernetes configuration
         config.load_kube_config(config_file=kubeconfig_path)
@@ -149,7 +156,7 @@ class ContainerOps:
                   else:
                     continue
                 elif (pod_status.status and pod_status.status.container_statuses and len(
-                      pod_status.status.container_statuses) > 0 and
+                  pod_status.status.container_statuses) > 0 and
                       pod_status.status.container_statuses[0].state and
                       pod_status.status.container_statuses[0].state.waiting and
                       pod_status.status.container_statuses[0].state.waiting.reason):
@@ -201,14 +208,15 @@ class ContainerOps:
 
         return pods, down
       except Exception as e:
-        self.logger.error(f"Exception when calling CoreV1Api: {e}")
+        logger.error(f"Exception when calling CoreV1Api: {e}")
         return {}, -1  # Return an error code
     else:
-      self.logger.error(f'Namespace {namespace} does not exist\n')
+      logger.error(f'Namespace {namespace} does not exist\n')
       return {}, -1  # Return an error code
 
-  def pod_checker(self, pod_name: str, namespace: str, kubeconfig_path: str = '~/.kube/config',
-                  timeout: int = 300) -> list:
+  def pod_checker(self, pod_name: str, namespace: str, kubeconfig_path: str = '~/.kube/config', logger=None) -> list:
+    logger = logger or self.logger
+
     try:
       print(f"Checking {pod_name} status...")
       sleep(5)
@@ -217,9 +225,19 @@ class ContainerOps:
       pods: dict
       down: int
 
-      with MultiThreading() as mt:
-        pods, down = mt.run_with_progress_indicator(
-          self.are_pods_and_containers_running, 1, timeout, pod_name, namespace, kubeconfig_path)
+      try:
+        with MultiProcessing() as mp:
+          pods, down = mp.execute_with_progress_indicator(self.are_pods_and_containers_running,
+                                                          self.logger,
+                                                          0.5,
+                                                          600,
+                                                          pod_name,
+                                                          namespace,
+                                                          kubeconfig_path)
+      except Exception as e:
+        self.logger.error(f'Error: {e}')
+        pods = {}
+        down = -1
 
       if down == -1:
         print(f"Unable to check running status of {pod_name}\n")
@@ -239,10 +257,12 @@ class ContainerOps:
         print(f'No {pod_name} pods were found running.')
         return pod_names
     except Exception as e:
-      self.logger.error(f'Error: {e}')
+      logger.error(f'Error: {e}')
       return []
 
-  def get_service_ip_address(self, service_name, namespace, kubeconfig_path: str = '~/.kube/config'):
+  def get_service_ip_address(self, service_name, namespace, kubeconfig_path: str = '~/.kube/config', logger=None):
+    logger = logger or self.logger
+
     try:
       config.load_kube_config(config_file=kubeconfig_path)
       v1 = client.CoreV1Api()
@@ -260,10 +280,10 @@ class ContainerOps:
 
         if service.spec.ports:
           port = service.spec.ports[0].port
-          self.logger.info(f"Service {service_name}: IP Address - {ip_address}, Potential Port - {port}")
+          logger.info(f"Service {service_name}: IP Address - {ip_address}, Potential Port - {port}")
         else:
-          self.logger.error(f"Service {service_name}: IP Address - {ip_address}, Port information not available in "
-                            f"service definition.")
+          logger.error(f"Service {service_name}: IP Address - {ip_address}, "
+                       f"Port information not available in service definition.")
           port = 0
       elif service.spec.type == "LoadBalancer":
         # LoadBalancer service type - might have multiple ingress points
@@ -274,10 +294,10 @@ class ContainerOps:
 
         if service.spec.ports:
           port = service.spec.ports[0].port  # Assuming single port for simplicity
-          self.logger.info(f"Service {service_name}: IP Address - {ip_address}, Potential Port - {port}")
+          logger.info(f"Service {service_name}: IP Address - {ip_address}, Potential Port - {port}")
         else:
-          self.logger.error(f"Service {service_name}: IP Address - {ip_address}, Port information not available in "
-                            f"service definition. Checking ingress rules...")
+          logger.error(f"Service {service_name}: IP Address - {ip_address}, "
+                       f"Port information not available in service definition. Checking ingress rules...")
           port = 0
       else:
         raise Exception(f"Service type '{service.spec.type}' not currently supported")
@@ -287,7 +307,9 @@ class ContainerOps:
       print(f"Error retrieving service information: {e}")
       return False
 
-  def list_pods_in_namespace(self, namespace) -> list | None:
+  def list_pods_in_namespace(self, namespace, logger=None) -> list | None:
+    logger = logger or self.logger
+
     # Load Kubernetes configuration from the default location (~/.kube/config)
     config.load_kube_config()
 
@@ -303,5 +325,5 @@ class ContainerOps:
       return pod_names
 
     except Exception as e:
-      self.logger.error(f"An error occurred: {e}")
+      logger.error(f"An error occurred: {e}")
       return None

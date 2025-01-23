@@ -3,7 +3,8 @@ import subprocess
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+# from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.AWS import AWS, AWSSpecs
 
 
@@ -27,13 +28,15 @@ class AWSDaemonsetKAC(AWS):
     self.kac_image_tag: str = kac_image_tag
     self.sensor_tags: str = sensor_tags
 
-  def aws_daemonset_kac_thread(self):
+  def aws_daemonset_kac_thread(self, logger=None):
+    logger = logger or self.logger
+
     if self.repository:
       repository: str = self.repository
     else:
       repository: str = self.get_default_repository_name(sensor_type='falcon-kac')
 
-    registry_type: str = self.check_registry_type(registry=self.registry)
+    registry_type: str = self.check_registry_type(registry=self.registry, logger=logger)
 
     registry: str = self.get_image_registry(registry=self.registry,
                                             registry_type=registry_type,
@@ -42,19 +45,20 @@ class AWSDaemonsetKAC(AWS):
     image_tag: str = self.get_image_tag(registry=registry,
                                         repository=repository,
                                         image_tag=self.kac_image_tag,
-                                        sensor_type='falcon-kac')
+                                        sensor_type='falcon-kac',
+                                        logger=logger)
 
     pull_token: str = self.get_image_pull_token(registry=registry)
 
     # Install Helm repository and release
     command = 'helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm'
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
     command = 'helm repo update'
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
     command = 'helm repo list'
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
     falcon_kac_repo = "crowdstrike/falcon-kac"
 
@@ -77,14 +81,16 @@ class AWSDaemonsetKAC(AWS):
 
     command = ' '.join(kac_helm_chart)
 
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
-  def deploy_falcon_kac(self):
+  def deploy_falcon_kac(self, logger=None):
+    logger = logger or self.logger
+
     print(f"\n{'+' * 44}\nCrowdStrike Kubernetes Admission Controller\n{'+' * 44}\n")
 
     print('Installing Kubernetes Admission Controller...')
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     if k8s.namespace_exists(namespace_name='falcon-kac'):
       captured_pods, status = k8s.find_pods_with_status(pod_string='falcon-kac', namespace='falcon-kac')
@@ -99,23 +105,25 @@ class AWSDaemonsetKAC(AWS):
         return
 
     try:
-      with MultiThreading() as mt:
-        mt.run_with_progress_indicator(self.aws_daemonset_kac_thread, 1, 300)
+      with MultiProcessing() as mp:
+        mp.execute_with_progress_indicator(self.aws_daemonset_kac_thread, logger, 0.5, 900)
+      # with MultiThreading() as mt:
+      #   mt.run_with_progress_indicator(self.aws_daemonset_kac_thread, 1, 300)
 
       print('Kubernetes admission controller installed successfully.\n')
 
       container = ContainerOps(logger=self.logger)
       container.pod_checker(pod_name='falcon-kac', namespace='falcon-kac', kubeconfig_path='~/.kube/config')
     except subprocess.CalledProcessError as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
-      self.logger.error(f"Command output: {e.stdout}")
-      self.logger.error(f"Command error: {e.stderr}")
-      self.logger.error(f'Kubernetes admission controller installation failed\n')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
+      logger.error(f"Command output: {e.stdout}")
+      logger.error(f"Command error: {e.stderr}")
+      logger.error(f'Kubernetes admission controller installation failed\n')
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
-      self.logger.error(f'Kubernetes admission controller installation failed\n')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
+      logger.error(f'Kubernetes admission controller installation failed\n')
 
 
 class AWSSidecarKAC(AWSSpecs):
@@ -142,13 +150,15 @@ class AWSSidecarKAC(AWSSpecs):
     self.kac_image_tag = kac_image_tag
     self.kac_iam_role = kac_iam_role
 
-  def aws_sidecar_kac_thread(self):
+  def aws_sidecar_kac_thread(self, logger=None):
+    logger = logger or self.logger
+
     if self.repository:
       repository: str = self.repository
     else:
       repository: str = self.get_default_repository_name(sensor_type='falcon-kac')
 
-    registry_type: str = self.check_registry_type(registry=self.registry)
+    registry_type: str = self.check_registry_type(registry=self.registry, logger=logger)
 
     registry: str = self.get_image_registry(registry=self.registry,
                                             registry_type=registry_type,
@@ -157,19 +167,20 @@ class AWSSidecarKAC(AWSSpecs):
     image_tag: str = self.get_image_tag(registry=registry,
                                         repository=repository,
                                         image_tag=self.kac_image_tag,
-                                        sensor_type='falcon-kac')
+                                        sensor_type='falcon-kac',
+                                        logger=logger)
 
     pull_token: str = self.get_image_pull_token(registry=registry)
 
     # Install Helm repository and release
     command = 'helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm'
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
     command = 'helm repo update'
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
     command = 'helm repo list'
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
     falcon_kac_repo = "crowdstrike/falcon-kac"
 
@@ -192,7 +203,8 @@ class AWSSidecarKAC(AWSSpecs):
                                                             namespace='falcon-kac',
                                                             service_account='falcon-kac-sa',
                                                             iam_role=self.kac_iam_role,
-                                                            cluster_name=self.cluster_name)
+                                                            cluster_name=self.cluster_name,
+                                                            logger=logger)
 
       if iam_role_arn is not None:
         kac_helm_chart.append("--set")
@@ -202,14 +214,16 @@ class AWSSidecarKAC(AWSSpecs):
 
     command = ' '.join(kac_helm_chart)
 
-    self.run_command(command=command)
+    self.run_command(command=command, logger=logger)
 
-  def deploy_falcon_kac(self):
+  def deploy_falcon_kac(self, logger=None):
+    logger = logger or self.logger
+
     print(f"\n{'+' * 44}\nCrowdStrike Kubernetes Admission Controller\n{'+' * 44}\n")
 
     print('Installing Kubernetes Admission Controller...')
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     if k8s.namespace_exists(namespace_name='falcon-kac'):
       captured_pods, status = k8s.find_pods_with_status(pod_string='falcon-kac', namespace='falcon-kac')
@@ -224,19 +238,22 @@ class AWSSidecarKAC(AWSSpecs):
         return
 
     try:
-      with MultiThreading() as mt:
-        mt.run_with_progress_indicator(self.aws_sidecar_kac_thread, 1, 300)
+      with MultiProcessing() as mp:
+        mp.execute_with_progress_indicator(self.aws_sidecar_kac_thread, logger, 0.5, 900)
+      # with MultiThreading() as mt:
+      #   mt.run_with_progress_indicator(self.aws_sidecar_kac_thread, 1, 300)
 
       print('Kubernetes admission controller installed successfully.\n')
 
-      container = ContainerOps(logger=self.logger)
-      container.pod_checker(pod_name='falcon-kac', namespace='falcon-kac', kubeconfig_path='~/.kube/config')
+      container = ContainerOps(logger=logger)
+      container.pod_checker(pod_name='falcon-kac', namespace='falcon-kac',
+                            kubeconfig_path='~/.kube/config', logger=logger)
     except subprocess.CalledProcessError as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
-      self.logger.error(f"Command output: {e.stdout}")
-      self.logger.error(f"Command error: {e.stderr}")
-      self.logger.error(f'Kubernetes admission controller installation failed\n')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
+      logger.error(f"Command output: {e.stdout}")
+      logger.error(f"Command error: {e.stderr}")
+      logger.error(f'Kubernetes admission controller installation failed\n')
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')

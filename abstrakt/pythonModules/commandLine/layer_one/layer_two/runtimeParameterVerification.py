@@ -123,8 +123,7 @@ class AzureRuntimeParameterVerification(BasicRuntimeParameterVerification):
                proxy_port: int, install_kac: bool, install_iar: bool, install_kpa: bool, falcon_client_id: str,
                falcon_client_secret: str, install_detections_container: bool, install_vulnerable_apps: bool,
                generate_misconfigs: bool, logger, cluster_name: str, resource_group: str, location: str,
-               asset_tags: str,
-               kernel_mode: bool, ebpf_mode: bool, acr_resource_group: str, sp_name: str, sp_pass: str, acr_sub_id: str
+               asset_tags: str, kernel_mode: bool, ebpf_mode: bool, acr_resource_group: str, sp_name: str, sp_pass: str
                ):
     super().__init__(config_file, install_falcon_sensor, registry, repository, proxy_server, proxy_port, install_kac,
                      install_iar, install_kpa, falcon_client_id, falcon_client_secret, install_detections_container,
@@ -139,7 +138,6 @@ class AzureRuntimeParameterVerification(BasicRuntimeParameterVerification):
     self.acr_resource_group = acr_resource_group
     self.sp_name = sp_name
     self.sp_pass = sp_pass
-    self.acr_sub_id = acr_sub_id
 
   def verify_aks_runtime_parameters(self):
     self.verify_generic_parameters()
@@ -150,14 +148,12 @@ class AzureRuntimeParameterVerification(BasicRuntimeParameterVerification):
       print("Usage: --cluster-name <name> --resource-group <name> --location <location> and --asset-tags <tags>")
       exit()
 
-    if any([self.acr_resource_group, self.acr_sub_id]) and not all([self.acr_resource_group, self.acr_sub_id,
-                                                                    self.sp_name]):
+    if any([self.acr_resource_group]) and not all([self.acr_resource_group, self.sp_name]):
       print('Error: One or more runtime parameters are missing or are used in incorrect combination')
       print('Usage: --acr-resource-group <name> --acr-sub-id <id> --sp-name <name>')
       exit()
 
-    if any([self.acr_resource_group, self.acr_sub_id]) and not any([self.install_falcon_sensor, self.install_kac,
-                                                                    self.install_iar]):
+    if any([self.acr_resource_group]) and not any([self.install_falcon_sensor, self.install_kac, self.install_iar]):
       print('Error: One or more runtime parameters are missing or are used in incorrect combination')
       print('Usage:  --install-falcon-sensor | --install-kac | --install-iar --acr-resource-group <name> '
             '--acr-sub-id <id>')
@@ -168,7 +164,7 @@ class AzureRuntimeParameterVerification(BasicRuntimeParameterVerification):
       print('Usage:  --install-falcon-sensor | --install-kac | --install-iar --sp-name <name> --sp-pass <password>')
       exit()
 
-    if any([self.sp_name, self.sp_pass]) and not any([self.acr_resource_group, self.acr_sub_id]):
+    if any([self.sp_name, self.sp_pass]) and not any([self.acr_resource_group]):
       print('Error: One or more runtime parameters are missing or are used in incorrect combination')
       print('Usage:  --acr-resource-group <name> --acr-sub-id <id> --sp-name <name> --sp-pass <password>')
       exit()
@@ -237,7 +233,7 @@ class SensorInstallRuntimeParameterVerification:
                registry: str = None, repository: str = None, proxy_server: str = None,
                proxy_port: int = None, aws_cluster: str = None, aws_region: str = None,
                az_cluster: str = None, az_resource_group: str = None, az_location: str = None,
-               az_acr_resource_group: str = None, az_acr_sub_id: str = None, az_sp_name: str = None,
+               az_acr_resource_group: str = None, az_sp_name: str = None,
                az_sp_pass: str = None, gcp_cluster: str = None, gcp_location: str = None,
                gcp_project_id: str = None, gcp_service_account: str = None, kac: bool = None,
                iar: bool = None, kpa: bool = None, falcon_client_id: str = None,
@@ -257,7 +253,6 @@ class SensorInstallRuntimeParameterVerification:
     self.az_resource_group = az_resource_group
     self.az_location = az_location
     self.az_acr_resource_group = az_acr_resource_group
-    self.az_acr_sub_id = az_acr_sub_id
     self.az_sp_name = az_sp_name
     self.az_sp_pass = az_sp_pass
     self.gcp_cluster = gcp_cluster

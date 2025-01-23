@@ -73,10 +73,6 @@ def aks(
                                        help='Azure Service Principal Password | Example: password',
                                        show_default=False,
                                        rich_help_panel="Azure Options")] = None,
-  acr_sub_id: Annotated[str, typer.Option('--acr-sub-id', help='ACR Subscription ID | '
-                                          'Example: 11111111-0000-0000-0000-111111111111',
-                                          show_default=False,
-                                          rich_help_panel="Azure Options")] = None,
   install_kac: Annotated[bool, typer.Option('--install-kac',
                                             help='Install Kubernetes Admission Controller',
                                             show_default=False,
@@ -151,8 +147,7 @@ def aks(
                                           generate_misconfigs=generate_misconfigs,
                                           logger=aks_logger,
                                           kernel_mode=kernel_mode,
-                                          ebpf_mode=ebpf_mode,
-                                          acr_sub_id=acr_sub_id)
+                                          ebpf_mode=ebpf_mode)
 
   manager.start_azure_cluster_operations()
 

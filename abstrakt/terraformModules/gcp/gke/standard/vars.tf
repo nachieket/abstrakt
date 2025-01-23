@@ -28,7 +28,7 @@ variable "cidr_range" {
 }
 
 variable "version_prefix" {
-  default = "1.27."
+  default = "1.31."
 }
 
 variable "gke_username" {

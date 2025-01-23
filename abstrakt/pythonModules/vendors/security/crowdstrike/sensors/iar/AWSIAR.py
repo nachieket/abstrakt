@@ -4,7 +4,8 @@ import inspect
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+# from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.AWS import AWS, AWSSpecs
 
 
@@ -26,14 +27,16 @@ class AWSDaemonsetIAR(AWS):
     self.cluster_name: str = cluster_name
     self.cluster_type: str = cluster_type
 
-  def execute_iar_installation_process(self) -> bool:
+  def execute_iar_installation_process(self, logger=None) -> bool:
+    logger = logger or self.logger
+
     try:
       if self.repository:
         repository: str = self.repository
       else:
         repository: str = self.get_default_repository_name(sensor_type='falcon-imageanalyzer')
 
-      registry_type: str = self.check_registry_type(registry=self.registry)
+      registry_type: str = self.check_registry_type(registry=self.registry, logger=logger)
 
       registry: str = self.get_image_registry(registry=self.registry,
                                               registry_type=registry_type,
@@ -42,17 +45,18 @@ class AWSDaemonsetIAR(AWS):
       image_tag: str = self.get_image_tag(registry=registry,
                                           repository=repository,
                                           image_tag=self.iar_image_tag,
-                                          sensor_type='falcon-imageanalyzer')
+                                          sensor_type='falcon-imageanalyzer',
+                                          logger=logger)
 
       pull_token: str = self.get_image_pull_token(registry=registry)
 
-      self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm")
-      self.run_command("helm repo update")
-      self.run_command("kubectl create namespace falcon-image-analyzer")
+      self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm", logger=logger)
+      self.run_command("helm repo update", logger=logger)
+      self.run_command("kubectl create namespace falcon-image-analyzer", logger=logger)
       self.run_command("kubectl label --overwrite ns falcon-image-analyzer "
-                       "pod-security.kubernetes.io/enforce=privileged")
+                       "pod-security.kubernetes.io/enforce=privileged", logger=logger)
 
-      output = self.run_command("kubectl config view --minify --output jsonpath={..cluster}")
+      output, error = self.run_command("kubectl config view --minify --output jsonpath={..cluster}", logger=logger)
 
       random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
       cluster_name = f"random_{random_string}_cluster"
@@ -78,20 +82,22 @@ class AWSDaemonsetIAR(AWS):
       elif registry_type == 'ecr':
         iar_helm_chart += f' --set image.repository={registry}/{repository}'
 
-      self.run_command(iar_helm_chart)
+      self.run_command(iar_helm_chart, logger=logger)
 
       return True
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def deploy_falcon_iar(self):
+  def deploy_falcon_iar(self, logger=None):
+    logger = logger or self.logger
+
     print(f"\n{'+' * 40}\nCrowdStrike Image Assessment at Runtime\n{'+' * 40}\n")
 
     print('Installing IAR...')
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     if k8s.namespace_exists(namespace_name='falcon-image-analyzer'):
       captured_pods, status = k8s.find_pods_with_status(pod_string='image-analyzer', namespace='falcon-image-analyzer')
@@ -105,15 +111,17 @@ class AWSDaemonsetIAR(AWS):
         print(' ')
         return
 
-    with MultiThreading() as mt:
-      status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1, 300)
+    with MultiProcessing() as mp:
+      status = mp.execute_with_progress_indicator(self.execute_iar_installation_process, logger, 0.5, 900)
+    # with MultiThreading() as mt:
+    #   status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1, 300)
 
     if status:
       print('IAR installation successful\n')
 
-      container = ContainerOps(logger=self.logger)
+      container = ContainerOps(logger=logger)
       container.pod_checker(pod_name='image-analyzer', namespace='falcon-image-analyzer',
-                            kubeconfig_path='~/.kube/config')
+                            kubeconfig_path='~/.kube/config', logger=logger)
     else:
       print('IAR installation failed\n')
 
@@ -141,14 +149,16 @@ class AWSSidecarIAR(AWSSpecs):
     self.iam_policy: str = ecr_iam_policy
     self.iar_iam_role: str = iar_iam_role
 
-  def execute_iar_installation_process(self) -> bool:
+  def execute_iar_installation_process(self, logger=None) -> bool:
+    logger = logger or self.logger
+
     try:
       if self.repository:
         repository: str = self.repository
       else:
         repository: str = self.get_default_repository_name(sensor_type='falcon-imageanalyzer')
 
-      registry_type: str = self.check_registry_type(registry=self.registry)
+      registry_type: str = self.check_registry_type(registry=self.registry, logger=logger)
 
       registry: str = self.get_image_registry(registry=self.registry,
                                               registry_type=registry_type,
@@ -157,17 +167,18 @@ class AWSSidecarIAR(AWSSpecs):
       image_tag: str = self.get_image_tag(registry=registry,
                                           repository=repository,
                                           image_tag=self.iar_image_tag,
-                                          sensor_type='falcon-imageanalyzer')
+                                          sensor_type='falcon-imageanalyzer',
+                                          logger=logger)
 
       pull_token: str = self.get_image_pull_token(registry=registry)
 
-      self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm")
-      self.run_command("helm repo update")
-      self.run_command("kubectl create namespace falcon-image-analyzer")
+      self.run_command("helm repo add crowdstrike https://crowdstrike.github.io/falcon-helm", logger=logger)
+      self.run_command("helm repo update", logger=logger)
+      self.run_command("kubectl create namespace falcon-image-analyzer", logger=logger)
       self.run_command("kubectl label --overwrite ns falcon-image-analyzer "
-                       "pod-security.kubernetes.io/enforce=privileged")
+                       "pod-security.kubernetes.io/enforce=privileged", logger=logger)
 
-      output = self.run_command("kubectl config view --minify --output jsonpath={..cluster}")
+      output, error = self.run_command("kubectl config view --minify --output jsonpath={..cluster}", logger=logger)
 
       # Generate a random 4-character string including letters and digits
       random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
@@ -201,27 +212,30 @@ class AWSSidecarIAR(AWSSpecs):
                                                               namespace='falcon-image-analyzer',
                                                               service_account='image-analyzer-falcon-image-analyzer',
                                                               iam_role=self.iar_iam_role,
-                                                              cluster_name=self.cluster_name)
+                                                              cluster_name=self.cluster_name,
+                                                              logger=logger)
 
         if iam_role_arn is not None:
           iar_helm_chart += f'--set serviceAccount.annotations."eks\\.amazonaws\\.com/role-arn"="{iam_role_arn}"'
         else:
           return False
 
-      self.run_command(iar_helm_chart)
+      self.run_command(iar_helm_chart, logger=logger)
 
       return True
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def deploy_falcon_iar(self):
+  def deploy_falcon_iar(self, logger=None):
+    logger = logger or self.logger
+
     print(f"\n{'+' * 40}\nCrowdStrike Image Assessment at Runtime\n{'+' * 40}\n")
 
     print('Installing IAR...')
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     if k8s.namespace_exists(namespace_name='falcon-image-analyzer'):
       captured_pods, status = k8s.find_pods_with_status(pod_string='image-analyzer', namespace='falcon-image-analyzer')
@@ -235,14 +249,16 @@ class AWSSidecarIAR(AWSSpecs):
         print(' ')
         return
 
-    with MultiThreading() as mt:
-      status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1, 300)
+    with MultiProcessing() as mp:
+      status = mp.execute_with_progress_indicator(self.execute_iar_installation_process, logger, 0.5, 900)
+    # with MultiThreading() as mt:
+    #   status = mt.run_with_progress_indicator(self.execute_iar_installation_process, 1, 300)
 
     if status:
       print('IAR installation successful\n')
 
-      container = ContainerOps(logger=self.logger)
+      container = ContainerOps(logger=logger)
       container.pod_checker(pod_name='image-analyzer', namespace='falcon-image-analyzer',
-                            kubeconfig_path='~/.kube/config')
+                            kubeconfig_path='~/.kube/config', logger=logger)
     else:
       print('IAR installation failed\n')

@@ -41,8 +41,7 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
                generate_misconfigs: bool,
                logger,
                kernel_mode: bool,
-               ebpf_mode: bool,
-               acr_sub_id: str):
+               ebpf_mode: bool):
 
     self.config_file: str = config_file
     self.cluster_name: str = cluster_name
@@ -74,7 +73,6 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
     self.logger = logger
     self.kernel_mode: bool = kernel_mode
     self.ebpf_mode: bool = ebpf_mode
-    self.acr_sub_id: str = acr_sub_id
 
   def verify_parameters(self):
     runtime = AzureRuntimeParameterVerification(config_file=self.config_file,
@@ -92,7 +90,6 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
                                                 acr_resource_group=self.acr_resource_group,
                                                 sp_name=self.sp_name,
                                                 sp_pass=self.sp_pass,
-                                                acr_sub_id=self.acr_sub_id,
                                                 install_kac=self.install_kac,
                                                 install_iar=self.install_iar,
                                                 install_kpa=self.install_kpa,
@@ -137,7 +134,6 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
                                  rg_location=self.location,
                                  sensor_image_tag=self.sensor_image_tag,
                                  acr_rg=self.acr_resource_group,
-                                 acr_sub_id=self.acr_sub_id,
                                  proxy_server=self.proxy_server,
                                  proxy_port=self.proxy_port,
                                  sensor_tags=self.sensor_tags,
@@ -145,7 +141,7 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
                                  sp_name=self.sp_name,
                                  sp_pass=self.sp_pass)
 
-      daemonset.deploy_azure_daemonset_falcon_sensor()
+      daemonset.deploy_azure_daemonset_falcon_sensor(logger=self.logger)
     else:
       print('The cluster type you mentioned is not yet supported. Existing falcon sensor deployment.\n')
       return
@@ -160,13 +156,12 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
                      rg_name=self.resource_group,
                      rg_location=self.location,
                      acr_rg=self.acr_resource_group,
-                     acr_sub_id=self.acr_sub_id,
                      kac_image_tag=self.kac_image_tag,
                      sensor_tags=self.sensor_tags,
                      sp_name=self.sp_name,
                      sp_pass=self.sp_pass)
 
-      kac.deploy_falcon_kac()
+      kac.deploy_falcon_kac(logger=self.logger)
 
   def start_iar_deployment(self):
     if self.cluster_type == 'aks':
@@ -178,12 +173,11 @@ class AzureClusterOperationsManager(ClusterOperationsManager):
                      rg_name=self.resource_group,
                      rg_location=self.location,
                      acr_rg=self.acr_resource_group,
-                     acr_sub_id=self.acr_sub_id,
                      iar_image_tag=self.iar_image_tag,
                      sp_name=self.sp_name,
                      sp_pass=self.sp_pass)
 
-      iar.deploy_falcon_iar()
+      iar.deploy_falcon_iar(logger=self.logger)
 
   def start_azure_cluster_operations(self):
     start_time = time.time()

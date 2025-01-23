@@ -28,7 +28,9 @@ class CrowdStrikeSensors(CrowdStrike):
     elif sensor_type == 'falcon-imageanalyzer':
       return 'falcon-iar'
 
-  def check_registry_type(self, registry: str) -> str:
+  def check_registry_type(self, registry: str, logger=None) -> str:
+    logger = logger or self.logger
+
     try:
       if registry:
         ecr_regex = re.compile(
@@ -57,8 +59,8 @@ class CrowdStrikeSensors(CrowdStrike):
       else:
         return 'crwd'
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return 'unsupported'
 
   def get_image_repo(self, sensor_type) -> tuple:

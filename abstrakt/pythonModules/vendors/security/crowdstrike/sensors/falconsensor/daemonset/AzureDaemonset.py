@@ -2,7 +2,8 @@ import inspect
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+# from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 from abstrakt.pythonModules.vendors.security.crowdstrike.sensors.falconsensor.Azure import Azure
 
 
@@ -15,7 +16,6 @@ class AzureDaemonset(Azure):
                rg_name: str,
                rg_location: str,
                acr_rg: str,
-               acr_sub_id: str,
                sensor_image_tag: str,
                proxy_server: str,
                proxy_port: int,
@@ -30,8 +30,7 @@ class AzureDaemonset(Azure):
                      repository,
                      rg_name,
                      rg_location,
-                     acr_rg,
-                     acr_sub_id)
+                     acr_rg)
 
     self.sensor_image_tag: str = sensor_image_tag
     self.proxy_server: str = proxy_server
@@ -41,7 +40,9 @@ class AzureDaemonset(Azure):
     self.sp_name: str = sp_name
     self.sp_pass: str = sp_pass
 
-  def get_helm_chart(self):
+  def get_helm_chart(self, logger=None):
+    logger = logger or self.logger
+
     if self.repository:
       repository: str = self.repository
     else:
@@ -56,7 +57,8 @@ class AzureDaemonset(Azure):
     if registry_type == 'acr':
       sp_name, sp_pass = self.get_service_principal_credentials(registry=registry,
                                                                 sp_name=self.sp_name,
-                                                                sp_pass=self.sp_pass)
+                                                                sp_pass=self.sp_pass,
+                                                                logger=logger)
 
       if sp_name is None or sp_pass is None:
         return False
@@ -68,7 +70,6 @@ class AzureDaemonset(Azure):
                                          registry_type=registry_type,
                                          repository=repository,
                                          image_tag=self.sensor_image_tag,
-                                         acr_sub_id=self.acr_sub_id,
                                          acr_rg=self.acr_rg,
                                          sp_name=sp_name,
                                          sp_pass=sp_pass,
@@ -119,36 +120,46 @@ class AzureDaemonset(Azure):
     else:
       return False
 
-  def azure_daemonset_falcon_sensor_thread(self):
+  def azure_daemonset_falcon_sensor_thread(self, logger=None):
+    logger = logger or self.logger
+
     helm_chart = self.get_helm_chart()
 
     if helm_chart:
       command = ' '.join(helm_chart)
 
       self.logger.info(f'Running command: {command}')
-      self.run_command(command=command)
+      self.run_command(command=command, logger=logger)
 
       return True
     else:
       return False
 
-  def execute_helm_chart(self):
+  def execute_helm_chart(self, logger=None):
+    logger = logger or self.logger
+
     try:
-      with MultiThreading() as mt:
-        return True if mt.run_with_progress_indicator(self.azure_daemonset_falcon_sensor_thread, 1, 300) else False
+      with MultiProcessing() as mp:
+        return True if mp.execute_with_progress_indicator(self.azure_daemonset_falcon_sensor_thread,
+                                                          logger,
+                                                          0.5,
+                                                          900) else False
+      # with MultiThreading() as mt:
+      #   return True if mt.run_with_progress_indicator(self.azure_daemonset_falcon_sensor_thread, 1, 300) else False
     except Exception as e:
       self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
       self.logger.error(f'Error: {e}')
       return False
 
-  def deploy_azure_daemonset_falcon_sensor(self):
+  def deploy_azure_daemonset_falcon_sensor(self, logger=None):
     """Deploys the CrowdStrike Falcon Sensor _daemonset on a Kubernetes cluster."""
+    logger = logger or self.logger
 
     print(f"{'+' * 26}\nCrowdStrike Falcon Sensor\n{'+' * 26}\n")
 
     print("Installing Falcon Sensor...")
 
-    k8s = KubectlOps(logger=self.logger)
+    k8s = KubectlOps(logger=logger)
 
     falcon_sensor_names = ['daemonset-falcon-sensor', 'falcon-helm-falcon-sensor']
 
@@ -165,10 +176,10 @@ class AzureDaemonset(Azure):
           print(' ')
           return
 
-    if self.execute_helm_chart():
+    if self.execute_helm_chart(logger=logger):
       print("Falcon sensor installation successful\n")
 
-      container = ContainerOps(logger=self.logger)
+      container = ContainerOps(logger=logger)
       container.pod_checker(pod_name='falcon-sensor', namespace='falcon-system', kubeconfig_path='~/.kube/config')
     else:
       print("Falcon sensor installation failed\n")

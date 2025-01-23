@@ -53,7 +53,6 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                az_acr_resource_group=None,
                az_sp_name=None,
                az_sp_pass=None,
-               az_acr_sub_id=None,
                gcp_cluster=None,
                gcp_location=None,
                gcp_project_id=None,
@@ -93,7 +92,6 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
     self.az_acr_resource_group = az_acr_resource_group
     self.az_sp_name = az_sp_name
     self.az_sp_pass = az_sp_pass
-    self.az_acr_sub_id = az_acr_sub_id
     self.gcp_cluster = gcp_cluster
     self.gcp_location = gcp_location
     self.gcp_project_id = gcp_project_id
@@ -165,7 +163,6 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                                         az_resource_group=self.az_resource_group,
                                                         az_location=self.az_location,
                                                         az_acr_resource_group=self.az_acr_resource_group,
-                                                        az_acr_sub_id=self.az_acr_sub_id,
                                                         az_sp_name=self.az_sp_name,
                                                         az_sp_pass=self.az_sp_pass,
                                                         gcp_cluster=self.gcp_cluster,
@@ -394,7 +391,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                       sensor_tags=self.sensor_tags,
                                       sensor_mode=sensor_mode)
 
-      daemonset.deploy_falcon_sensor_daemonset()
+      daemonset.deploy_falcon_sensor_daemonset(logger=self.logger)
     elif cluster_type == 'eks-fargate':
       sidecar = AWSSidecar(falcon_client_id=self.falcon_client_id,
                            falcon_client_secret=self.falcon_client_secret,
@@ -414,7 +411,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                            ecr_iar_iam_role=self.aws_iar_iam_role,
                            cluster_name=self.aws_cluster)
 
-      sidecar.deploy_sidecar_falcon_sensor()
+      sidecar.deploy_sidecar_falcon_sensor(logger=self.logger)
     elif cluster_type == 'aks' or cluster_type == 'azure-aks':
       daemonset = AzureDaemonset(falcon_client_id=self.falcon_client_id,
                                  falcon_client_secret=self.falcon_client_secret,
@@ -424,7 +421,6 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                  rg_name=self.az_resource_group,
                                  rg_location=self.az_location,
                                  acr_rg=self.az_acr_resource_group,
-                                 acr_sub_id=self.az_acr_sub_id,
                                  sensor_image_tag=self.sensor_image_tag,
                                  proxy_server=self.proxy_server,
                                  proxy_port=self.proxy_port,
@@ -433,7 +429,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                  sp_name=self.az_sp_name,
                                  sp_pass=self.az_sp_pass)
 
-      daemonset.deploy_azure_daemonset_falcon_sensor()
+      daemonset.deploy_azure_daemonset_falcon_sensor(logger=self.logger)
     elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
       daemonset = GCPDaemonset(falcon_client_id=self.falcon_client_id,
                                falcon_client_secret=self.falcon_client_secret,
@@ -449,7 +445,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                proxy_port=self.proxy_port,
                                cluster_type=cluster_type)
 
-      daemonset.deploy_falcon_sensor_daemonset()
+      daemonset.deploy_falcon_sensor_daemonset(logger=self.logger)
     elif cluster_type == 'eks-managed-node-with-eks-fargate':
       # TODO: Implement the method
       pass
@@ -468,7 +464,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                           cluster_type=cluster_type,
                                           kac_image_tag=self.kac_image_tag,
                                           sensor_tags=self.sensor_tags)
-      aws_daemonset_kac.deploy_falcon_kac()
+      aws_daemonset_kac.deploy_falcon_kac(logger=self.logger)
     elif cluster_type == 'eks-fargate':
       aws_sidecar_kac = AWSSidecarKAC(falcon_client_id=self.falcon_client_id,
                                       falcon_client_secret=self.falcon_client_secret,
@@ -480,7 +476,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                       cluster_type=cluster_type,
                                       kac_image_tag=self.kac_image_tag,
                                       kac_iam_role=self.aws_kac_iam_role)
-      aws_sidecar_kac.deploy_falcon_kac()
+      aws_sidecar_kac.deploy_falcon_kac(logger=self.logger)
     elif cluster_type == 'aks' or cluster_type == 'azure-aks':
       aks_daemonset_kac = AzureKAC(falcon_client_id=self.falcon_client_id,
                                    falcon_client_secret=self.falcon_client_secret,
@@ -490,12 +486,11 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                    rg_name=self.az_resource_group,
                                    rg_location=self.az_location,
                                    acr_rg=self.az_acr_resource_group,
-                                   acr_sub_id=self.az_acr_sub_id,
                                    kac_image_tag=self.kac_image_tag,
                                    sensor_tags=self.sensor_tags,
                                    sp_name=self.az_sp_name,
                                    sp_pass=self.az_sp_pass)
-      aks_daemonset_kac.deploy_falcon_kac()
+      aks_daemonset_kac.deploy_falcon_kac(logger=self.logger)
     elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
       gke_standard_kac = GCPKAC(falcon_client_id=self.falcon_client_id,
                                 falcon_client_secret=self.falcon_client_secret,
@@ -508,7 +503,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                 kac_image_tag=self.kac_image_tag,
                                 sensor_tags=self.sensor_tags)
 
-      gke_standard_kac.deploy_falcon_kac()
+      gke_standard_kac.deploy_falcon_kac(logger=self.logger)
     elif cluster_type == 'eks-managed-node-with-eks-fargate':
       # TODO: Implement the method
       pass
@@ -528,7 +523,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                           cluster_name=self.aws_cluster,
                                           cluster_type=cluster_type)
 
-      aws_daemonset_iar.deploy_falcon_iar()
+      aws_daemonset_iar.deploy_falcon_iar(logger=self.logger)
     elif cluster_type == 'eks-fargate':
       aws_sidecar_iar = AWSSidecarIAR(falcon_client_id=self.falcon_client_id,
                                       falcon_client_secret=self.falcon_client_secret,
@@ -541,7 +536,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                                       ecr_iam_policy=self.aws_ecr_iam_policy,
                                       iar_iam_role=self.aws_iar_iam_role)
 
-      aws_sidecar_iar.deploy_falcon_iar()
+      aws_sidecar_iar.deploy_falcon_iar(logger=self.logger)
     elif cluster_type == 'aks' or cluster_type == 'azure-aks':
       az_aks_iar = AzureIAR(falcon_client_id=self.falcon_client_id,
                             falcon_client_secret=self.falcon_client_secret,
@@ -551,12 +546,11 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                             rg_name=self.az_resource_group,
                             rg_location=self.az_location,
                             acr_rg=self.az_acr_resource_group,
-                            acr_sub_id=self.az_acr_sub_id,
                             iar_image_tag=self.iar_image_tag,
                             sp_name=self.az_sp_name,
                             sp_pass=self.az_sp_pass)
 
-      az_aks_iar.deploy_falcon_iar()
+      az_aks_iar.deploy_falcon_iar(logger=self.logger)
     elif cluster_type == 'gke-standard' or cluster_type == 'gke-autopilot':
       iar = GCPIAR(falcon_client_id=self.falcon_client_id,
                    falcon_client_secret=self.falcon_client_secret,
@@ -568,7 +562,7 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
                    location=self.gcp_location,
                    iar_image_tag=self.iar_image_tag)
 
-      iar.deploy_falcon_iar()
+      iar.deploy_falcon_iar(logger=self.logger)
     elif cluster_type == 'eks-managed-node-with-eks-fargate':
       # TODO: Implement the method
       pass
@@ -716,7 +710,9 @@ class CrowdStrikeSensorInstallOperationsManager(ClusterOperationsManager):
     if self.detections:
       k8s = ContainerOps(logger=self.logger)
 
-      if k8s.check_namespace_exists(namespace='crowdstrike-detections', kubeconfig_path='~/.kube/config'):
+      if k8s.check_namespace_exists(namespace='crowdstrike-detections',
+                                    kubeconfig_path='~/.kube/config',
+                                    logger=self.logger):
         command = 'kubectl delete namespace crowdstrike-detections'
 
         print('Deleting all detections containers and crowdstrike-detections namespace...')

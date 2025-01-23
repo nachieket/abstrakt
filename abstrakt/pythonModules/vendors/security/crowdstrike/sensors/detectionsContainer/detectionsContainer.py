@@ -3,28 +3,52 @@ import subprocess
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.pythonOps.customPrint.customPrint import printf
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 
 
 class DetectionsContainer:
   def __init__(self, logger):
     self.logger = logger
 
-  def execute_command(self, command):
-    self.logger.info(f'Executing command: {command}')
+  def execute_command(self, command, logger=None):
+    logger = logger or self.logger
+
+    logger.info(f'Executing command: {command}')
 
     try:
       process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
 
       if process.stdout:
-        self.logger.info(process.stdout)
+        logger.info(process.stdout)
 
       if process.stderr:
-        self.logger.info(process.stderr)
+        logger.info(process.stderr)
     except Exception as e:
-      self.logger.error(f'Error {e} executing command {command}')
+      logger.error(f'Error {e} executing command {command}')
 
-  def deploy_detections_containers(self, cluster_type, mode):
+  def detections_containers_thread(self, logger=None):
+    logger = logger or self.logger
+
+    path = './abstrakt/conf/crowdstrike/detections-container/'
+    containers_yaml = [f'{path}crowdstrike-detections.yaml', f'{path}detections-container.yaml',
+                       f'{path}vulnerable-app.yaml', f'{path}generic-tools.yaml']
+
+    for container_yaml in containers_yaml:
+      command = ['kubectl', 'apply', '-f', container_yaml]
+
+      logger.info(f'Executing command: {command}')
+
+      process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+
+      if process.stdout:
+        logger.info(process.stdout)
+
+      if process.stderr:
+        logger.info(process.stderr)
+
+  def deploy_detections_containers(self, cluster_type, mode, logger=None):
+    logger = logger or self.logger
+
     print(f"\n{'+' * 33}\nCrowdStrike Detections Containers\n{'+' * 33}\n")
 
     print('Installing Detections Containers...')
@@ -45,32 +69,13 @@ class DetectionsContainer:
         print()
         return
 
-    path = './abstrakt/conf/crowdstrike/detections-container/'
-
-    detections_containers = [f'{path}crowdstrike-detections.yaml', f'{path}detections-container.yaml',
-                             f'{path}vulnerable-app.yaml', f'{path}generic-tools.yaml']
-
     try:
-      def thread():
-        for container_yaml in detections_containers:
-          command = ['kubectl', 'apply', '-f', container_yaml]
-
-          self.logger.info(f'Executing command: {command}')
-
-          process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-
-          if process.stdout:
-            self.logger.info(process.stdout)
-
-          if process.stderr:
-            self.logger.info(process.stderr)
-
-      with MultiThreading() as mt:
-        mt.run_with_progress_indicator(thread, 1, 300)
+      with MultiProcessing() as mp:
+        mp.execute_with_progress_indicator(self.detections_containers_thread, logger, 0.5, 900)
 
       printf('All Detections containers installation successful\n', logger=self.logger)
 
-      container = ContainerOps(logger=self.logger)
+      container = ContainerOps(logger=logger)
 
       detections_containers = ['detections-container', 'vulnerable.example.com', 'generic-tools']
       pods: dict = {}
@@ -84,15 +89,17 @@ class DetectionsContainer:
       print('Retrieving ip address of vulnerable app service object...\n')
 
       service_ip_address, service_port = container.get_service_ip_address(service_name='vulnerable-example-com',
-                                                                          namespace='crowdstrike-detections')
+                                                                          namespace='crowdstrike-detections',
+                                                                          logger=logger)
 
       print('Generating artificial detections...')
       print('This may take a few minutes.')
 
       if pods['detections-container'][0] and pods['vulnerable.example.com'][0] and pods['generic-tools'][0]:
-        with MultiThreading() as mt:
-          mt.run_with_progress_indicator(self.generate_artificial_detections, 1, 600, cluster_type, service_ip_address,
-                                         service_port, pods['generic-tools'][0], pods['detections-container'][0], mode)
+        with MultiProcessing() as mp:
+          mp.execute_with_progress_indicator(self.generate_artificial_detections, logger, 0.5, 900, cluster_type,
+                                             service_ip_address, service_port, pods['generic-tools'][0],
+                                             pods['detections-container'][0], mode)
 
           print('Artificial detections generated successfully. Check them on your console in a few minutes.')
 
@@ -107,9 +114,11 @@ class DetectionsContainer:
                 'on the console.\n')
 
     except Exception as e:
-      self.logger.error(f'Error: {e}')
+      logger.error(f'Error: {e}')
 
-  def generate_sh_detections(self, detections_container):
+  def generate_sh_detections(self, detections_container, logger=None):
+    logger = logger or self.logger
+
     sh_commands: list = [
       "sh /home/eval/bin/Collection_via_Automated_Collection.sh",
       "sh /home/eval/bin/Command_Control_via_Remote_Access-obfuscated.sh",
@@ -134,9 +143,11 @@ class DetectionsContainer:
       kubectl_command: list = ["kubectl", "exec", "-it", detections_container, "-n", "crowdstrike-detections",
                                "--", shell, script]
 
-      self.execute_command(command=kubectl_command)
+      self.execute_command(command=kubectl_command, logger=logger)
 
-  def generate_curl_detections(self, service_ip_address, service_port, execution_container, mode):
+  def generate_curl_detections(self, service_ip_address, service_port, execution_container, mode, logger=None):
+    logger = logger or self.logger
+
     curl_commands: list = [
       f'curl http://{service_ip_address}:{service_port}/ps',
       f'curl http://{service_ip_address}:{service_port}/rootkit',
@@ -161,14 +172,16 @@ class DetectionsContainer:
         kubectl_command: list = ["kubectl", "exec", "-it", execution_container, "-n", "crowdstrike-detections",
                                  "--", shell, script]
 
-      self.execute_command(command=kubectl_command)
+      self.execute_command(command=kubectl_command, logger=logger)
 
   def generate_artificial_detections(self, cluster_type, service_ip_address, service_port, execution_container,
-                                     detections_container, mode):
+                                     detections_container, mode, logger=None):
+    logger = logger or self.logger
+
     if cluster_type == 'eks-fargate':
       self.generate_curl_detections(service_ip_address=service_ip_address, service_port=service_port,
-                                    execution_container=execution_container, mode=mode)
+                                    execution_container=execution_container, mode=mode, logger=logger)
     else:
       self.generate_curl_detections(service_ip_address=service_ip_address, service_port=service_port,
-                                    execution_container=execution_container, mode=mode)
-      self.generate_sh_detections(detections_container=detections_container)
+                                    execution_container=execution_container, mode=mode, logger=logger)
+      self.generate_sh_detections(detections_container=detections_container, logger=logger)

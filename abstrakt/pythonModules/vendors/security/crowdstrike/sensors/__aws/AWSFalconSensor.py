@@ -128,12 +128,15 @@ class AWSFalconSensor(CrowdStrikeSensors):
     else:
       return 'None'
 
-  def copy_crwd_image_to_ecr(self, sensor_type: str, ecr_image_repo: str, image_tag: str = 'latest') -> bool:
+  def copy_crwd_image_to_ecr(self, sensor_type: str, ecr_image_repo: str,
+                             image_tag: str = 'latest', logger=None) -> bool:
+    logger = logger or self.logger
+
     try:
       ecr_region: str = ecr_image_repo.split('.')[3]
       ecr_repo: str = ecr_image_repo.split('/')[0]
 
-      crowdstrike_image_repo: str = self.get_crwd_repo_url(sensor_type=sensor_type)
+      crowdstrike_image_repo: str = self.get_crwd_repo_url(sensor_type=sensor_type, logger=logger)
 
       if image_tag == 'None':
         return False

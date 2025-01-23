@@ -181,7 +181,7 @@ class GCPClusterOperationsManager(ClusterOperationsManager):
                              service_account=self.service_account,
                              location=self.location)
 
-    daemonset.deploy_falcon_sensor_daemonset()
+    daemonset.deploy_falcon_sensor_daemonset(logger=self.logger)
 
   def start_kac_deployment(self):
     kac = GCPKAC(falcon_client_id=self.falcon_client_id,
@@ -195,7 +195,7 @@ class GCPClusterOperationsManager(ClusterOperationsManager):
                  sensor_tags=self.sensor_tags,
                  location=self.location)
 
-    kac.deploy_falcon_kac()
+    kac.deploy_falcon_kac(logger=self.logger)
 
   def start_iar_deployment(self):
     iar = GCPIAR(falcon_client_id=self.falcon_client_id,
@@ -208,7 +208,7 @@ class GCPClusterOperationsManager(ClusterOperationsManager):
                  iar_image_tag=self.iar_image_tag,
                  location=self.location)
 
-    iar.deploy_falcon_iar()
+    iar.deploy_falcon_iar(logger=self.logger)
 
   def start_gcp_cluster_operations(self):
     start_time = time.time()

@@ -1,5 +1,19 @@
 # ABSTRAKT
 
+Abstrakt streamlines cloud operations by providing an intelligent abstraction layer that simplifies complex multi-cloud environments. It automates the deployment and management of Kubernetes clusters across AWS, Azure, and GCP, while seamlessly integrating CrowdStrike sensors. This orchestration significantly accelerates proof of value processes, enabling rapid security implementation and evaluation.
+
+In upcoming releases, Abstrakt will expand its capabilities to facilitate enterprise-wide CrowdStrike sensor deployment. This enhancement will support large-scale rollouts across diverse environments, including multiple virtual machines and Kubernetes clusters, spanning numerous cloud accounts. This advancement will empower organizations to swiftly achieve comprehensive security coverage and maintain consistent protection across their entire cloud ecosystem.
+
+### Usage
+
+```
+docker pull nachiketj/abstrakt:1.0.3
+
+docker run -it nachiketj/abstrakt:1.0.3
+
+Note: Check here for latest version of Abstrakt image - https://hub.docker.com/r/nachiketj/abstrakt/tags
+```
+
 ### AWS
 
 #### AWS EKS Managed Node Example
@@ -91,7 +105,7 @@ abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt
 ##### Create Azure AKS Cluster and Deploy Sensors via Azure ACR Registry
 
 ```
-abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --registry abstrakt.azurecr.io --sp-name abstrakt --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --acr-resource-group NJ --acr-sub-id 12345678-1234-1234-1234-123456789012 --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt create azure aks --cluster-name abstrakt-aks1 --resource-group abstrakt-group1 --location uksouth --asset-tags "owner=Abstrakt,product=Falcon,accounting=dev,department=Security,business=IT" --registry abstrakt.azurecr.io --sp-name abstrakt --install-falcon-sensor --install-kac --install-iar --install-detections-container --install-vulnerable-apps --generate-misconfigs --acr-resource-group NJ --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Install CrowdStrike Sensors via CrowdStrike Registry
@@ -103,7 +117,7 @@ abstrakt install crowdstrike --az-cluster abstrakt-aks1 --az-resource-group abst
 ##### Install CrowdStrike Sensors via Åzure ACR Registry
 
 ```
-abstrakt install crowdstrike --az-cluster abstrakt-aks1 --az-resource-group abstrakt-group1 --az-location uksouth --az-acr-resource-group NJ --az-acr-sub-id 12345678-1234-1234-1234-123456789012 --registry abstrakt.azurecr.io --az-sp-name abstrakt --falcon-sensor --kac --iar --detections-container --vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
+abstrakt install crowdstrike --az-cluster abstrakt-aks1 --az-resource-group abstrakt-group1 --az-location uksouth --az-acr-resource-group NJ --registry abstrakt.azurecr.io --az-sp-name abstrakt --falcon-sensor --kac --iar --detections-container --vulnerable-apps --generate-misconfigs --falcon-client-id 3af74117bREDACTED --falcon-client-secret xqKpyF07TIREDACTED
 ```
 
 ##### Uninstall Sensors

@@ -7,51 +7,54 @@ import inspect
 
 import requests
 import subprocess
+from typing import Optional, Tuple
 
 from requests import Response
 from falconpy import SensorDownload
-from subprocess import CompletedProcess
 from requests.auth import HTTPBasicAuth
-
-from abstrakt.pythonModules.customLogging.customLogging import CustomLogger
 
 
 class CrowdStrike:
   def __init__(self, falcon_client_id: str,
                falcon_client_secret: str,
-               logger: CustomLogger(logger_name='CrowdStrike', log_file='/var/log/crowdstrike/crowdstrike.log')):
+               logger):
     self.falcon_client_id: str = falcon_client_id
     self.falcon_client_secret: str = falcon_client_secret
     self.logger = logger
 
     self.falcon_cid: str = self.get_falcon_cid()
-    self.falcon_region: str = self.get_falcon_region()
+    self.falcon_region: str = self.get_falcon_region(logger=self.logger)
     self.falcon_api: str = self.get_falcon_api()
 
     self.falcon_art_password: str = self.get_falcon_art_password()
-    self.falcon_art_username: str = self.get_falcon_art_username()
+    self.falcon_art_username: str = self.get_falcon_art_username(logger=self.logger)
 
-  def get_falcon_response(self) -> dict[str, int | dict] | None:
+  def get_falcon_response(self, logger=None) -> dict[str, int | dict] | None:
+    logger = logger or self.logger
+
     try:
       falcon: SensorDownload = SensorDownload(client_id=self.falcon_client_id, client_secret=self.falcon_client_secret)
 
       return falcon.get_sensor_installer_ccid()
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_falcon_cid(self) -> str | None:
+  def get_falcon_cid(self, logger=None) -> str | None:
+    logger = logger or self.logger
     try:
       response: dict[str, int | dict] = self.get_falcon_response()
 
       return response["body"]["resources"][0].strip()
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_falcon_api(self) -> str | None:
+  def get_falcon_api(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       response: dict[str, int | dict] = self.get_falcon_response()
 
@@ -62,21 +65,25 @@ class CrowdStrike:
       else:
         return 'api.crowdstrike.com'
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_falcon_region(self) -> str | None:
+  def get_falcon_region(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       response: dict[str, int | dict] = self.get_falcon_response()
 
       return response['headers']['X-Cs-Region'].strip()
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_falcon_api_bearer_token(self) -> str | None:
+  def get_falcon_api_bearer_token(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       token_url: str = f"https://{self.falcon_api}/oauth2/token"
       token_data: dict = {
@@ -89,11 +96,13 @@ class CrowdStrike:
 
       return falcon_api_bearer_token
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_falcon_art_password(self) -> str | None:
+  def get_falcon_art_password(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       falcon_api_bearer_token: str = self.get_falcon_api_bearer_token()
 
@@ -103,19 +112,23 @@ class CrowdStrike:
         response: Response = requests.get(url, headers=headers)
         return response.json()['resources'][0]['token']
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_falcon_art_username(self) -> str | None:
+  def get_falcon_art_username(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       return f"fc-{self.falcon_cid.lower().split('-')[0]}"
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_registry_bearer_token(self, sensor_type: str) -> str | None:
+  def get_registry_bearer_token(self, sensor_type: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       if self.falcon_art_username and self.falcon_art_password:
         if sensor_type == 'daemonset':
@@ -142,48 +155,58 @@ class CrowdStrike:
       else:
         return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def login_to_crowdstrike_repo(self):
+  def login_to_crowdstrike_repo(self, logger=None):
+    logger = logger or self.logger
+
     command: str = (f'echo {self.falcon_art_password} | sudo skopeo login -u {self.falcon_art_username} '
                     f'--password-stdin registry.crowdstrike.com')
 
-    return True if self.run_command(command=command) else False
+    output, error = self.run_command(command=command, logger=logger)
 
-  def add_crowdstrike_helm_repo(self) -> bool:
+    return True if output else False
+
+  def add_crowdstrike_helm_repo(self, logger=None) -> bool:
+    logger = logger or self.logger
+
     try:
       command: list = ["helm", "repo", "add", "crowdstrike", "https://crowdstrike.github.io/falcon-helm"]
       process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
       if process.stdout:
-        self.logger.info(process.stdout)
+        logger.info(process.stdout)
       if process.stderr:
-        self.logger.info(process.stderr)
+        logger.info(process.stderr)
 
       return True
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def get_crowdstrike_partial_pull_token(self) -> str | None:
+  def get_crowdstrike_partial_pull_token(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       if self.add_crowdstrike_helm_repo() is True:
         # Generate partial pull token
         partial_pull_token: str = (base64.b64encode(
           f"{self.falcon_art_username}:{self.get_falcon_art_password()}".encode()).decode()
-                              )
+                                   )
         return partial_pull_token
       else:
         return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_crowdstrike_image_pull_token(self) -> str | None:
+  def get_crowdstrike_image_pull_token(self, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       partial_pull_token: str = self.get_crowdstrike_partial_pull_token()
 
@@ -202,8 +225,8 @@ class CrowdStrike:
       else:
         return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
   def get_crowdstrike_registry(self, sensor_type) -> str:
@@ -227,11 +250,8 @@ class CrowdStrike:
       return (f"https://registry.crowdstrike.com/v2/{sensor_type}/{self.falcon_region}/release"
               f"/{sensor_type}/tags/list")
 
-  def verify_crowdstrike_sensor_image_tag(self, image_tag: str, sensor_type: str) -> bool:
-    # daemonset_pattern: str = r'^\d+\.\d+\.\d+-\d+-\d+\.falcon-linux\.Release\.(US|EU)-\d+$'
-    # sidecar_pattern: str = r'^\d+\.\d+\.\d+-\d+\.container\.x86_64\.Release\.(US|EU)-\d+$'
-    # kac_pattern: str = r'^\d+\.\d+\.\d+-\d+\.container\.x86_64\.Release\.(US|EU)-\d+$'
-    # iar_pattern: str = r'^\d+\.\d+\.\d+'
+  def verify_crowdstrike_sensor_image_tag(self, image_tag: str, sensor_type: str, logger=None) -> bool:
+    logger = logger or self.logger
 
     try:
       if sensor_type == 'daemonset':
@@ -244,20 +264,6 @@ class CrowdStrike:
         registry_bearer: str = self.get_registry_bearer_token(sensor_type='falcon-imageanalyzer')
       else:
         return False
-      # if re.match(daemonset_pattern, image_tag):
-      #   registry_bearer: str = self.get_registry_bearer_token(sensor_type='daemonset')
-      #   sensor_type: str = 'daemonset'
-      # elif re.match(sidecar_pattern, image_tag):
-      #   registry_bearer: str = self.get_registry_bearer_token(sensor_type='sidecar')
-      #   sensor_type: str = 'sidecar'
-      # elif re.match(kac_pattern, image_tag):
-      #   registry_bearer: str = self.get_registry_bearer_token(sensor_type='falcon-kac')
-      #   sensor_type: str = 'falcon-kac'
-      # elif re.match(iar_pattern, image_tag):
-      #   registry_bearer: str = self.get_registry_bearer_token(sensor_type='falcon-imageanalyzer')
-      #   sensor_type: str = 'falcon-imageanalyzer'
-      # else:
-      #   return False
 
       if registry_bearer:
         headers: dict[str, str] = {"authorization": f"Bearer {registry_bearer}"}
@@ -274,14 +280,16 @@ class CrowdStrike:
         if image_tag in sensor_tags:
           return True
       else:
-        self.logger.error(f'{image_tag} does not match CrowdStrike image tag pattern.')
+        logger.error(f'{image_tag} does not match CrowdStrike image tag pattern.')
         return False
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return False
 
-  def get_crowdstrike_sensor_image_tag(self, sensor_type: str, image_tag: str) -> str | None:
+  def get_crowdstrike_sensor_image_tag(self, sensor_type: str, image_tag: str, logger=None) -> str | None:
+    logger = logger or self.logger
+
     try:
       if 'latest' not in image_tag:
         if self.verify_crowdstrike_sensor_image_tag(image_tag=image_tag, sensor_type=sensor_type):
@@ -298,11 +306,9 @@ class CrowdStrike:
           self.get_crowdstrike_sensor_tag_list_url(sensor_type=sensor_type), headers=headers)
 
         sensors: dict = response.json()['tags']
-        sensor_tags: list = []
 
-        for sensor in sensors:
-          if 'sha256' not in sensor:
-            sensor_tags.append(sensor)
+        sensor_tags = [sensor for sensor in sensors if all(
+          tag not in sensor for tag in ['sha256', '_aarch64', '_x86_64'])]
 
         if '-' in image_tag:
           version_number: int = int(image_tag.split('-')[1])
@@ -316,11 +322,12 @@ class CrowdStrike:
       else:
         return None
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
+      logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
+      logger.error(f'{e}')
       return None
 
-  def get_random_string(self, length=5):
+  def get_random_string(self, length=5, logger=None):
+    logger = logger or self.logger
     string_file = './abstrakt/conf/aws/eks/string.txt'
 
     try:
@@ -339,30 +346,111 @@ class CrowdStrike:
 
         return f'-{random_string}'
     except Exception as e:
-      self.logger.error(e)
+      logger.error(e)
       return '-qwert'
 
-  def run_command(self, command: str) -> str | None:
+  def run_command(self, command: str, logger=None) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Executes a shell command and captures its output.
+
+    Args:
+        command (str): The shell command to run.
+        logger: Logger
+
+    Returns:
+        Tuple[Optional[str], Optional[str]]: The standard output and error of the command.
+                                             Both can be None if there's no output.
+    """
+    logger = logger or self.logger
+
     try:
-      result: CompletedProcess[str] = subprocess.run(command,
-                                                     shell=True,
-                                                     check=True,
-                                                     text=True,
-                                                     stdout=subprocess.PIPE,
-                                                     stderr=subprocess.PIPE)
 
-      if result.returncode == 0:
-        if result.stderr:
-          self.logger.error(result.stderr)
+      # Run the command
+      result = subprocess.run(
+        command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True  # Don't raise an exception for non-zero return codes
+      )
 
-        if result.stdout:
-          self.logger.info(result.stdout)
-          return result.stdout
-        else:
-          return '//EMPTY'
-      else:
-        return None
+      # Log and capture stdout
+      stdout_output = []
+      for line in result.stdout.splitlines():
+        logger.info(line)
+        stdout_output.append(line)
+
+      # Log and capture stderr
+      stderr_output = []
+      for line in result.stderr.splitlines():
+        logger.error(line)
+        stderr_output.append(line)
+
+      # Check return code
+      if result.returncode != 0:
+        logger.error(f"Command failed with return code: {result.returncode}")
+        return None, '\n'.join(stderr_output) if stderr_output else None
+
+      return '\n'.join(stdout_output) if stdout_output else None, '\n'.join(stderr_output) if stderr_output else None
+
     except Exception as e:
-      self.logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
-      self.logger.error(f'{e}')
-      return None
+      logger.error(f"Unexpected error occurred: {e}")
+      return None, str(e)
+
+  # def run_command(self, command: str) -> Tuple[Optional[str], Optional[str]]:
+  #   """
+  #   Executes a shell command and captures its output in real-time.
+  #
+  #   Args:
+  #       command (str): The shell command to run.
+  #
+  #   Returns:
+  #       Tuple[Optional[str], Optional[str]]: The standard output and error of the command.
+  #                                            Both can be None if there's no output.
+  #   """
+  #   try:
+  #     process = subprocess.Popen(
+  #       shlex.split(command),
+  #       stdout=subprocess.PIPE,
+  #       stderr=subprocess.PIPE,
+  #       text=True,
+  #       bufsize=1,
+  #       universal_newlines=True
+  #     )
+  #
+  #     stdout_output = []
+  #     stderr_output = []
+  #
+  #     while True:
+  #       stdout_line = process.stdout.readline()
+  #       stderr_line = process.stderr.readline()
+  #
+  #       if stdout_line:
+  #         self.logger.info(stdout_line.strip())
+  #         stdout_output.append(stdout_line)
+  #       if stderr_line:
+  #         self.logger.error(stderr_line.strip())
+  #         stderr_output.append(stderr_line)
+  #
+  #       if process.poll() is not None:
+  #         break
+  #
+  #     remaining_stdout, remaining_stderr = process.communicate()
+  #
+  #     if remaining_stdout:
+  #       self.logger.info(remaining_stdout)
+  #       stdout_output.append(remaining_stdout)
+  #     if remaining_stderr:
+  #       self.logger.error(remaining_stderr)
+  #       stderr_output.append(remaining_stderr)
+  #
+  #     if process.returncode != 0:
+  #       self.logger.error(f"Command failed with return code: {process.returncode}")
+  #       return None, ''.join(stderr_output) if stderr_output else None
+  #
+  #     return ''.join(stdout_output) if stdout_output else None, ''.join(stderr_output) if stderr_output else None
+  #
+  #   except Exception as e:
+  #     self.logger.error(f"Unexpected error occurred: {e}")
+  #     return None, str(e)

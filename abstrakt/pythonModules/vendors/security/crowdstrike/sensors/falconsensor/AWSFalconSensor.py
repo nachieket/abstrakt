@@ -2,10 +2,10 @@ import inspect
 
 from abstrakt.pythonModules.kubernetesOps.kubectlOps import KubectlOps
 from abstrakt.pythonModules.kubernetesOps.containerOps import ContainerOps
-from abstrakt.pythonModules.multiThread.multithreading import MultiThreading
+from abstrakt.pythonModules.multiProcess.multiProcessing import MultiProcessing
 
 
-class FalconSensorSidecar:
+class AWSFalconSensor:
   @staticmethod
   def check_falcon_sensor_installation(sensor_names: list, namespace: str, logger) -> bool:
     k8s = KubectlOps(logger=logger)
@@ -33,8 +33,8 @@ class FalconSensorSidecar:
   @staticmethod
   def execute_helm_chart(thread, logger) -> bool:
     try:
-      with MultiThreading() as mt:
-        return True if mt.run_with_progress_indicator(thread, 1, 300) else False
+      with MultiProcessing() as mp:
+        return True if mp.execute_with_progress_indicator(thread, logger, 0.5, 600) else False
     except Exception as e:
       logger.error(f'Error in function {inspect.currentframe().f_back.f_code.co_name}')
       logger.error(f'Error: {e}')
